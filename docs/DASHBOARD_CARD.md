@@ -72,11 +72,11 @@ Browser fixtures and screenshots use explicitly synthetic data. Browser test suc
 
 - Full Node/Chromium suite: 82 passing tests, including the dashboard card.
 - Card suite repeated against the installable component assets: 22 passing tests.
-- Python test discovery with HA installed: 89 passing tests; HA boundary suite: 52 passing tests.
+- Python test discovery with HA installed: 93 passing tests; HA boundary suite: 52 passing tests.
 - Packaged JavaScript and CSS were served by actual HA HTTP and byte-matched against the installed files.
 - Native authenticated WebSocket diary reads and an actual update event refreshed the displayed totals. Independent Store readback confirmed the card submitted no writes.
 - A real read-only HA user was denied diary access; a client identity downgrade cleared displayed private data.
 - Light/dark captures at 320, 440 and 1080 pixels had no horizontal overflow, unhandled browser errors or external requests.
 - The disposable runtime was stopped and its short-lived refresh tokens were removed, including persisted credentials.
 
-These local results do not turn the repository's existing failing publication checks into a green release, and do not claim an end-to-end test of the full native Lovelace editor or mobile Safari.
+These local results complement the publication checks; check GitHub Actions for the exact revision being installed. They do not claim an end-to-end test of the full native Lovelace editor, mobile Safari or a live household deployment. Passing CI does not itself create a tagged release.
