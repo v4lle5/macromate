@@ -1,0 +1,13 @@
+{
+  "domain": "marcomate",
+  "name": "MarcoMate",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/valentin/marcomate",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/valentin/marcomate/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.2.0"
+}

@@ -1,0 +1,44 @@
+{
+  "title": "MarcoMate",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Garmin calorie data",
+        "description": "Select the Garmin Connect weight and active-calorie sensors. Garmin BMR is optional; without it, MarcoMate estimates BMR from weight.",
+        "data": {
+          "weight_entity": "Garmin weight sensor",
+          "active_calories_entity": "Garmin active calories sensor",
+          "bmr_entity": "Garmin BMR calories sensor (optional)",
+          "kcal_per_kg": "Fallback BMR factor (kcal/kg)",
+          "calorie_adjustment": "Daily deficit/surplus (kcal)",
+          "protein_per_kg": "Protein target (g/kg)",
+          "fat_per_kg": "Fat target (g/kg)"
+        }
+      }
+    },
+    "abort": {"single_instance_allowed": "MarcoMate is already configured."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Garmin sensors and recommendation settings",
+        "data": {
+          "weight_entity": "Garmin weight sensor",
+          "active_calories_entity": "Garmin active calories sensor",
+          "bmr_entity": "Garmin BMR calories sensor (optional)",
+          "kcal_per_kg": "Fallback BMR factor (kcal/kg)",
+          "calorie_adjustment": "Daily deficit/surplus (kcal)",
+          "protein_per_kg": "Protein target (g/kg)",
+          "fat_per_kg": "Fat target (g/kg)"
+        }
+      }
+    }
+  },
+  "services": {
+    "log_meal": {"name": "Log meal"},
+    "list_meals": {"name": "List meals"},
+    "update_meal": {"name": "Update meal"},
+    "delete_meal": {"name": "Delete meal"},
+    "clear_day": {"name": "Clear day"}
+  }
+}

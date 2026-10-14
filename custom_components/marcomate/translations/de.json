@@ -1,0 +1,44 @@
+{
+  "title": "MarcoMate",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Garmin-Kaloriendaten verbinden",
+        "description": "Wähle die Garmin-Connect-Sensoren für Gewicht und Aktivkalorien. Der Garmin-Grundumsatz ist optional; ohne ihn wird der Grundumsatz aus dem Gewicht geschätzt.",
+        "data": {
+          "weight_entity": "Garmin-Gewichtssensor",
+          "active_calories_entity": "Garmin-Sensor für Aktivkalorien",
+          "bmr_entity": "Garmin-Grundumsatzsensor (optional)",
+          "kcal_per_kg": "Ersatzfaktor für Grundumsatz (kcal/kg)",
+          "calorie_adjustment": "Tägliches Defizit/Plus (kcal)",
+          "protein_per_kg": "Proteinziel (g/kg)",
+          "fat_per_kg": "Fettziel (g/kg)"
+        }
+      }
+    },
+    "abort": {"single_instance_allowed": "MarcoMate ist bereits eingerichtet."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Garmin-Sensoren und Empfehlungen",
+        "data": {
+          "weight_entity": "Garmin-Gewichtssensor",
+          "active_calories_entity": "Garmin-Sensor für Aktivkalorien",
+          "bmr_entity": "Garmin-Grundumsatzsensor (optional)",
+          "kcal_per_kg": "Ersatzfaktor für Grundumsatz (kcal/kg)",
+          "calorie_adjustment": "Tägliches Defizit/Plus (kcal)",
+          "protein_per_kg": "Proteinziel (g/kg)",
+          "fat_per_kg": "Fettziel (g/kg)"
+        }
+      }
+    }
+  },
+  "services": {
+    "log_meal": {"name": "Mahlzeit eintragen"},
+    "list_meals": {"name": "Mahlzeiten auflisten"},
+    "update_meal": {"name": "Mahlzeit bearbeiten"},
+    "delete_meal": {"name": "Mahlzeit löschen"},
+    "clear_day": {"name": "Tag leeren"}
+  }
+}

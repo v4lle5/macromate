@@ -1,0 +1,24 @@
+[project]
+name = "marcomate"
+version = "0.2.0"
+description = "Local meal tracking for Home Assistant with Garmin-based calorie recommendations"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.coverage.run]
+branch = true
+source = ["custom_components/marcomate", "tools"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 85

@@ -1,0 +1,66 @@
+log_meal:
+  name: Mahlzeit eintragen
+  description: Trägt eine Mahlzeit mit Kalorien und Makronährstoffen ein.
+  fields:
+    name:
+      required: true
+      selector: {text: {}}
+    meal_type:
+      required: true
+      selector:
+        select:
+          options: [breakfast, lunch, dinner, snack]
+    calories:
+      required: true
+      selector: {number: {min: 0, max: 10000, step: 1, unit_of_measurement: kcal}}
+    protein:
+      selector: {number: {min: 0, max: 1000, step: 0.1, unit_of_measurement: g}}
+    carbs:
+      selector: {number: {min: 0, max: 1000, step: 0.1, unit_of_measurement: g}}
+    fat:
+      selector: {number: {min: 0, max: 1000, step: 0.1, unit_of_measurement: g}}
+    eaten_at:
+      selector: {datetime: {}}
+    request_id:
+      description: Optionale eindeutige ID für wiederholsichere Agent-Aufrufe.
+      selector: {text: {}}
+list_meals:
+  name: Mahlzeiten auflisten
+  description: Liefert Einträge, Summen und die aktuelle Garmin-basierte Empfehlung als Antwortdaten.
+  fields:
+    date:
+      selector: {date: {}}
+update_meal:
+  name: Mahlzeit bearbeiten
+  fields:
+    entry_id:
+      required: true
+      selector: {text: {}}
+    name:
+      selector: {text: {}}
+    meal_type:
+      selector:
+        select:
+          options: [breakfast, lunch, dinner, snack]
+    calories:
+      selector: {number: {min: 0, step: 1}}
+    protein:
+      selector: {number: {min: 0, step: 0.1}}
+    carbs:
+      selector: {number: {min: 0, step: 0.1}}
+    fat:
+      selector: {number: {min: 0, step: 0.1}}
+    eaten_at:
+      selector: {datetime: {}}
+delete_meal:
+  name: Mahlzeit löschen
+  fields:
+    entry_id:
+      required: true
+      selector: {text: {}}
+clear_day:
+  name: Tag leeren
+  description: Löscht alle Einträge eines Tages. Ja, absichtlich mit einer klaren Aktion statt magischer Datenvernichtung.
+  fields:
+    date:
+      selector: {date: {}}

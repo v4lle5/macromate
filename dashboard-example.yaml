@@ -1,0 +1,38 @@
+title: Ernährung
+path: ernaehrung
+icon: mdi:food-apple
+cards:
+  - type: entities
+    title: Kalorien heute
+    show_header_toggle: false
+    entities:
+      - entity: sensor.kalorien_gegessen
+        name: Gegessen
+      - entity: sensor.grundumsatz_empfehlung
+        name: Grundumsatz
+      - entity: sensor.garmin_aktivkalorien
+        name: Aktivkalorien
+      - entity: sensor.kalorienempfehlung_heute
+        name: Empfehlung
+      - entity: sensor.kalorienbilanz
+        name: Noch verfügbar
+
+  - type: entities
+    title: Gewicht und Makros
+    show_header_toggle: false
+    entities:
+      - entity: sensor.garmin_gewicht
+      - entity: sensor.protein_gegessen
+      - entity: sensor.proteinempfehlung
+      - entity: sensor.kohlenhydrate_gegessen
+      - entity: sensor.kohlenhydratempfehlung
+      - entity: sensor.fett_gegessen
+      - entity: sensor.fettempfehlung
+      - entity: sensor.mahlzeiten_heute
+
+  - type: markdown
+    title: Eintragen
+    content: >-
+      Mahlzeiten lassen sich über `marcomate.log_meal` oder durch den
+      angebundenen Hermes Agent eintragen. Korrekturen und Löschungen verwenden
+      die IDs aus `marcomate.list_meals`.
