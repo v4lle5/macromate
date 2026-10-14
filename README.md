@@ -1,7 +1,7 @@
 # MacroMate for Home Assistant
 
 <p align="center">
-  <img src="brand/macromate-logo.jpg" alt="MacroMate – Track Eat Progress" width="420">
+  <img src="brand/macromate-logo.png" alt="MacroMate – Track Eat Progress" width="420">
 </p>
 
 A local meal and macro tracker that uses existing Garmin Connect sensors in Home Assistant and provides an interface for Hermes Agent.
@@ -36,6 +36,12 @@ HACS requires a public GitHub repository. The button opens the repository flow i
 5. Go to **Settings → Devices & services → Add integration → MacroMate**.
 
 If the button does not offer to add the repository, use **HACS → ⋮ → Custom repositories** and add `https://github.com/v4lle5/macromate` with type **Integration**.
+
+## Integration branding
+
+MacroMate ships its circular, transparent PNG icon and logo in `custom_components/macromate/brand/`, including standard and high-resolution variants. Home Assistant **2026.3 or newer** loads these local brand images automatically after the integration is installed. No separate brands-repository submission is required for those versions. Older Home Assistant versions may show a placeholder instead. Local branding does not guarantee an icon in HACS before installation.
+
+After updating through HACS, restart Home Assistant and refresh your browser if the previous icon is cached.
 
 ## Manual setup
 
