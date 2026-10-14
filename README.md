@@ -38,6 +38,18 @@ For a local development installation:
 
 The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tests also run on Python 3.11; that does not establish older HA compatibility. Local branding is supported by HA 2026.3+; HACS pre-install listings may still show a placeholder.
 
+## Dashboard card
+
+The optional local dashboard card shows a calorie-balance ring, macro progress and four meal-group summaries. It uses the existing administrator-authorized diary API without guessed entity IDs or additional credentials. Missing nutrients and goals remain explicitly unknown. Editing stays in the existing MacroMate diary.
+
+After installing a revision containing the card, register `/macromate-assets/macromate-card.js?v=card1` as a **JavaScript module** under dashboard resources, then add a manual card:
+
+```yaml
+type: custom:macromate-card
+```
+
+Updating the integration does not register the resource automatically. Full setup, requirements and troubleshooting: [Dashboard card](docs/DASHBOARD_CARD.md). Copyable YAML: [example](examples/macromate-dashboard.yaml).
+
 ## Profile, goals and Garmin
 
 Setup collects birth date, physiological formula sex, height, current/target weight, loss/maintenance/gain intent, weekly pace, activity category and a named macro plan. MacroMate supports adults and bounded values only; support bounds are not medical recommendations.

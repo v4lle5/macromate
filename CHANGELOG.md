@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added an optional local dashboard card with a calorie-balance ring, macro progress, meal-group summaries and a link to the existing diary.
+- Dashboard resource setup is explicit; the card uses the existing administrator-only diary API without additional credentials or fixed entity IDs.
+
 ## [0.3.0] — local development build
 
 - Added automatic calorie/macro goals and MacroMate's food, portion and diary model. No proprietary food database is included.

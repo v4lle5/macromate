@@ -23,6 +23,12 @@ Every write gets a `crypto.randomUUID()` request ID. Only a definitive response 
 
 Known non-admin HA users are denied locally; actual authorization must also be enforced by the server for every command. Arbitrary food names, attribution and diary strings are rendered as text nodes, never raw HTML.
 
+## Dashboard card
+
+`macromate-card.js` registers `macromate-card` for use as `custom:macromate-card` on Home Assistant dashboards. Register `/macromate-assets/macromate-card.js?v=card1` as a JavaScript module resource; the stylesheet is loaded locally relative to that module. The card reads the existing authenticated diary API and opens `/macromate` for editing. It does not require entity IDs, extra credentials or write access beyond the integration's existing authorization boundary.
+
+The integration must include the card files and be configured; resource registration is a separate dashboard step. See the repository's `docs/DASHBOARD_CARD.md` and `examples/macromate-dashboard.yaml`. Browser fixtures are explicitly synthetic, not a live household diary.
+
 ## Scanner dependencies
 
 The fallback is the checked-in `vendor/zxing-0.21.3.js`, built from **@zxing/library 0.21.3** using only EAN-13/EAN-8 readers. Explicit readers deliberately avoid the generic ZXing reader's automatic EAN-13-to-UPC-A leading-zero removal. BarcodeDetector is used when EAN support is available; a native failure or non-result falls back to this local JS decoder. Images/frames are only processed locally. Camera access requires HTTPS or localhost and browser permission.

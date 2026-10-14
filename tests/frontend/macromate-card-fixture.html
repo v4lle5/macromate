@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MacroMate card browser fixture</title>
+  <style>
+    :root { --primary-text-color:#253a32; --secondary-text-color:#62726a; --ha-card-background:#fffefb; --divider-color:#e9ede7; --primary-color:#187957; --ha-card-border-radius:24px; --ha-card-box-shadow:0 4px 24px #203b2910; --paper-font-body1_-_font-family:Roboto,Arial,sans-serif; }
+    body { margin:0; padding:16px; background:#f2f4ef; }
+    #mount { max-width:440px; margin:0 auto; }
+    body.dark { background:#101915; --primary-text-color:#edf4ef; --secondary-text-color:#a9bbb0; --ha-card-background:#1b2721; --divider-color:#33453b; --primary-color:#80cfad; }
+  </style>
+</head>
+<body><div id="mount"></div>
+<script type="module">
+  window.calls=[]; window.subscriptions=[]; window.pending=[]; window.unsubscribeCount=0;
+  window.data={date:'2026-10-14',today:'2026-10-14',entries:[{name:'Breakfast',meal_type:'breakfast'},{name:'Lunch',meal_type:'lunch'}],totals:{calories:840,carbs:92,protein:48,fat:28},nutrition_missing:[],recommendation:{calorie_target:2100,carbs:260,protein:120,fat:70},meals:{
+    breakfast:{entries:[{name:'Breakfast'}],totals:{calories:340},nutrition_missing:[]},
+    lunch:{entries:[{name:'Lunch'}],totals:{calories:500},nutrition_missing:[]},
+    dinner:{entries:[],totals:{calories:0},nutrition_missing:[]},
+    snack:{entries:[],totals:{calories:0},nutrition_missing:[]}
+  }};
+  window.connection=()=>({subscribeEvents(callback,type){
+    const subscription={callback,type,active:true}; window.subscriptions.push(subscription);
+    const unsubscribe=()=>{if(subscription.active){subscription.active=false;window.unsubscribeCount++;}};
+    if(window.deferSubscription)return new Promise(resolve=>{window.resolveSubscription=()=>resolve(unsubscribe);});
+    return Promise.resolve(unsubscribe);
+  }});
+  window.makeHass=(id='admin',admin=true,connection=window.connection())=>({user:{id,is_admin:admin},connection,callWS(message){
+    window.calls.push(structuredClone(message));
+    if(window.deferReads)return new Promise((resolve,reject)=>window.pending.push({resolve,reject}));
+    if(window.failReads)return Promise.reject(new Error(window.failReads));
+    return Promise.resolve(structuredClone(window.data));
+  }});
+  window.emit=()=>window.subscriptions.filter(s=>s.active).forEach(s=>s.callback({event_type:'macromate_updated'}));
+  window.mount=(config={type:'custom:macromate-card'},hass=window.makeHass())=>{
+    const card=document.createElement('macromate-card');card.setConfig(config);card.hass=hass;
+    document.querySelector('#mount').append(card);window.card=card;return card;
+  };
+  try { await import('/macromate-assets/macromate-card.js'); } catch(error) { window.moduleError=error.message; }
+  window.ready=true;
+</script></body></html>
