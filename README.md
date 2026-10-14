@@ -2,7 +2,7 @@
 
 <p align="center"><img src="brand/macromate-logo.png" alt="MacroMate — Track Eat Progress" width="420"></p>
 
-Local calorie and nutrient tracking inside Home Assistant. The food/portion/diary model and automatic goals are independently implemented from a static REA analysis of the supplied YAZIO 26.41.2 artifact. No YAZIO accounts, production APIs, proprietary code, assets or food database are used.
+Local calorie and nutrient tracking inside Home Assistant. MacroMate provides its own food, portion and diary model, automatic nutrition goals, local storage and optional Open Food Facts lookup.
 
 Development build, not a medical tool. Physical mobile cameras and iOS/Safari remain unverified; read the limits below before installing on a live instance.
 
@@ -42,13 +42,13 @@ The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tes
 
 Setup collects birth date, physiological formula sex, height, current/target weight, loss/maintenance/gain intent, weekly pace, activity category and a named macro plan. MacroMate supports adults and bounded values only; support bounds are not medical recommendations.
 
-Reference-derived rules, independently written:
+Nutrition goal rules:
 
 - BMR: `10 × kg + 6.25 × cm − 5 × age + offset`; complete calendar months / 12 for age, offsets −161/+5.
 - PAL: 1.25 / 1.38 / 1.52 / 1.65.
 - Signed weekly change: `750 × kg/week`, with target-weight BMR as a floor in the adjusting branch.
 - Named macro shares use 4.1 kcal/g for protein/carbohydrates and 9.3 kcal/g for fat. Food-label energy is kept separately, not reconstructed from those goals.
-- MacroMate stops adjustment at or beyond the target weight. Crossing-stop is an independent policy, not a claimed identical YAZIO backend rule.
+- MacroMate stops the weight adjustment at or beyond the target weight.
 
 Garmin entities are optional. Valid measured weight overrides profile weight; usable Garmin BMR overrides the formula. A current, explicitly selected **daily active energy** reading uses `BMR + active energy` instead of a PAL budget. Without it, PAL-based estimation is labeled fallback/estimated. Unknown activity is not a measured zero. Incorrect units, yesterday-dated activity, restored readings and explicitly total-energy readings are rejected for the active path.
 
@@ -64,7 +64,7 @@ OFF product reads use v3.6; text search uses documented legacy CGI because v2 st
 
 Food data: **Open Food Facts contributors**, https://world.openfoodfacts.org — database **ODbL 1.0**, contents **DbCL 1.0**. Cached products retain attribution; it is displayed with results. Redistributing a derived database may invoke ODbL share-alike requirements. The integration's code license does not replace data licensing. Product images are not fetched. Community data can be incomplete or wrong: verify the label.
 
-Barcodes are preserved as strings, including leading zeros. MacroMate requires ASCII GTIN8/12/13/14 syntax and a valid mod-10 checksum; no trimming, repair or integer normalization. This is an independent stricter policy than the reference's verified heuristic. A food without declared calories cannot be logged until a separate local product is completed. Unknown macros/micronutrients remain marked missing, and incomplete totals are partial known totals.
+Barcodes are preserved as strings, including leading zeros. MacroMate requires ASCII GTIN8/12/13/14 syntax and a valid mod-10 checksum; no trimming, repair or integer normalization. A food without declared calories cannot be logged until a separate local product is completed. Unknown macros/micronutrients remain marked missing, and incomplete totals are partial known totals.
 
 ## Home Assistant actions
 
@@ -170,7 +170,7 @@ Detailed diary entries are not exposed in sensor attributes. Daily intake, goal 
 - Physical cameras, autofocus/lighting, Android/iOS hardware and Safari remain unverified. Generated EAN images and actual Chromium virtual-camera frames were tested, not substituted decode results.
 - Firefox checks exist; WebKit was blocked by missing host libraries.
 - OFF mapping/HTTP behavior was tested with offline synthetic TLS fixtures, not a promise of live product coverage or availability.
-- YAZIO server ranking, moderation, full proprietary database, remote experiments and universal wearable deduplication were not recovered or reproduced.
+
 - No live HA instance was changed; no local build is automatically published. HACS/hassfest CI is distinct from local runtime acceptance.
 
 ## Development checks

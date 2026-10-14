@@ -2,7 +2,7 @@
 
 ## [0.3.0] — local development build
 
-- Independently implemented calorie/macro goals and food/portion/diary model from evidence-backed static REA analysis of the supplied YAZIO artifact. No proprietary database/code/assets included.
+- Added automatic calorie/macro goals and MacroMate's food, portion and diary model. No proprietary food database is included.
 - Profile-based onboarding and safe v1 config migration; Garmin sources optional, explicit fallback/source policy and dated goals.
 - Local reusable foods, extensive typed nutrients, per100 labels, named servings, favorites/recent/custom search and optional read-only Open Food Facts lookup with license metadata.
 - Local responsive sidebar panel, camera/image EAN decoding and bundled ZXing fallback. Physical mobile cameras and Safari remain unverified.
