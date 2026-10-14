@@ -202,3 +202,7 @@ python -m compileall -q custom_components tests tools
 Browser/decoder commands and exact scratch dependency pins: `frontend/README.md`. Evidence and limits: `tests/frontend/evidence/README.md`. HACS installs the mirrored `custom_components/macromate/frontend` copy; after deliberate frontend changes mirror it there too. `test_panel_packaging.py` rejects stale/missing packaged assets.
 
 Browser contract tests now replay captured form submissions through the actual HA coordinator. Set `HA_PYTHON` to a Python 3.14.2 interpreter with `homeassistant==2026.10.1` installed before running the Node suite; the CI frontend job installs that pinned runtime rather than skipping those assertions.
+
+## License
+
+MacroMate's original code is available under the [MIT License](LICENSE). Bundled third-party components retain their own license notices in `frontend/vendor/`. Open Food Facts data retains its separate data licenses and attribution; the MIT license does not replace them.

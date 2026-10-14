@@ -87,28 +87,57 @@
   },
   "services": {
     "log_meal": {
-      "name": "Log meal"
+      "name": "Log meal",
+      "description": "Store a quick entry with total nutrition. Available to administrators and trusted internal automations."
     },
     "list_meals": {
-      "name": "List meals"
+      "name": "List meals",
+      "description": "Read private diary entries, meal groups, known totals, missing nutrients and the dated goal snapshot. Requires response data."
     },
     "update_meal": {
-      "name": "Update meal"
+      "name": "Update meal",
+      "description": "Update a quick diary entry by its entry ID. Use the food-portion action for immutable food entries."
     },
     "delete_meal": {
-      "name": "Delete meal"
+      "name": "Delete meal",
+      "description": "Delete one diary entry identified by its entry ID."
     },
     "clear_day": {
-      "name": "Clear explicit date"
+      "name": "Clear explicit date",
+      "description": "Delete all entries on an explicitly selected date. Requires confirm true; there is no implicit today default."
     },
-    "copy_meal": {"name": "Copy diary entry"},
-    "search_foods": {"name": "Search foods"},
-    "get_food": {"name": "Read cached food"},
-    "lookup_barcode": {"name": "Lookup exact barcode"},
-    "save_food": {"name": "Save local reusable food"},
-    "set_favorite": {"name": "Save favorite portion"},
-    "log_food": {"name": "Log food portion"},
-    "update_food_entry": {"name": "Update food portion"}
+    "copy_meal": {
+      "name": "Copy diary entry",
+      "description": "Create an independent entry on the selected date, preserving the original nutrition snapshot."
+    },
+    "search_foods": {
+      "name": "Search foods",
+      "description": "Search locally by default. Explicit online searches require configuration consent and send the query to Open Food Facts."
+    },
+    "get_food": {
+      "name": "Read cached food",
+      "description": "Read a locally stored food by its food ID without an online lookup."
+    },
+    "lookup_barcode": {
+      "name": "Lookup exact barcode",
+      "description": "Look up an exact valid GTIN8/12/13/14 string. Leading zeros are preserved; online lookup requires explicit consent."
+    },
+    "save_food": {
+      "name": "Save local reusable food",
+      "description": "Save a local food with a g/ml base unit, per-100 nutrition, and optional named servings and barcodes."
+    },
+    "set_favorite": {
+      "name": "Save favorite portion",
+      "description": "Save a favorite with an optional portion template, or remove it without supplying portion fields."
+    },
+    "log_food": {
+      "name": "Log food portion",
+      "description": "Log a base-unit amount or named serving and quantity. Preserve the product nutrition as an immutable snapshot."
+    },
+    "update_food_entry": {
+      "name": "Update food portion",
+      "description": "Change a food entry's portion using its original nutrition snapshot, not the current product record."
+    }
   },
   "selector": {
     "formula_sex": {

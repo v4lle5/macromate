@@ -87,28 +87,57 @@
   },
   "services": {
     "log_meal": {
-      "name": "Mahlzeit eintragen"
+      "name": "Mahlzeit eintragen",
+      "description": "Speichert einen Schnelleintrag mit gesamten Nährwerten. Für Administratoren und vertrauenswürdige interne Automationen verfügbar."
     },
     "list_meals": {
-      "name": "Mahlzeiten auflisten"
+      "name": "Mahlzeiten auflisten",
+      "description": "Liest private Tagebucheinträge, Mahlzeitengruppen, bekannte Summen, fehlende Nährwerte und das gespeicherte Tagesziel. Benötigt Antwortdaten."
     },
     "update_meal": {
-      "name": "Mahlzeit bearbeiten"
+      "name": "Mahlzeit bearbeiten",
+      "description": "Bearbeitet einen Schnelleintrag anhand seiner Eintrags-ID. Für Lebensmittel-Einträge die Aktion zur Portionsänderung verwenden."
     },
     "delete_meal": {
-      "name": "Mahlzeit löschen"
+      "name": "Mahlzeit löschen",
+      "description": "Löscht einen einzelnen Tagebucheintrag anhand seiner Eintrags-ID."
     },
     "clear_day": {
-      "name": "Ausdrückliches Datum leeren"
+      "name": "Ausdrückliches Datum leeren",
+      "description": "Löscht alle Einträge eines ausdrücklich gewählten Datums. Erfordert confirm true; heute wird nicht automatisch gewählt."
     },
-    "copy_meal": {"name": "Tagebucheintrag kopieren"},
-    "search_foods": {"name": "Lebensmittel suchen"},
-    "get_food": {"name": "Gespeichertes Lebensmittel lesen"},
-    "lookup_barcode": {"name": "Exakten Barcode nachschlagen"},
-    "save_food": {"name": "Eigenes Lebensmittel speichern"},
-    "set_favorite": {"name": "Lieblingsportion speichern"},
-    "log_food": {"name": "Lebensmittelportion eintragen"},
-    "update_food_entry": {"name": "Lebensmittelportion ändern"}
+    "copy_meal": {
+      "name": "Tagebucheintrag kopieren",
+      "description": "Erstellt einen unabhängigen Eintrag am gewählten Datum und erhält die ursprünglichen Nährwerte."
+    },
+    "search_foods": {
+      "name": "Lebensmittel suchen",
+      "description": "Sucht standardmäßig lokal. Ausdrückliche Online-Suchen erfordern die Freigabe in den Optionen und senden den Suchtext an Open Food Facts."
+    },
+    "get_food": {
+      "name": "Gespeichertes Lebensmittel lesen",
+      "description": "Liest ein lokal gespeichertes Lebensmittel anhand seiner Lebensmittel-ID ohne Online-Abfrage."
+    },
+    "lookup_barcode": {
+      "name": "Exakten Barcode nachschlagen",
+      "description": "Sucht eine exakt gültige GTIN8/12/13/14-Zeichenfolge. Führende Nullen bleiben erhalten; Online-Abfragen erfordern eine ausdrückliche Freigabe."
+    },
+    "save_food": {
+      "name": "Eigenes Lebensmittel speichern",
+      "description": "Speichert ein eigenes Lebensmittel mit g/ml-Basiseinheit, Nährwerten pro 100 Einheiten sowie optionalen Portionen und Barcodes."
+    },
+    "set_favorite": {
+      "name": "Lieblingsportion speichern",
+      "description": "Speichert einen Favoriten mit optionaler Portionsvorlage oder entfernt ihn ohne zusätzliche Portionsangaben."
+    },
+    "log_food": {
+      "name": "Lebensmittelportion eintragen",
+      "description": "Trägt eine Basismenge oder benannte Portion mit Anzahl ein. Die Produktnährwerte bleiben als unveränderliche Momentaufnahme erhalten."
+    },
+    "update_food_entry": {
+      "name": "Lebensmittelportion ändern",
+      "description": "Ändert die Portion eines Lebensmittel-Eintrags anhand seiner ursprünglichen Nährwerte, nicht des aktuellen Produktdatensatzes."
+    }
   },
   "selector": {
     "formula_sex": {

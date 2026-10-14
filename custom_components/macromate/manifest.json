@@ -1,6 +1,7 @@
 {
   "domain": "macromate",
   "name": "MacroMate",
+  "after_dependencies": ["http"],
   "codeowners": [],
   "config_flow": true,
   "documentation": "https://github.com/v4lle5/macromate",

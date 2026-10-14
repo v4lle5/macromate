@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added private CI test scratch, the optional HTTP ordering declaration, complete service descriptions, and the MIT license in both the repository and installable component.
 - Added an optional local dashboard card with a calorie-balance ring, macro progress, meal-group summaries and a link to the existing diary.
 - Dashboard resource setup is explicit; the card uses the existing administrator-only diary API without additional credentials or fixed entity IDs.
 
