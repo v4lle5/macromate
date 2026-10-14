@@ -19,7 +19,25 @@ Ein lokaler Mahlzeiten- und Makro-Tracker mit Garmin-Connect-Daten und einer sau
 
 Die gewichtsbasierte Berechnung ist eine konfigurierbare Alltagsschätzung, keine medizinische Ernährungsberatung. Wenn Garmin einen eigenen BMR-Wert liefert, wird dieser bevorzugt.
 
-## Einrichtung
+## Installation über HACS
+
+[![In HACS öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=v4lle5&repository=marcomate&category=integration)
+
+**Aktuell blockiert:** Dieses Repository ist privat. HACS unterstützt keine privaten GitHub-Repositories. Der Button ist für die spätere öffentliche Bereitstellung vorbereitet; er macht das Repository nicht öffentlich und installiert nichts automatisch.
+
+Sobald das Repository öffentlich und der Entwicklungsstand installierbar ist:
+
+1. HACS muss in deiner Home-Assistant-Instanz installiert sein.
+2. Den Button anklicken und deine Home-Assistant-Instanz auswählen.
+3. MarcoMate in HACS hinzufügen und herunterladen.
+4. Home Assistant neu starten.
+5. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen → MarcoMate** einrichten.
+
+Falls das Hinzufügen über den Button nicht angeboten wird: **HACS → ⋮ → Benutzerdefinierte Repositories**, URL `https://github.com/v4lle5/marcomate`, Typ **Integration** hinzufügen.
+
+**Entwicklungsstand:** Noch kein freigegebenes Release; bekannte Test- und Sicherheitsprobleme sind offen.
+
+## Manuelle Einrichtung
 
 1. `custom_components/marcomate` nach `/config/custom_components/marcomate` kopieren.
 2. Home Assistant neu starten.
