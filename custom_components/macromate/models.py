@@ -1,4 +1,4 @@
-"""Pure domain model for MarcoMate."""
+"""Pure domain model for MacroMate."""
 
 from __future__ import annotations
 

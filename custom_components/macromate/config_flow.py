@@ -1,4 +1,4 @@
-"""UI setup for MarcoMate."""
+"""UI setup for MacroMate."""
 
 from __future__ import annotations
 
@@ -90,7 +90,7 @@ class MealTrackerConfigFlow(ConfigFlow, domain=DOMAIN):
         if self._async_current_entries():
             return self.async_abort(reason="single_instance_allowed")
         if user_input is not None:
-            return self.async_create_entry(title="MarcoMate", data=_normalized(user_input))
+            return self.async_create_entry(title="MacroMate", data=_normalized(user_input))
         return self.async_show_form(step_id="user", data_schema=_schema(self.hass, {}))
 
     @staticmethod

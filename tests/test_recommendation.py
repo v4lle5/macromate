@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from custom_components.marcomate.recommendation import (
+from custom_components.macromate.recommendation import (
     NutritionRecommendation,
     build_recommendation,
     energy_to_kcal,

@@ -1,10 +1,10 @@
 {
-  "title": "MarcoMate",
+  "title": "MacroMate",
   "config": {
     "step": {
       "user": {
         "title": "Connect Garmin calorie data",
-        "description": "Select the Garmin Connect weight and active-calorie sensors. Garmin BMR is optional; without it, MarcoMate estimates BMR from weight.",
+        "description": "Select the Garmin Connect weight and active-calorie sensors. Garmin BMR is optional; without it, MacroMate estimates BMR from weight.",
         "data": {
           "weight_entity": "Garmin weight sensor",
           "active_calories_entity": "Garmin active calories sensor",
@@ -16,7 +16,7 @@
         }
       }
     },
-    "abort": {"single_instance_allowed": "MarcoMate is already configured."}
+    "abort": {"single_instance_allowed": "MacroMate is already configured."}
   },
   "options": {
     "step": {

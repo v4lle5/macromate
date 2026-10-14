@@ -1,4 +1,4 @@
-"""MarcoMate integration."""
+"""MacroMate integration."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ async def async_setup(hass, config) -> bool:
     def coordinator():
         entries = hass.config_entries.async_loaded_entries(DOMAIN)
         if not entries:
-            raise ServiceValidationError("MarcoMate ist nicht eingerichtet")
+            raise ServiceValidationError("MacroMate ist nicht eingerichtet")
         return entries[0].runtime_data
 
     def failure(err: Exception) -> ServiceValidationError:

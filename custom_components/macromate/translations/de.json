@@ -1,5 +1,5 @@
 {
-  "title": "MarcoMate",
+  "title": "MacroMate",
   "config": {
     "step": {
       "user": {
@@ -16,7 +16,7 @@
         }
       }
     },
-    "abort": {"single_instance_allowed": "MarcoMate ist bereits eingerichtet."}
+    "abort": {"single_instance_allowed": "MacroMate ist bereits eingerichtet."}
   },
   "options": {
     "step": {

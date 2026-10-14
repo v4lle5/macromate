@@ -1,4 +1,4 @@
-"""Storage-backed runtime and Garmin sensor adapter for MarcoMate."""
+"""Storage-backed runtime and Garmin sensor adapter for MacroMate."""
 
 from __future__ import annotations
 

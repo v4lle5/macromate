@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import unittest
 
-from custom_components.marcomate.models import DailyGoals, MealEntry, MealLog, OperationLedger
-from custom_components.marcomate.time import localize_wall_time
+from custom_components.macromate.models import DailyGoals, MealEntry, MealLog, OperationLedger
+from custom_components.macromate.time import localize_wall_time
 
 
 def entry(

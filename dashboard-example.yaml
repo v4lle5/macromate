@@ -33,6 +33,6 @@ cards:
   - type: markdown
     title: Eintragen
     content: >-
-      Mahlzeiten lassen sich über `marcomate.log_meal` oder durch den
+      Mahlzeiten lassen sich über `macromate.log_meal` oder durch den
       angebundenen Hermes Agent eintragen. Korrekturen und Löschungen verwenden
-      die IDs aus `marcomate.list_meals`.
+      die IDs aus `macromate.list_meals`.

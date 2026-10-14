@@ -1,4 +1,4 @@
-"""Nutrition, Garmin and recommendation sensors for MarcoMate."""
+"""Nutrition, Garmin and recommendation sensors for MacroMate."""
 
 from __future__ import annotations
 

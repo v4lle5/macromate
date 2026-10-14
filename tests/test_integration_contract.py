@@ -6,13 +6,13 @@ from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).parents[1]
-INTEGRATION = ROOT / "custom_components" / "marcomate"
+INTEGRATION = ROOT / "custom_components" / "macromate"
 
 
 class IntegrationContractTests(unittest.TestCase):
     def test_manifest_is_hacs_ready_and_has_config_flow(self) -> None:
         manifest = json.loads((INTEGRATION / "manifest.json").read_text())
-        self.assertEqual(manifest["domain"], "marcomate")
+        self.assertEqual(manifest["domain"], "macromate")
         self.assertTrue(manifest["config_flow"])
         self.assertEqual(manifest["iot_class"], "calculated")
         self.assertTrue(manifest["single_config_entry"])

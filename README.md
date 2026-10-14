@@ -1,73 +1,73 @@
-# MarcoMate für Home Assistant
+# MacroMate for Home Assistant
 
 <p align="center">
-  <img src="brand/marcomate-logo.jpg" alt="MarcoMate – Track Eat Progress" width="420">
+  <img src="brand/macromate-logo.jpg" alt="MacroMate – Track Eat Progress" width="420">
 </p>
 
-Ein lokaler Mahlzeiten- und Makro-Tracker mit Garmin-Connect-Daten und einer sauberen Schnittstelle für Hermes Agent.
+A local meal and macro tracker that uses existing Garmin Connect sensors in Home Assistant and provides an interface for Hermes Agent.
 
-## Was er macht
+> **Work in progress — not a production release.** Known test failures and security issues remain open. In particular, the companion client does not yet block cross-origin redirects, and mutation idempotency is incomplete. Do not use the client with a real Home Assistant token until these issues are fixed.
 
-- Mahlzeiten mit Kalorien, Protein, Kohlenhydraten und Fett erfassen
-- Einträge auflisten, korrigieren und löschen
-- Garmin-Gewicht und Garmin-Aktivkalorien aus vorhandenen Home-Assistant-Sensoren übernehmen
-- Garmin-Grundumsatz verwenden, sofern der Sensor verfügbar ist
-- andernfalls den Grundumsatz transparent aus `Gewicht × kcal/kg` schätzen
-- Tagesempfehlung berechnen: `Grundumsatz + Aktivkalorien + Defizit/Plus`
-- Protein und Fett gewichtsbasiert empfehlen; Kohlenhydrate füllen die restlichen Kalorien
-- Daten lokal in Home Assistants `.storage` speichern
+## Features
 
-Die gewichtsbasierte Berechnung ist eine konfigurierbare Alltagsschätzung, keine medizinische Ernährungsberatung. Wenn Garmin einen eigenen BMR-Wert liefert, wird dieser bevorzugt.
+- Log meals with calories, protein, carbohydrates, and fat.
+- List, update, and delete entries.
+- Read weight and active calories from your existing Garmin Connect sensors.
+- Use Garmin's basal metabolic rate (BMR) when available.
+- Otherwise estimate BMR using `weight × kcal/kg`.
+- Calculate a daily calorie target from BMR, active calories, and a calorie adjustment.
+- Recommend protein and fat based on body weight; use the remaining calories for carbohydrates.
+- Store meal data locally in Home Assistant's `.storage`.
 
-## Installation über HACS
+The weight-based calculation is a configurable everyday estimate, not medical or nutritional advice. The calorie target is raised when needed to cover the recommended protein and fat.
 
-[![In HACS öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=v4lle5&repository=marcomate&category=integration)
+## Install through HACS
 
-**Aktuell blockiert:** Dieses Repository ist privat. HACS unterstützt keine privaten GitHub-Repositories. Der Button ist für die spätere öffentliche Bereitstellung vorbereitet; er macht das Repository nicht öffentlich und installiert nichts automatisch.
+[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=v4lle5&repository=macromate&category=integration)
 
-Sobald das Repository öffentlich und der Entwicklungsstand installierbar ist:
+HACS requires a public GitHub repository. The button opens the repository flow in your Home Assistant instance; it does not install the integration automatically or make it an official default HACS repository.
 
-1. HACS muss in deiner Home-Assistant-Instanz installiert sein.
-2. Den Button anklicken und deine Home-Assistant-Instanz auswählen.
-3. MarcoMate in HACS hinzufügen und herunterladen.
-4. Home Assistant neu starten.
-5. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen → MarcoMate** einrichten.
+**The following steps are intended for development testing, not production use:**
 
-Falls das Hinzufügen über den Button nicht angeboten wird: **HACS → ⋮ → Benutzerdefinierte Repositories**, URL `https://github.com/v4lle5/marcomate`, Typ **Integration** hinzufügen.
+1. Install HACS in your Home Assistant instance first.
+2. Click the button and select your Home Assistant instance.
+3. Add MacroMate in HACS and download it.
+4. Restart Home Assistant.
+5. Go to **Settings → Devices & services → Add integration → MacroMate**.
 
-**Entwicklungsstand:** Noch kein freigegebenes Release; bekannte Test- und Sicherheitsprobleme sind offen.
+If the button does not offer to add the repository, use **HACS → ⋮ → Custom repositories** and add `https://github.com/v4lle5/macromate` with type **Integration**.
 
-## Manuelle Einrichtung
+## Manual setup
 
-1. `custom_components/marcomate` nach `/config/custom_components/marcomate` kopieren.
-2. Home Assistant neu starten.
-3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → MarcoMate**.
-4. Aus deiner vorhandenen Garmin-Connect-Integration auswählen:
-   - Gewicht
-   - Aktivkalorien
-   - optional: BMR/Grundumsatz
-5. Faktoren festlegen. Standardwerte:
-   - Grundumsatz-Ersatzwert: `22 kcal/kg`
-   - Protein: `1,6 g/kg`
-   - Fett: `0,8 g/kg`
-   - Kalorienkorrektur: `0 kcal` — ein Defizit ist negativ, ein Plus positiv
+1. Copy `custom_components/macromate` to `/config/custom_components/macromate`.
+2. Restart Home Assistant.
+3. Go to **Settings → Devices & services → Add integration → MacroMate**.
+4. Select the following entities from your existing Garmin Connect integration:
+   - Weight
+   - Active calories
+   - Optional: BMR / basal calories
+5. Configure the factors. Defaults:
+   - Estimated BMR: `22 kcal/kg`
+   - Protein: `1.6 g/kg`
+   - Fat: `0.8 g/kg`
+   - Calorie adjustment: `0 kcal` — negative for a deficit, positive for a surplus
 
-Die offiziellen Garmin-Connect-Entity-IDs liegen üblicherweise bei `sensor.garmin_connect_weight`, `sensor.garmin_connect_active_calories` und `sensor.garmin_connect_bmr_calories`. Der Einrichtungsdialog nutzt Entity-Auswahlfelder, deshalb hängt nichts blind an diesen Namen.
+Common Garmin Connect entity names include `sensor.garmin_connect_weight`, `sensor.garmin_connect_active_calories`, and `sensor.garmin_connect_bmr_calories`. Actual IDs depend on your installation; the setup form uses entity selectors rather than hard-coded IDs. Weight sensors must provide a supported unit; energy sensors must provide kcal or kJ.
 
-## Home-Assistant-Aktionen
+## Home Assistant actions
 
-- `marcomate.log_meal`
-- `marcomate.list_meals`
-- `marcomate.update_meal`
-- `marcomate.delete_meal`
-- `marcomate.clear_day`
+- `macromate.log_meal`
+- `macromate.list_meals`
+- `macromate.update_meal`
+- `macromate.delete_meal`
+- `macromate.clear_day`
 
-### Eintragen
+### Log a meal
 
 ```yaml
-action: marcomate.log_meal
+action: macromate.log_meal
 data:
-  name: Haferflocken mit Banane
+  name: Oatmeal with banana
   meal_type: breakfast
   calories: 540
   protein: 24
@@ -77,63 +77,63 @@ data:
 response_variable: meal
 ```
 
-`request_id` ist optional. Ein Agent sollte pro logischem Eintrag eine stabile ID verwenden. Wird derselbe Auftrag nach einem Timeout wiederholt, entsteht dadurch kein zweiter Eintrag.
+`request_id` is optional. Use a stable ID for the same logical add, but do not treat the current implementation as safe general-purpose idempotency: it does not reject changed payloads, and replaying an add after deletion can recreate the entry. A persistent operation ledger is still pending.
 
-### Auflisten
+### List meals
 
 ```yaml
-action: marcomate.list_meals
+action: macromate.list_meals
 response_variable: meals
 ```
 
-Die Antwort enthält Einträge mit `entry_id`, Tagessummen und die aktuelle Garmin-basierte Empfehlung.
+The response contains entries, daily totals, and the current Garmin-based recommendation. **Known contract issue:** listed entries currently expose `id`, while update and delete expect `entry_id`. Until this is fixed, pass the returned `id` value as `entry_id`.
 
-### Korrigieren
+### Update a meal
 
 ```yaml
-action: marcomate.update_meal
+action: macromate.update_meal
 data:
-  entry_id: "ID_AUS_LIST_MEALS"
+  entry_id: "ID_FROM_LIST_MEALS"
   calories: 510
   protein: 26
 response_variable: corrected
 ```
 
-### Löschen
+### Delete a meal
 
 ```yaml
-action: marcomate.delete_meal
+action: macromate.delete_meal
 data:
-  entry_id: "ID_AUS_LIST_MEALS"
+  entry_id: "ID_FROM_LIST_MEALS"
 response_variable: deleted
 ```
 
-## Hermes Agent im selben Netz
+## Hermes Agent on the same network
 
-Kein zusätzlicher offener Port. Kein eigener Mini-Webserver. Hermes verwendet Home Assistants bereits authentifizierte REST-API.
+No extra open port or separate web server is required. Hermes uses Home Assistant's authenticated REST API.
 
-Das mitgelieferte Werkzeug `tools/marcomate_client.py` kann ein Agent direkt ausführen:
+The included `tools/macromate_client.py` provides a command-line interface. **The client is not yet safe for production credentials because redirect handling remains unresolved.** The example below shows its interface only; configure secrets through your agent's secret manager before using a hardened version.
 
 ```bash
-export HA_URL="http://homeassistant.local:8123"
-export HA_TOKEN="<Home-Assistant-Long-Lived-Access-Token>"
+export HA_URL="https://ha.example.com"
+# Supply HA_TOKEN through your secret manager or protected environment.
 
-python3 tools/marcomate_client.py list
-python3 tools/marcomate_client.py add \
-  --name "Müsli" --meal-type breakfast --calories 430 \
+python3 tools/macromate_client.py list
+python3 tools/macromate_client.py add \
+  --name "Cereal" --meal-type breakfast --calories 430 \
   --protein 20 --carbs 61 --fat 12 \
   --request-id "hermes-20261013-breakfast"
-python3 tools/marcomate_client.py update ENTRY_ID --calories 410
-python3 tools/marcomate_client.py delete ENTRY_ID
+python3 tools/macromate_client.py update ENTRY_ID --calories 410
+python3 tools/macromate_client.py delete ENTRY_ID
 ```
 
-Den Token niemals in Prompts, Skills, Logs oder Chatnachrichten schreiben. Er gehört in die Secret-/Umgebungsverwaltung des Agenten. Das Werkzeug liest ausschließlich `HA_URL` und `HA_TOKEN` und gibt den Token nie aus.
+Never put tokens in prompts, skills, logs, or chat messages. The client reads `HA_URL` and `HA_TOKEN` from its environment. Use HTTPS to protect bearer credentials in transit.
 
-Für Agenten liegt unter `agent-skill/SKILL.md` eine knappe Arbeitsanweisung bei.
+A short agent workflow is included in `agent-skill/SKILL.md`.
 
-## Sensoren
+## Sensors
 
-Die wichtigsten erzeugten Entitäten heißen voraussichtlich:
+Depending on your installation and entity naming, generated entities may include:
 
 - `sensor.kalorien_gegessen`
 - `sensor.grundumsatz_empfehlung`
@@ -141,15 +141,15 @@ Die wichtigsten erzeugten Entitäten heißen voraussichtlich:
 - `sensor.kalorienempfehlung_heute`
 - `sensor.kalorienbilanz`
 - `sensor.proteinempfehlung`, `sensor.kohlenhydratempfehlung`, `sensor.fettempfehlung`
-- die entsprechenden Gegessen-/Bilanz-Sensoren
+- Corresponding intake and balance sensors
 
-Home Assistant kann Entity-IDs bei Namenskollisionen abwandeln. Im Zweifel gilt die Entitätsübersicht, nicht Wunschdenken.
+These IDs retain the current integration's German naming. Home Assistant may change entity IDs to avoid naming collisions. Check the entity list in your instance for the actual IDs.
 
-## Datenschutz
+## Privacy
 
-Mahlzeiten bleiben lokal in Home Assistant. Diese Integration ruft Garmin nicht selbst auf; sie liest lediglich die Zustände deiner vorhandenen Garmin-Connect-Entitäten. Die Garmin-Integration selbst ist Cloud-Polling.
+Meals stay local to Home Assistant. MacroMate does not contact Garmin directly; it reads the states of your existing Garmin Connect entities. Your Garmin Connect integration may use cloud polling separately.
 
-Beim Entfernen der Integration wird ihr lokaler Mahlzeitenspeicher gelöscht.
+Removing MacroMate deletes its local meal storage.
 
 ## Tests
 
@@ -158,11 +158,13 @@ python3 -m unittest discover -s tests -v
 python3 -m compileall -q custom_components tests tools
 ```
 
-## Noch nicht enthalten
+The current test suite is not green: `tests/test_models.py` imports an `OperationLedger` that has not yet been implemented. Pure-Python and static contract checks also do not establish Home Assistant runtime compatibility. Full runtime and persistence testing is still required.
 
-- Barcode- oder Lebensmitteldatenbank
-- Fotoerkennung
-- Rezepte und Portionsumrechnung
-- eigene grafische Eingabekarte
+## Not included yet
 
-Erst belastbare Datenwege. Dann Glitzer.
+- Barcode scanning or a food database
+- Photo recognition
+- Recipes and serving-size conversions
+- A dedicated graphical meal-entry card
+
+Reliable data paths first. Glitter later.

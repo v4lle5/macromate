@@ -13,7 +13,7 @@ import sys
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-DOMAIN = "marcomate"
+DOMAIN = "macromate"
 
 
 def service_url(base_url: str, service: str, *, response: bool) -> str:
@@ -43,7 +43,7 @@ def call_service(base_url: str, token: str, service: str, data: dict, *, respons
 
 
 def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(description="Manage MarcoMate through Home Assistant")
+    result = argparse.ArgumentParser(description="Manage MacroMate through Home Assistant")
     sub = result.add_subparsers(dest="command", required=True)
 
     listing = sub.add_parser("list", help="List meals and today's recommendation")

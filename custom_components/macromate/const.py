@@ -1,6 +1,6 @@
-"""Constants for MarcoMate."""
+"""Constants for MacroMate."""
 
-DOMAIN = "marcomate"
+DOMAIN = "macromate"
 PLATFORMS = ["sensor"]
 STORE_KEY = f"{DOMAIN}.meals"
 STORE_VERSION = 1

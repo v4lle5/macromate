@@ -2,7 +2,7 @@
 
 ## Sicherheitsmodell
 
-MarcoMate öffnet keinen eigenen Netzwerkdienst. Remotezugriff erfolgt ausschließlich über Home Assistants authentifizierte API und deren Berechtigungsmodell.
+MacroMate öffnet keinen eigenen Netzwerkdienst. Remotezugriff erfolgt ausschließlich über Home Assistants authentifizierte API und deren Berechtigungsmodell.
 
 - Keine Tokens in Issues, Logs oder Chatnachrichten veröffentlichen.
 - `HA_TOKEN` ausschließlich über eine Secret- oder Umgebungsverwaltung bereitstellen.
