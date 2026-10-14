@@ -54,20 +54,26 @@ class MealSensor(SensorEntity):
 
     @property
     def _summary(self):
-        return self.coordinator.summary(dt_util.now().date())
+        return self.coordinator.summary(self.coordinator.today())
 
     @property
     def _recommendation(self):
         return self.coordinator.recommendation()
 
     @property
+    def _nutrient(self):
+        key = self.entity_description.key.removeprefix("remaining_")
+        return key if key in ("calories", "protein", "carbs", "fat") else None
+
+    @property
     def available(self) -> bool:
-        return not self.entity_description.needs_recommendation or self._recommendation is not None
+        complete = self._nutrient is None or self._nutrient not in self._summary.nutrition_missing
+        return complete and (not self.entity_description.needs_recommendation or self._recommendation is not None)
 
     @property
     def native_value(self):
         recommendation = self._recommendation
-        if self.entity_description.needs_recommendation and recommendation is None:
+        if not self.available:
             return None
         return self.entity_description.value(self._summary, recommendation)
 
@@ -76,13 +82,15 @@ class MealSensor(SensorEntity):
         if self.entity_description.key == "recommended_bmr" and self._recommendation:
             return {
                 "source": self._recommendation.bmr_source,
-                "note": "Gewichtsbasierte Schätzung, falls Garmin keinen Grundumsatz liefert; keine medizinische Empfehlung.",
+                "note": "Garmin-Grundumsatz oder profilbasierte Schätzung; keine medizinische Empfehlung.",
             }
         if self.entity_description.key != "calories":
-            return None
+            return {"nutrition_complete":self._nutrient not in self._summary.nutrition_missing,
+                    "known_total":getattr(self._summary,self._nutrient)} if self._nutrient else None
         recommendation = self._recommendation
         return {
-            "entries": [item.to_dict() for item in self._summary.entries[-20:]],
+            "nutrition_complete":"calories" not in self._summary.nutrition_missing,
+            "known_total":self._summary.calories,
             "entry_count": self._summary.entry_count,
             "recommendation_available": recommendation is not None,
             "bmr_source": recommendation.bmr_source if recommendation else None,

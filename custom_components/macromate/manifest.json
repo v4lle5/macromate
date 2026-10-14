@@ -3,11 +3,11 @@
   "name": "MacroMate",
   "codeowners": [],
   "config_flow": true,
-  "documentation": "https://github.com/valentin/macromate",
+  "documentation": "https://github.com/v4lle5/macromate",
   "integration_type": "service",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/valentin/macromate/issues",
+  "issue_tracker": "https://github.com/v4lle5/macromate/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

@@ -1,0 +1,27 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MacroMate – synthetic HA test fixture</title><style>body{margin:0}aside{padding:6px;background:#fff3c9;font:12px system-ui}</style><aside>SYNTHETISCHE TESTUMGEBUNG · kein echter HA-Zugriff</aside><macromate-panel></macromate-panel><script type="module">
+import '/macromate-assets/panel.js';
+window.calls=[];
+window.entries=[{entry_id:'quick1',name:'Haferfrühstück',meal_type:'breakfast',calories:300,protein:10,carbs:40,fat:9,eaten_at:'2026-10-14T12:00:00+02:00'}];
+window.product={food_id:'milk1',name:'<img src=x onerror=alert(1)> Haferdrink',producer:'Lokal',base_unit:'ml',nutrients_per_100:{calories:45,protein:1,carbs:7,fat:1.5,fiber:0.8},servings:[{serving_id:'cup',label:'Glas',amount:250}],barcodes:['4006381333931'],source:'local',is_custom:true,is_favorite:false};
+window.permissionError=false;
+window.updateListeners=new Set();window.unsubscribed=0;
+window.emitUpdate=()=>window.updateListeners.forEach(fn=>fn({event_type:'macromate_updated'}));
+window.hass={user:{id:'admin',is_admin:window.testAdmin??true},connection:{subscribeEvents:async(callback,type)=>{if(type!=='macromate_updated')throw Error('unexpected event');window.updateListeners.add(callback);return ()=>{window.unsubscribed++;window.updateListeners.delete(callback);};}},callWS:async msg=>{
+ window.calls.push(structuredClone(msg));
+ if(window.permissionError) throw {code:'unauthorized',message:'SECRET must not render'};
+ const p=msg.payload;
+ switch(msg.action){
+  case 'diary':return {date:p.date||'2026-10-14',today:'2026-10-14',entries:window.entries,totals:{calories:300,protein:10,carbs:40,fat:9},meals:{},recommendation:(!p.date||p.date==='2026-10-14')?{calorie_target:2000,protein:100,carbs:250,fat:60}:null,nutrition_missing:['fiber'],goal_status:'ready'};
+  case 'search_foods':case 'barcode':return {foods:[window.product],source:'local',attribution:'Lokaler Testbestand'};
+  case 'food':return {food:window.product};
+  case 'save_food':if(p.food.producer!=null&&!p.food.producer.trim())throw {code:'invalid_request'};window.product={...p.food,food_id:'new1',source:'local',is_custom:true};return {food:window.product};
+  case 'favorite':if(!p.enabled&&['amount','serving_id','quantity'].some(key=>key in p))throw {code:'invalid_request'};window.product={...window.product,is_favorite:p.enabled,favorite:p.enabled?{amount:p.amount,serving_id:p.serving_id,quantity:p.quantity}:null};return {food:window.product};
+  case 'log_meal':case 'log_food':return {entry_id:'added',entry:{...p,entry_id:'added'}};
+  case 'update_meal':case 'update_food_entry':return {entry_id:p.entry_id,entry:{...p}};
+  case 'delete_meal':window.entries=window.entries.filter(e=>e.entry_id!==p.entry_id);return {deleted_entry_id:p.entry_id};
+  case 'copy_meal':return {entry_id:'copied',entry:{...window.entries[0],entry_id:'copied'}};
+  default:throw {code:'invalid_request'};
+ }
+}};
+document.querySelector('macromate-panel').hass=window.hass;
+</script></html>

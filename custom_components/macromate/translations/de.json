@@ -3,42 +3,143 @@
   "config": {
     "step": {
       "user": {
-        "title": "Garmin-Kaloriendaten verbinden",
-        "description": "Wähle die Garmin-Connect-Sensoren für Gewicht und Aktivkalorien. Der Garmin-Grundumsatz ist optional; ohne ihn wird der Grundumsatz aus dem Gewicht geschätzt.",
+        "title": "Dein Profil und automatische Ziele",
+        "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Das Begleitpanel ist automatisch in Home Assistant verfügbar; kein eigener Server oder Port ist nötig.",
         "data": {
-          "weight_entity": "Garmin-Gewichtssensor",
-          "active_calories_entity": "Garmin-Sensor für Aktivkalorien",
-          "bmr_entity": "Garmin-Grundumsatzsensor (optional)",
-          "kcal_per_kg": "Ersatzfaktor für Grundumsatz (kcal/kg)",
-          "calorie_adjustment": "Tägliches Defizit/Plus (kcal)",
-          "protein_per_kg": "Proteinziel (g/kg)",
-          "fat_per_kg": "Fettziel (g/kg)"
+          "formula_sex": "Geschlecht für die Energieformel",
+          "birthday": "Geburtsdatum",
+          "height_cm": "Körpergröße (cm)",
+          "weight_kg": "Aktuelles Profilgewicht (kg)",
+          "target_weight_kg": "Zielgewicht (kg)",
+          "goal": "Gewichtsziel",
+          "weekly_pace_kg": "Gewichtsänderung pro Woche (kg/Woche)",
+          "activity_level": "Übliches Aktivitätsniveau",
+          "macro_plan": "Ernährungspräferenz",
+          "weight_entity": "Gewichtssensor (optional)",
+          "bmr_entity": "Sensor für Ruheenergie / Grundumsatz (optional)",
+          "active_calories_entity": "Heutige Aktivkalorien (optional; nicht Gesamtenergie)",
+          "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
+        },
+        "data_description": {
+          "formula_sex": "Wähle den physiologischen Geschlechtskoeffizienten der Formel, nicht die Geschlechtsidentität. Diese Schätzung passt möglicherweise nicht für alle.",
+          "target_weight_kg": "Zum Halten das aktuelle Profilgewicht verwenden. Zum Abnehmen/Zunehmen ein niedrigeres/höheres Ziel wählen.",
+          "weekly_pace_kg": "Zum Abnehmen oder Zunehmen einen positiven Wert angeben; zum Halten null. Die Zielauswahl bestimmt die Richtung.",
+          "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
+          "weight_entity": "Verwendet kg, lb oder Stone. Ohne nutzbaren Sensor gilt dein Profilgewicht.",
+          "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung.",
+          "enable_food_database": "Standardmäßig aus. Nur ausdrücklich abgesendete Online-Suchen/Barcodes kontaktieren Open Food Facts und übermitteln Suchtext oder Barcode; keine Profildaten. Lokales Tagebuch und eigene Lebensmittel funktionieren auch ohne diese Freigabe."
         }
       }
     },
-    "abort": {"single_instance_allowed": "MacroMate ist bereits eingerichtet."}
+    "abort": {
+      "single_instance_allowed": "MacroMate ist bereits eingerichtet."
+    },
+    "error": {
+      "invalid_profile": "Gib einen unterstützten, endlichen Wert für dieses Feld ein.",
+      "profile_required": "Vervollständige dein Profil für automatische Ziele.",
+      "adults_only": "MacroMate unterstützt nur Erwachsenenprofile von 18–120 Jahren. Dies ist keine medizinische Beratung.",
+      "goal_mismatch": "Zielgewicht und Wochenrate müssen zum Ziel passen; beim Halten gelten das aktuelle Profilgewicht und Wochenrate null.",
+      "invalid_recommendation": "Diese Angaben ergeben eine nicht unterstützte Energieschätzung. Prüfe dein Profil.",
+      "source_not_found": "Dieser Sensor existiert nicht. Wähle einen verfügbaren Sensor oder lasse das Feld leer.",
+      "invalid_source_unit": "Wähle einen Sensor mit passender Gewichts- oder Energieeinheit; fehlende Einheiten werden nicht unterstützt."
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Garmin-Sensoren und Empfehlungen",
+        "title": "Dein Profil und automatische Ziele",
+        "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Das Begleitpanel ist automatisch in Home Assistant verfügbar; kein eigener Server oder Port ist nötig.",
         "data": {
-          "weight_entity": "Garmin-Gewichtssensor",
-          "active_calories_entity": "Garmin-Sensor für Aktivkalorien",
-          "bmr_entity": "Garmin-Grundumsatzsensor (optional)",
-          "kcal_per_kg": "Ersatzfaktor für Grundumsatz (kcal/kg)",
-          "calorie_adjustment": "Tägliches Defizit/Plus (kcal)",
-          "protein_per_kg": "Proteinziel (g/kg)",
-          "fat_per_kg": "Fettziel (g/kg)"
+          "formula_sex": "Geschlecht für die Energieformel",
+          "birthday": "Geburtsdatum",
+          "height_cm": "Körpergröße (cm)",
+          "weight_kg": "Aktuelles Profilgewicht (kg)",
+          "target_weight_kg": "Zielgewicht (kg)",
+          "goal": "Gewichtsziel",
+          "weekly_pace_kg": "Gewichtsänderung pro Woche (kg/Woche)",
+          "activity_level": "Übliches Aktivitätsniveau",
+          "macro_plan": "Ernährungspräferenz",
+          "weight_entity": "Gewichtssensor (optional)",
+          "bmr_entity": "Sensor für Ruheenergie / Grundumsatz (optional)",
+          "active_calories_entity": "Heutige Aktivkalorien (optional; nicht Gesamtenergie)",
+          "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
+        },
+        "data_description": {
+          "formula_sex": "Wähle den physiologischen Geschlechtskoeffizienten der Formel, nicht die Geschlechtsidentität. Diese Schätzung passt möglicherweise nicht für alle.",
+          "target_weight_kg": "Zum Halten das aktuelle Profilgewicht verwenden. Zum Abnehmen/Zunehmen ein niedrigeres/höheres Ziel wählen.",
+          "weekly_pace_kg": "Zum Abnehmen oder Zunehmen einen positiven Wert angeben; zum Halten null. Die Zielauswahl bestimmt die Richtung.",
+          "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
+          "weight_entity": "Verwendet kg, lb oder Stone. Ohne nutzbaren Sensor gilt dein Profilgewicht.",
+          "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung.",
+          "enable_food_database": "Standardmäßig aus. Nur ausdrücklich abgesendete Online-Suchen/Barcodes kontaktieren Open Food Facts und übermitteln Suchtext oder Barcode; keine Profildaten. Lokales Tagebuch und eigene Lebensmittel funktionieren auch ohne diese Freigabe."
         }
       }
+    },
+    "error": {
+      "invalid_profile": "Gib einen unterstützten, endlichen Wert für dieses Feld ein.",
+      "profile_required": "Vervollständige dein Profil für automatische Ziele.",
+      "adults_only": "MacroMate unterstützt nur Erwachsenenprofile von 18–120 Jahren. Dies ist keine medizinische Beratung.",
+      "goal_mismatch": "Zielgewicht und Wochenrate müssen zum Ziel passen; beim Halten gelten das aktuelle Profilgewicht und Wochenrate null.",
+      "invalid_recommendation": "Diese Angaben ergeben eine nicht unterstützte Energieschätzung. Prüfe dein Profil.",
+      "source_not_found": "Dieser Sensor existiert nicht. Wähle einen verfügbaren Sensor oder lasse das Feld leer.",
+      "invalid_source_unit": "Wähle einen Sensor mit passender Gewichts- oder Energieeinheit; fehlende Einheiten werden nicht unterstützt."
     }
   },
   "services": {
-    "log_meal": {"name": "Mahlzeit eintragen"},
-    "list_meals": {"name": "Mahlzeiten auflisten"},
-    "update_meal": {"name": "Mahlzeit bearbeiten"},
-    "delete_meal": {"name": "Mahlzeit löschen"},
-    "clear_day": {"name": "Tag leeren"}
+    "log_meal": {
+      "name": "Mahlzeit eintragen"
+    },
+    "list_meals": {
+      "name": "Mahlzeiten auflisten"
+    },
+    "update_meal": {
+      "name": "Mahlzeit bearbeiten"
+    },
+    "delete_meal": {
+      "name": "Mahlzeit löschen"
+    },
+    "clear_day": {
+      "name": "Ausdrückliches Datum leeren"
+    },
+    "copy_meal": {"name": "Tagebucheintrag kopieren"},
+    "search_foods": {"name": "Lebensmittel suchen"},
+    "get_food": {"name": "Gespeichertes Lebensmittel lesen"},
+    "lookup_barcode": {"name": "Exakten Barcode nachschlagen"},
+    "save_food": {"name": "Eigenes Lebensmittel speichern"},
+    "set_favorite": {"name": "Lieblingsportion speichern"},
+    "log_food": {"name": "Lebensmittelportion eintragen"},
+    "update_food_entry": {"name": "Lebensmittelportion ändern"}
+  },
+  "selector": {
+    "formula_sex": {
+      "options": {
+        "female": "Weibliche Physiologie",
+        "male": "Männliche Physiologie"
+      }
+    },
+    "goal": {
+      "options": {
+        "lose": "Abnehmen",
+        "maintain": "Gewicht halten",
+        "gain": "Zunehmen"
+      }
+    },
+    "activity_level": {
+      "options": {
+        "low": "Niedrig — überwiegend sitzend",
+        "moderate": "Mäßig — etwas Bewegung",
+        "high": "Hoch — häufig aktiv",
+        "very_high": "Sehr hoch — körperlich anspruchsvoller Alltag"
+      }
+    },
+    "macro_plan": {
+      "options": {
+        "balanced": "Ausgewogen",
+        "moderate_carb": "Mäßige Kohlenhydrate",
+        "low_carb": "Weniger Kohlenhydrate",
+        "high_protein": "Mehr Protein",
+        "low_fat": "Weniger Fett"
+      }
+    }
   }
 }

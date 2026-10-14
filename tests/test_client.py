@@ -8,7 +8,8 @@ from tools.macromate_client import service_url
 class AgentClientTests(unittest.TestCase):
     def test_service_url_uses_authenticated_home_assistant_service_endpoint(self) -> None:
         self.assertEqual(
-            service_url("http://homeassistant.local:8123/", "list_meals", response=True),
+            service_url("http://homeassistant.local:8123/", "list_meals", response=True,
+                        trusted_lan_http=True),
             "http://homeassistant.local:8123/api/services/macromate/list_meals?return_response",
         )
 

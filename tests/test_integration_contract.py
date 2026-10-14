@@ -59,6 +59,26 @@ class IntegrationContractTests(unittest.TestCase):
             self.assertIn(key, coordinator)
         self.assertIn("build_recommendation", coordinator)
 
+    def test_profile_onboarding_replaces_manual_factor_settings(self) -> None:
+        config_flow = (INTEGRATION / "config_flow.py").read_text()
+        for factor in ("CONF_KCAL_PER_KG", "CONF_PROTEIN_PER_KG", "CONF_FAT_PER_KG", "CONF_CALORIE_ADJUSTMENT"):
+            self.assertNotIn(factor, config_flow)
+        required = {"formula_sex", "birthday", "height_cm", "weight_kg", "target_weight_kg", "goal",
+                    "weekly_pace_kg", "activity_level", "macro_plan", "enable_food_database"}
+        for filename in (INTEGRATION / "strings.json", INTEGRATION / "translations" / "de.json"):
+            strings = json.loads(filename.read_text())
+            for section, step in (("config", "user"), ("options", "init")):
+                fields = strings[section]["step"][step]["data"]
+                self.assertTrue(required.issubset(fields))
+                for factor in ("kcal_per_kg", "protein_per_kg", "fat_per_kg", "calorie_adjustment"):
+                    self.assertNotIn(factor, fields)
+                self.assertIn("adults_only", strings[section]["error"])
+                self.assertIn("invalid_recommendation", strings[section]["error"])
+            self.assertEqual(set(strings["selector"]["activity_level"]["options"]),
+                             {"low", "moderate", "high", "very_high"})
+            self.assertEqual(set(strings["selector"]["macro_plan"]["options"]),
+                             {"balanced", "moderate_carb", "low_carb", "high_protein", "low_fat"})
+
     def test_translations_are_valid_json(self) -> None:
         strings = json.loads((INTEGRATION / "strings.json").read_text())
         german = json.loads((INTEGRATION / "translations" / "de.json").read_text())

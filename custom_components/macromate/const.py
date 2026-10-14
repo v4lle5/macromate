@@ -18,3 +18,16 @@ DEFAULT_KCAL_PER_KG = 22.0
 DEFAULT_CALORIE_ADJUSTMENT = 0.0
 DEFAULT_PROTEIN_PER_KG = 1.6
 DEFAULT_FAT_PER_KG = 0.8
+
+# Config-entry version and profile schema version are independent of the meal Store.
+CONFIG_VERSION = 2
+CONF_ENABLE_FOOD_DATABASE = "enable_food_database"
+CONF_FORMULA_SEX = "formula_sex"
+CONF_BIRTHDAY = "birthday"
+CONF_HEIGHT_CM = "height_cm"
+CONF_WEIGHT_KG = "weight_kg"
+CONF_TARGET_WEIGHT_KG = "target_weight_kg"
+CONF_GOAL = "goal"
+CONF_WEEKLY_PACE_KG = "weekly_pace_kg"
+CONF_ACTIVITY_LEVEL = "activity_level"
+CONF_MACRO_PLAN = "macro_plan"

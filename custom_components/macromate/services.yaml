@@ -1,37 +1,40 @@
 log_meal:
-  name: Mahlzeit eintragen
-  description: Trägt eine Mahlzeit mit Kalorien und Makronährstoffen ein.
+  name: Log quick meal
+  description: Local total nutrition entry. Admin users or trusted internal automations only.
   fields:
     name:
       required: true
       selector: {text: {}}
     meal_type:
       required: true
-      selector:
-        select:
-          options: [breakfast, lunch, dinner, snack]
+      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
     calories:
       required: true
-      selector: {number: {min: 0, max: 10000, step: 1, unit_of_measurement: kcal}}
+      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: kcal}}
     protein:
-      selector: {number: {min: 0, max: 1000, step: 0.1, unit_of_measurement: g}}
+      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: g}}
     carbs:
-      selector: {number: {min: 0, max: 1000, step: 0.1, unit_of_measurement: g}}
+      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: g}}
     fat:
-      selector: {number: {min: 0, max: 1000, step: 0.1, unit_of_measurement: g}}
+      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: g}}
+    date:
+      description: Selected Home Assistant local date; omitted means today.
+      selector: {date: {}}
     eaten_at:
-      selector: {datetime: {}}
+      description: Optional ISO timestamp including timezone. Must match date when both are supplied.
+      selector: {text: {}}
     request_id:
-      description: Optionale eindeutige ID für wiederholsichere Agent-Aufrufe.
+      description: Stable logical request ID. Reuse only for identical data; history retains 1000 operations.
       selector: {text: {}}
 list_meals:
-  name: Mahlzeiten auflisten
-  description: Liefert Einträge, Summen und die aktuelle Garmin-basierte Empfehlung als Antwortdaten.
+  name: Read diary
+  description: Private entries, meal groups, known totals, missing nutrients and dated goal snapshot. Requires response data.
   fields:
     date:
       selector: {date: {}}
 update_meal:
-  name: Mahlzeit bearbeiten
+  name: Update quick meal
+  description: Food-entry nutrition is immutable; use update_food_entry to change its portion.
   fields:
     entry_id:
       required: true
@@ -39,28 +42,141 @@ update_meal:
     name:
       selector: {text: {}}
     meal_type:
-      selector:
-        select:
-          options: [breakfast, lunch, dinner, snack]
+      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
     calories:
-      selector: {number: {min: 0, step: 1}}
+      selector: {number: {min: 0, max: 100000, step: 0.1}}
     protein:
-      selector: {number: {min: 0, step: 0.1}}
+      selector: {number: {min: 0, max: 100000, step: 0.1}}
     carbs:
-      selector: {number: {min: 0, step: 0.1}}
+      selector: {number: {min: 0, max: 100000, step: 0.1}}
     fat:
-      selector: {number: {min: 0, step: 0.1}}
+      selector: {number: {min: 0, max: 100000, step: 0.1}}
     eaten_at:
-      selector: {datetime: {}}
+      selector: {text: {}}
+    request_id:
+      selector: {text: {}}
 delete_meal:
-  name: Mahlzeit löschen
+  name: Delete one entry
   fields:
     entry_id:
       required: true
       selector: {text: {}}
+    request_id:
+      selector: {text: {}}
 clear_day:
-  name: Tag leeren
-  description: Löscht alle Einträge eines Tages. Ja, absichtlich mit einer klaren Aktion statt magischer Datenvernichtung.
+  name: Clear explicit date
+  description: Bulk deletion requires an explicit date and confirm true. There is no implicit today default.
   fields:
     date:
+      required: true
       selector: {date: {}}
+    confirm:
+      required: true
+      selector: {boolean: {}}
+    request_id:
+      selector: {text: {}}
+copy_meal:
+  name: Copy diary entry
+  description: Creates an independent entry on the selected date, preserving the original nutrition snapshot.
+  fields:
+    entry_id:
+      required: true
+      selector: {text: {}}
+    date:
+      required: true
+      selector: {date: {}}
+    meal_type:
+      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
+    request_id:
+      selector: {text: {}}
+search_foods:
+  name: Search foods
+  description: Local search by default. Explicit online search requires configuration consent and sends the query to Open Food Facts.
+  fields:
+    query:
+      selector: {text: {}}
+    filter:
+      selector: {select: {options: [all, favorites, recent, custom]}}
+    online:
+      selector: {boolean: {}}
+get_food:
+  name: Read cached food
+  fields:
+    food_id:
+      required: true
+      selector: {text: {}}
+lookup_barcode:
+  name: Lookup exact GTIN
+  description: Preserve leading zeros. Only valid ASCII GTIN8/12/13/14 strings are accepted; no automatic correction.
+  fields:
+    barcode:
+      required: true
+      selector: {text: {}}
+    online:
+      selector: {boolean: {}}
+save_food:
+  name: Save local reusable food
+  description: Food object requires name, base_unit g or ml and nutrients_per_100. Optional servings and barcodes. Cached OFF products cannot be overwritten as local products.
+  fields:
+    food:
+      required: true
+      selector: {object: {}}
+    request_id:
+      selector: {text: {}}
+set_favorite:
+  name: Save favorite portion template
+  description: Choose amount OR serving_id with quantity. Omit both to use the existing template or 100 base units.
+  fields:
+    food_id:
+      required: true
+      selector: {text: {}}
+    enabled:
+      required: true
+      selector: {boolean: {}}
+    amount:
+      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
+    serving_id:
+      selector: {text: {}}
+    quantity:
+      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
+    request_id:
+      selector: {text: {}}
+log_food:
+  name: Log food portion
+  description: Choose amount in the food's base unit OR serving_id and quantity. Nutrition is snapshotted, not recalculated from future product edits.
+  fields:
+    food_id:
+      required: true
+      selector: {text: {}}
+    amount:
+      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
+    serving_id:
+      selector: {text: {}}
+    quantity:
+      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
+    meal_type:
+      required: true
+      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
+    date:
+      selector: {date: {}}
+    eaten_at:
+      selector: {text: {}}
+    request_id:
+      selector: {text: {}}
+update_food_entry:
+  name: Update food entry portion
+  description: Scales the original product snapshot, never today's changed product. Choose base amount OR serving_id with quantity.
+  fields:
+    entry_id:
+      required: true
+      selector: {text: {}}
+    amount:
+      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
+    serving_id:
+      selector: {text: {}}
+    quantity:
+      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
+    meal_type:
+      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
+    request_id:
+      selector: {text: {}}

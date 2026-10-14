@@ -1,7 +1,7 @@
 [project]
 name = "macromate"
-version = "0.2.0"
-description = "Local meal tracking for Home Assistant with Garmin-based calorie recommendations"
+version = "0.3.0"
+description = "Local calorie, nutrient, food and barcode tracking inside Home Assistant"
 readme = "README.md"
 requires-python = ">=3.11"
 

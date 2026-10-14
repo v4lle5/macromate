@@ -3,7 +3,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import unittest
 
-from custom_components.macromate.models import DailyGoals, MealEntry, MealLog, OperationLedger
+from custom_components.macromate import models
+from custom_components.macromate.models import DailyGoals, MealEntry, MealLog
 from custom_components.macromate.time import localize_wall_time
 
 
@@ -35,7 +36,7 @@ class MealModelTests(unittest.TestCase):
         self.assertNotIn("id", value)
 
     def test_operation_ledger_replays_only_identical_request(self) -> None:
-        ledger = OperationLedger()
+        ledger = models.OperationLedger()
         payload = {"name": "Porridge", "calories": 500}
         ledger.record("request-1", "create", payload, {"entry_id": "meal-1"})
         self.assertEqual(
@@ -46,14 +47,14 @@ class MealModelTests(unittest.TestCase):
             ledger.replay("request-1", "create", {**payload, "calories": 900})
 
     def test_operation_ledger_roundtrip_preserves_delete_tombstone(self) -> None:
-        ledger = OperationLedger()
+        ledger = models.OperationLedger()
         ledger.record(
             "delete-1",
             "delete",
             {"entry_id": "meal-1"},
             {"deleted_entry_id": "meal-1"},
         )
-        restored = OperationLedger.from_list(ledger.to_list())
+        restored = models.OperationLedger.from_list(ledger.to_list())
         self.assertEqual(
             restored.replay("delete-1", "delete", {"entry_id": "meal-1"}),
             {"deleted_entry_id": "meal-1"},

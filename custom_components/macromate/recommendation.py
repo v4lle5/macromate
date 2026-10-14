@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 import math
+from typing import Any, Mapping
 
 _WEIGHT_FACTORS = {
     "kg": 1.0,
@@ -75,6 +77,12 @@ class NutritionRecommendation:
     protein: float
     carbs: float
     fat: float
+    budget_source: str = "legacy"
+    weight_source: str = "legacy"
+    source_status: str = "legacy"
+    fallback_reasons: tuple[str, ...] = ()
+    goal_status: str = "legacy"
+    profile_version: int | None = None
 
     def balance(self, consumed_calories: float) -> float:
         return round(self.calorie_target - float(consumed_calories), 1)
@@ -135,4 +143,64 @@ def build_recommendation(
         protein=round(protein, 1),
         carbs=round(carbs, 1),
         fat=round(fat, 1),
+    )
+
+
+def build_profile_recommendation(
+    settings: Mapping[str, Any],
+    current_date: date,
+    *,
+    weight_kg: float | None = None,
+    garmin_bmr: float | None = None,
+    active_calories: float | None = None,
+) -> NutritionRecommendation:
+    """Build precise goals from a complete profile (no manual multipliers).
+
+    Optional readings must already be normalized and validated by the caller for
+    entity meaning, unit and freshness. None means unusable, NOT zero. A trusted
+    current active-energy reading replaces PAL: BMR + active, never PAL + active.
+    Invalid optional readings fall back; invalid profile data always raises.
+    """
+    from .profile import ACTIVITY_LEVELS, MACRO_PLANS, Profile, bounded_number, calculate_bmr
+
+    profile = Profile.from_settings(settings, current_date)
+    reasons = []
+
+    def usable(value, key, minimum, maximum):
+        if value is not None:
+            try:
+                return bounded_number(key, value, minimum, maximum)
+            except ValueError:
+                pass
+        if value is not None or settings.get(f"{key}_entity"):
+            reasons.append(f"{key}_unavailable")
+        return None
+
+    live_weight = usable(weight_kg, "weight", 30, 350)
+    live_bmr = usable(garmin_bmr, "bmr", 500, 5000)
+    active = usable(active_calories, "active_calories", 0, 20000)
+    weight = profile.weight_kg if live_weight is None else live_weight
+    bmr = calculate_bmr(profile, current_date, weight) if live_bmr is None else live_bmr
+    reached = ((profile.goal == "lose" and weight <= profile.target_weight_kg)
+               or (profile.goal == "gain" and weight >= profile.target_weight_kg))
+    # Crossing-stop is MacroMate's policy; the reference proves only equality-stop.
+    adjusting = profile.goal != "maintain" and not reached
+    adjustment = 750 * profile.weekly_pace_kg * (-1 if profile.goal == "lose" else 1) if adjusting else 0
+    budget = bmr * ACTIVITY_LEVELS[profile.activity_level] if active is None else bmr + active
+    target = max(budget + adjustment, calculate_bmr(profile, current_date, profile.target_weight_kg)) if adjusting else budget
+    # The reference's supported goal interval is validation, not medical advice or clamping.
+    target = bounded_number("calorie_target", target, 500, 5000)
+    carbs_share, fat_share, protein_share = MACRO_PLANS[profile.macro_plan]
+    return NutritionRecommendation(
+        weight_kg=weight, bmr=bmr, bmr_source="profile_formula" if live_bmr is None else "garmin",
+        active_calories=0 if active is None else active,
+        calorie_adjustment=adjustment, calorie_target=target,
+        protein=target * protein_share / 4.1, carbs=target * carbs_share / 4.1,
+        fat=target * fat_share / 9.3,
+        budget_source="profile_pal" if active is None else "bmr_plus_active",
+        weight_source="profile" if live_weight is None else "garmin",
+        source_status="fallback" if reasons else ("estimated" if active is None else "wearable"),
+        fallback_reasons=tuple(reasons),
+        goal_status="maintaining" if profile.goal == "maintain" else ("target_reached" if reached else "active"),
+        profile_version=1,
     )

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import math
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date, datetime
-import math
 from typing import Any, Iterable
 from zoneinfo import ZoneInfo
 
@@ -46,6 +49,13 @@ class MealEntry:
     carbs: float
     fat: float
     eaten_at: datetime
+    food_id: str | None = None
+    amount: float | None = None
+    base_unit: str | None = None
+    serving_id: str | None = None
+    quantity: float | None = None
+    nutrients: dict[str, float] | None = None
+    food_snapshot: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not self.id.strip():
@@ -58,9 +68,27 @@ class MealEntry:
             raise ValueError("eaten_at must include a timezone")
         for nutrient in NUTRIENTS:
             object.__setattr__(self, nutrient, _non_negative(nutrient, getattr(self, nutrient)))
+        if self.food_id is not None:
+            if not isinstance(self.food_id, str) or not self.food_id.strip():
+                raise ValueError("food_id is required")
+            if self.base_unit not in ("g", "ml") or self.amount is None:
+                raise ValueError("food amount and g/ml base_unit are required")
+        for field in ("amount", "quantity"):
+            value = getattr(self, field)
+            if value is not None:
+                number = _non_negative(field, value)
+                if number == 0 or number > 100000:
+                    raise ValueError(f"{field} is outside supported range")
+                object.__setattr__(self, field, number)
+        if self.nutrients is not None:
+            object.__setattr__(self, "nutrients", {
+                key: _non_negative(key, value) for key, value in self.nutrients.items()
+            })
+        if self.food_snapshot is not None:
+            object.__setattr__(self, "food_snapshot", deepcopy(self.food_snapshot))
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        value = {
             "id": self.id,
             "name": self.name,
             "meal_type": self.meal_type,
@@ -70,6 +98,16 @@ class MealEntry:
             "fat": self.fat,
             "eaten_at": self.eaten_at.isoformat(),
         }
+        for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot"):
+            if (extra := getattr(self, key)) is not None:
+                value[key] = deepcopy(extra)
+        return value
+
+    def to_service_dict(self) -> dict[str, Any]:
+        """Expose the CRUD identifier without changing the storage schema."""
+        value = self.to_dict()
+        value["entry_id"] = value.pop("id")
+        return value
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> "MealEntry":
@@ -82,6 +120,7 @@ class MealEntry:
             carbs=float(value["carbs"]),
             fat=float(value["fat"]),
             eaten_at=datetime.fromisoformat(str(value["eaten_at"])),
+            **{key: value[key] for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot") if key in value},
         )
 
 
@@ -95,6 +134,125 @@ class DailySummary:
     entry_count: int
     entries: tuple[MealEntry, ...]
     remaining: dict[str, float]
+    nutrition_missing: tuple[str, ...] = ()
+
+
+class OperationLedger:
+    """Bounded, persistable idempotency history, independent of Home Assistant.
+
+    ``replay`` returns None on a miss, an independent result dict on a hit,
+    and raises ValueError on request-ID reuse with another operation/payload.
+    ``record`` never replaces an accepted result, even on an identical retry.
+    ``to_list``/``from_list`` serialize oldest-first records with request_id,
+    operation, payload_hash (SHA-256 of sorted compact JSON), and result.
+    Nested object key order is immaterial; array order and JSON number spelling
+    (e.g. 1 versus 1.0) remain significant. Inputs must be finite JSON objects.
+
+    The default retains the last 1000 newly accepted operations; evicted IDs
+    have no retry guarantee. Replay does not extend retention. Callers must
+    preserve logical payloads before resolving clock-dependent defaults, and
+    own the lock around replay -> staged mutation -> record -> durable save.
+    This class performs neither persistence nor atomic meal mutations itself.
+    """
+
+    def __init__(self, *, max_entries: int = 1000) -> None:
+        if type(max_entries) is not int or max_entries < 1:
+            raise ValueError("max_entries must be a positive integer")
+        self.max_entries = max_entries
+        self._records: dict[str, dict[str, Any]] = {}
+
+    @staticmethod
+    def _validate_identifier(value: str, name: str) -> None:
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{name} must be a nonempty string")
+
+    @staticmethod
+    def _canonical(value: dict[str, Any]) -> str:
+        def validate(item: Any) -> None:
+            if isinstance(item, dict):
+                for key, child in item.items():
+                    if not isinstance(key, str):
+                        raise ValueError("JSON object keys must be strings")
+                    validate(child)
+            elif isinstance(item, list):
+                for child in item:
+                    validate(child)
+            elif item is not None and type(item) not in (str, int, float, bool):
+                raise ValueError("value must contain only JSON data")
+
+        if not isinstance(value, dict):
+            raise ValueError("value must be a JSON object")
+        try:
+            validate(value)
+            return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        except (TypeError, RecursionError) as err:
+            raise ValueError("value must contain only JSON data") from err
+
+    @classmethod
+    def _payload_hash(cls, payload: dict[str, Any]) -> str:
+        canonical = cls._canonical(payload)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    def replay(
+        self, request_id: str, operation: str, payload: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        self._validate_identifier(request_id, "request_id")
+        self._validate_identifier(operation, "operation")
+        payload_hash = self._payload_hash(payload)
+        record = self._records.get(request_id)
+        if record is None:
+            return None
+        if record["operation"] != operation:
+            raise ValueError("request_id reused with a different operation")
+        if record["payload_hash"] != payload_hash:
+            raise ValueError("request_id reused with a different payload")
+        return deepcopy(record["result"])
+
+    def record(
+        self, request_id: str, operation: str, payload: dict[str, Any], result: dict[str, Any]
+    ) -> None:
+        self._canonical(result)
+        if self.replay(request_id, operation, payload) is not None:
+            return
+        self._records[request_id] = {
+            "request_id": request_id,
+            "operation": operation,
+            "payload_hash": self._payload_hash(payload),
+            "result": deepcopy(result),
+        }
+        self._trim()
+
+    def _trim(self) -> None:
+        while len(self._records) > self.max_entries:
+            del self._records[next(iter(self._records))]
+
+    def to_list(self) -> list[dict[str, Any]]:
+        return deepcopy(list(self._records.values()))
+
+    @classmethod
+    def from_list(
+        cls, values: list[dict[str, Any]], *, max_entries: int = 1000
+    ) -> "OperationLedger":
+        ledger = cls(max_entries=max_entries)
+        if not isinstance(values, list):
+            raise ValueError("operation ledger must be a list")
+        for value in values:
+            if not isinstance(value, dict) or set(value) != {
+                "request_id", "operation", "payload_hash", "result"
+            }:
+                raise ValueError("invalid operation ledger record")
+            cls._validate_identifier(value["request_id"], "request_id")
+            cls._validate_identifier(value["operation"], "operation")
+            digest = value["payload_hash"]
+            if (not isinstance(digest, str) or len(digest) != 64
+                    or any(char not in "0123456789abcdef" for char in digest)):
+                raise ValueError("invalid payload hash")
+            cls._canonical(value["result"])
+            if value["request_id"] in ledger._records:
+                raise ValueError("duplicate request_id in operation ledger")
+            ledger._records[value["request_id"]] = deepcopy(value)
+        ledger._trim()
+        return ledger
 
 
 class MealLog:
@@ -137,14 +295,17 @@ class MealLog:
     ) -> DailySummary:
         day = date.fromisoformat(requested) if isinstance(requested, str) else requested
         selected = self._entries_for_date(day, timezone)
+        declared = [item.nutrients if item.nutrients is not None else
+                    {key:getattr(item,key) for key in NUTRIENTS} for item in selected]
+        missing = tuple(key for key in NUTRIENTS if any(key not in values for values in declared))
         totals = {
-            nutrient: round(sum(getattr(item, nutrient) for item in selected), 2)
+            nutrient: round(sum(values.get(nutrient,0) for values in declared), 2)
             for nutrient in NUTRIENTS
         }
         remaining = (
             {
                 nutrient: round(max(0.0, getattr(goals, nutrient) - totals[nutrient]), 2)
-                for nutrient in NUTRIENTS
+                for nutrient in NUTRIENTS if nutrient not in missing
             }
             if goals
             else {}
@@ -154,5 +315,6 @@ class MealLog:
             entry_count=len(selected),
             entries=tuple(sorted(selected, key=lambda item: item.eaten_at)),
             remaining=remaining,
+            nutrition_missing=missing,
             **totals,
         )

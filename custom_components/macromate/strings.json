@@ -3,42 +3,143 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connect Garmin calorie data",
-        "description": "Select the Garmin Connect weight and active-calorie sensors. Garmin BMR is optional; without it, MacroMate estimates BMR from weight.",
+        "title": "Your profile and automatic goals",
+        "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The companion panel is available automatically inside Home Assistant; no separate server or port is needed.",
         "data": {
-          "weight_entity": "Garmin weight sensor",
-          "active_calories_entity": "Garmin active calories sensor",
-          "bmr_entity": "Garmin BMR calories sensor (optional)",
-          "kcal_per_kg": "Fallback BMR factor (kcal/kg)",
-          "calorie_adjustment": "Daily deficit/surplus (kcal)",
-          "protein_per_kg": "Protein target (g/kg)",
-          "fat_per_kg": "Fat target (g/kg)"
+          "formula_sex": "Sex used by the energy formula",
+          "birthday": "Date of birth",
+          "height_cm": "Height (cm)",
+          "weight_kg": "Current profile weight (kg)",
+          "target_weight_kg": "Target weight (kg)",
+          "goal": "Weight goal",
+          "weekly_pace_kg": "Weekly weight-change pace (kg/week)",
+          "activity_level": "Usual activity level",
+          "macro_plan": "Nutrition preference",
+          "weight_entity": "Weight sensor (optional)",
+          "bmr_entity": "Resting energy / BMR sensor (optional)",
+          "active_calories_entity": "Today's active calories sensor (optional; not total energy)",
+          "enable_food_database": "Allow explicit online food searches with Open Food Facts"
+        },
+        "data_description": {
+          "formula_sex": "Select the physiological sex coefficient used by the formula, not gender identity. This estimate may not suit everyone.",
+          "target_weight_kg": "For maintenance, use your current profile weight. For loss/gain, choose a lower/higher target.",
+          "weekly_pace_kg": "Enter a positive pace for loss or gain; use zero for maintenance. The goal determines the direction.",
+          "active_calories_entity": "Use only current-day active energy (kcal or kJ), not total daily energy. A usable reading replaces the activity-level estimate; the two are never added together.",
+          "weight_entity": "Uses kg, lb or stone. Without a usable sensor, your profile weight is used.",
+          "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate.",
+          "enable_food_database": "Off by default. Only explicitly submitted online searches/barcodes contact Open Food Facts and share the query or barcode; profile data is not sent. Local diary and custom foods work without this."
         }
       }
     },
-    "abort": {"single_instance_allowed": "MacroMate is already configured."}
+    "abort": {
+      "single_instance_allowed": "MacroMate is already configured."
+    },
+    "error": {
+      "invalid_profile": "Enter a supported, finite value for this field.",
+      "profile_required": "Complete your profile to enable automatic goals.",
+      "adults_only": "MacroMate supports adult profiles aged 18–120 only. This is not medical advice.",
+      "goal_mismatch": "Target weight and weekly pace must match your goal; maintenance uses current profile weight and zero pace.",
+      "invalid_recommendation": "These inputs produce an unsupported energy estimate. Review your profile.",
+      "source_not_found": "This sensor does not exist. Choose an available sensor or leave the field empty.",
+      "invalid_source_unit": "Choose a sensor with an appropriate weight or energy unit; missing units are not supported."
+    }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Garmin sensors and recommendation settings",
+        "title": "Your profile and automatic goals",
+        "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The companion panel is available automatically inside Home Assistant; no separate server or port is needed.",
         "data": {
-          "weight_entity": "Garmin weight sensor",
-          "active_calories_entity": "Garmin active calories sensor",
-          "bmr_entity": "Garmin BMR calories sensor (optional)",
-          "kcal_per_kg": "Fallback BMR factor (kcal/kg)",
-          "calorie_adjustment": "Daily deficit/surplus (kcal)",
-          "protein_per_kg": "Protein target (g/kg)",
-          "fat_per_kg": "Fat target (g/kg)"
+          "formula_sex": "Sex used by the energy formula",
+          "birthday": "Date of birth",
+          "height_cm": "Height (cm)",
+          "weight_kg": "Current profile weight (kg)",
+          "target_weight_kg": "Target weight (kg)",
+          "goal": "Weight goal",
+          "weekly_pace_kg": "Weekly weight-change pace (kg/week)",
+          "activity_level": "Usual activity level",
+          "macro_plan": "Nutrition preference",
+          "weight_entity": "Weight sensor (optional)",
+          "bmr_entity": "Resting energy / BMR sensor (optional)",
+          "active_calories_entity": "Today's active calories sensor (optional; not total energy)",
+          "enable_food_database": "Allow explicit online food searches with Open Food Facts"
+        },
+        "data_description": {
+          "formula_sex": "Select the physiological sex coefficient used by the formula, not gender identity. This estimate may not suit everyone.",
+          "target_weight_kg": "For maintenance, use your current profile weight. For loss/gain, choose a lower/higher target.",
+          "weekly_pace_kg": "Enter a positive pace for loss or gain; use zero for maintenance. The goal determines the direction.",
+          "active_calories_entity": "Use only current-day active energy (kcal or kJ), not total daily energy. A usable reading replaces the activity-level estimate; the two are never added together.",
+          "weight_entity": "Uses kg, lb or stone. Without a usable sensor, your profile weight is used.",
+          "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate.",
+          "enable_food_database": "Off by default. Only explicitly submitted online searches/barcodes contact Open Food Facts and share the query or barcode; profile data is not sent. Local diary and custom foods work without this."
         }
       }
+    },
+    "error": {
+      "invalid_profile": "Enter a supported, finite value for this field.",
+      "profile_required": "Complete your profile to enable automatic goals.",
+      "adults_only": "MacroMate supports adult profiles aged 18–120 only. This is not medical advice.",
+      "goal_mismatch": "Target weight and weekly pace must match your goal; maintenance uses current profile weight and zero pace.",
+      "invalid_recommendation": "These inputs produce an unsupported energy estimate. Review your profile.",
+      "source_not_found": "This sensor does not exist. Choose an available sensor or leave the field empty.",
+      "invalid_source_unit": "Choose a sensor with an appropriate weight or energy unit; missing units are not supported."
     }
   },
   "services": {
-    "log_meal": {"name": "Log meal"},
-    "list_meals": {"name": "List meals"},
-    "update_meal": {"name": "Update meal"},
-    "delete_meal": {"name": "Delete meal"},
-    "clear_day": {"name": "Clear day"}
+    "log_meal": {
+      "name": "Log meal"
+    },
+    "list_meals": {
+      "name": "List meals"
+    },
+    "update_meal": {
+      "name": "Update meal"
+    },
+    "delete_meal": {
+      "name": "Delete meal"
+    },
+    "clear_day": {
+      "name": "Clear explicit date"
+    },
+    "copy_meal": {"name": "Copy diary entry"},
+    "search_foods": {"name": "Search foods"},
+    "get_food": {"name": "Read cached food"},
+    "lookup_barcode": {"name": "Lookup exact barcode"},
+    "save_food": {"name": "Save local reusable food"},
+    "set_favorite": {"name": "Save favorite portion"},
+    "log_food": {"name": "Log food portion"},
+    "update_food_entry": {"name": "Update food portion"}
+  },
+  "selector": {
+    "formula_sex": {
+      "options": {
+        "female": "Female physiology",
+        "male": "Male physiology"
+      }
+    },
+    "goal": {
+      "options": {
+        "lose": "Lose weight",
+        "maintain": "Maintain weight",
+        "gain": "Gain weight"
+      }
+    },
+    "activity_level": {
+      "options": {
+        "low": "Low — mostly sitting",
+        "moderate": "Moderate — some movement",
+        "high": "High — frequently active",
+        "very_high": "Very high — physically demanding days"
+      }
+    },
+    "macro_plan": {
+      "options": {
+        "balanced": "Balanced",
+        "moderate_carb": "Moderate carbohydrate",
+        "low_carb": "Lower carbohydrate",
+        "high_protein": "Higher protein",
+        "low_fat": "Lower fat"
+      }
+    }
   }
 }

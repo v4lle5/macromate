@@ -1,21 +1,24 @@
 # Changelog
 
-Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
+## [0.3.0] — local development build
 
-## [Unreleased]
-
-- Erste unabhängige Prüfung gegen eine echte Home-Assistant-Installation.
-- Grafische Eingabekarte für Smartphone und Dashboard.
+- Independently implemented calorie/macro goals and food/portion/diary model from evidence-backed static REA analysis of the supplied YAZIO artifact. No proprietary database/code/assets included.
+- Profile-based onboarding and safe v1 config migration; Garmin sources optional, explicit fallback/source policy and dated goals.
+- Local reusable foods, extensive typed nutrients, per100 labels, named servings, favorites/recent/custom search and optional read-only Open Food Facts lookup with license metadata.
+- Local responsive sidebar panel, camera/image EAN decoding and bundled ZXing fallback. Physical mobile cameras and Safari remain unverified.
+- Immutable food-entry label snapshots, diary CRUD/copy, exact barcode preservation and separate product/entry/request IDs.
+- Persistent bounded idempotency ledger, staged atomic persistence, private admin-only WS/actions and no detailed diary sensor attributes.
+- HTTPS-default agent client, no redirects, sanitized transport errors and retry IDs for all mutations.
+- Breaking safety change: clear_day now requires explicit date and confirm true; CLI clear-day requires --date and --confirm.
+- Domain, existing meal IDs/storage, entity unique IDs and canonical branding retained. Local frontend is bundled with the HACS-shaped component.
+- Unit, real HA boundary and browser/decoder verification added. No automatic publication or production deployment.
 
 ## [0.2.0]
 
-- Garmin-Gewicht, Aktivkalorien und optionaler Garmin-Grundumsatz als Quellen.
-- Gewichtsbasiertes BMR-Fallback und dynamische Kalorien-/Makroempfehlungen.
-- Lokale Mahlzeitenverwaltung mit Listen-, Anlage-, Korrektur- und Löschaktionen.
-- Wiederholsichere Agent-Einträge über `request_id`.
-- Authentifizierter Hermes-CLI-Client und Agent-Skill.
-- Strikte Prüfung endlicher Nährwerte und explizites DST-Verhalten.
+- Garmin weight, active calories and optional BMR sources, weight-based fallback and local diary actions.
+- Authenticated agent CLI and initial HACS-shaped packaging.
+- Earlier retry guarantees were incomplete; v0.3 introduces a durable operation ledger.
 
 ## [0.1.0]
 
-- Lokaler MVP für Mahlzeiten, Makros, Tagesziele und Sensoren.
+- Local meal/macro/day-goal/sensor MVP.

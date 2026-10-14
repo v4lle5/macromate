@@ -1,11 +1,21 @@
-"""MacroMate integration."""
-
+"""MacroMate: local nutrition diary, optional open food data and private panel."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from .const import DOMAIN, PLATFORMS
+from .migration import async_migrate_entry  # HA discovers this public lifecycle hook.
+
+SERVICE_ACTIONS = {
+    "list_meals":"diary", "log_meal":"log_meal", "update_meal":"update_meal",
+    "delete_meal":"delete_meal", "clear_day":"clear_day", "copy_meal":"copy_meal",
+    "search_foods":"search_foods", "get_food":"food", "lookup_barcode":"barcode",
+    "save_food":"save_food", "set_favorite":"favorite", "log_food":"log_food",
+    "update_food_entry":"update_food_entry",
+}
+READ_ACTIONS = frozenset({"diary","search_foods","food","barcode"})
 
 
 def _settings(entry) -> dict[str, Any]:
@@ -14,208 +24,99 @@ def _settings(entry) -> dict[str, Any]:
 
 def _parse_datetime(hass, value: str | datetime | None):
     from homeassistant.util import dt as dt_util
-
     from .time import localize_wall_time
-
     if value is None:
         return dt_util.utcnow()
-    parsed = value if isinstance(value, datetime) else dt_util.parse_datetime(value)
+    parsed = value if isinstance(value,datetime) else dt_util.parse_datetime(value)
     if parsed is None:
         raise ValueError("invalid datetime")
-    return localize_wall_time(parsed, hass.config.time_zone)
+    return localize_wall_time(parsed,hass.config.time_zone)
 
 
 async def async_setup(hass, config) -> bool:
-    """Register actions independent of config-entry state."""
-    import math
-
+    """Register stable actions once, even before an entry has loaded."""
     import voluptuous as vol
-    from homeassistant.core import ServiceCall, SupportsResponse
+    from homeassistant.core import SupportsResponse
     from homeassistant.exceptions import ServiceValidationError
-    from homeassistant.helpers import config_validation as cv
-    from homeassistant.util import dt as dt_util
+    from homeassistant.helpers.service import async_register_admin_service
+    from .food_provider import ProviderUnavailable
+    from .websocket import async_register
+    async_register(hass)
 
-    def coordinator():
-        entries = hass.config_entries.async_loaded_entries(DOMAIN)
-        if not entries:
-            raise ServiceValidationError("MacroMate ist nicht eingerichtet")
-        return entries[0].runtime_data
+    def handler_for(action):
+        async def handle(call):
+            entries = hass.config_entries.async_loaded_entries(DOMAIN)
+            if not entries:
+                raise ServiceValidationError("MacroMate ist nicht eingerichtet")
+            try:
+                result = await entries[0].runtime_data.async_command(action,dict(call.data))
+            except KeyError as err:
+                raise ServiceValidationError("Eintrag oder Lebensmittel nicht gefunden") from err
+            except (ValueError,TypeError) as err:
+                raise ServiceValidationError(str(err)[:240]) from err
+            except PermissionError as err:
+                raise ServiceValidationError("Online-Lebensmittelsuche ist nicht freigegeben") from err
+            except ProviderUnavailable as err:
+                raise ServiceValidationError("Open Food Facts derzeit nicht erreichbar") from err
+            except OSError as err:
+                raise ServiceValidationError("Speichern fehlgeschlagen; dieselbe request_id beibehalten und Status prüfen") from err
+            return result if call.return_response else None
+        return handle
 
-    def failure(err: Exception) -> ServiceValidationError:
-        return ServiceValidationError(str(err))
-
-    async def log_meal(call: ServiceCall) -> dict[str, Any]:
-        try:
-            item = await coordinator().async_create(
-                name=call.data["name"],
-                meal_type=call.data["meal_type"],
-                calories=call.data["calories"],
-                protein=call.data.get("protein", 0),
-                carbs=call.data.get("carbs", 0),
-                fat=call.data.get("fat", 0),
-                eaten_at=_parse_datetime(hass, call.data.get("eaten_at")),
-                request_id=call.data.get("request_id"),
-            )
-        except (ValueError, KeyError) as err:
-            raise failure(err) from err
-        return {"entry_id": item.id}
-
-    async def list_meals(call: ServiceCall) -> dict[str, Any]:
-        requested = call.data.get("date") or dt_util.now().date().isoformat()
-        try:
-            day = date.fromisoformat(requested)
-            summary = coordinator().summary(day)
-        except (TypeError, ValueError) as err:
-            raise failure(err) from err
-        recommendation = coordinator().recommendation()
-        return {
-            "date": summary.date,
-            "entries": [item.to_dict() for item in summary.entries],
-            "totals": {
-                "calories": summary.calories,
-                "protein": summary.protein,
-                "carbs": summary.carbs,
-                "fat": summary.fat,
-            },
-            "recommendation": (
-                {
-                    "weight_kg": recommendation.weight_kg,
-                    "bmr": recommendation.bmr,
-                    "bmr_source": recommendation.bmr_source,
-                    "active_calories": recommendation.active_calories,
-                    "calorie_target": recommendation.calorie_target,
-                    "protein": recommendation.protein,
-                    "carbs": recommendation.carbs,
-                    "fat": recommendation.fat,
-                    "calorie_balance": recommendation.balance(summary.calories),
-                }
-                if recommendation
-                else None
-            ),
-        }
-
-    async def update_meal(call: ServiceCall) -> dict[str, Any]:
-        try:
-            changes = {
-                key: call.data.get(key)
-                for key in ("name", "meal_type", "calories", "protein", "carbs", "fat")
-                if key in call.data
-            }
-            if "eaten_at" in call.data:
-                changes["eaten_at"] = _parse_datetime(hass, call.data["eaten_at"]).isoformat()
-            item = await coordinator().async_update(call.data["entry_id"], changes)
-        except (ValueError, KeyError) as err:
-            raise failure(err) from err
-        return {"entry_id": item.id}
-
-    async def delete_meal(call: ServiceCall) -> dict[str, Any]:
-        try:
-            await coordinator().async_remove(call.data["entry_id"])
-        except KeyError as err:
-            raise failure(err) from err
-        return {"deleted_entry_id": call.data["entry_id"]}
-
-    async def clear_day(call: ServiceCall) -> dict[str, Any]:
-        requested = call.data.get("date") or dt_util.now().date().isoformat()
-        try:
-            removed = await coordinator().async_clear_date(requested)
-        except ValueError as err:
-            raise failure(err) from err
-        return {"removed": removed}
-
-    def finite(value: float) -> float:
-        if not math.isfinite(value):
-            raise vol.Invalid("value must be finite")
-        return value
-
-    non_negative = vol.All(vol.Coerce(float), finite, vol.Range(min=0, max=10000))
-    meal_type = vol.In(["breakfast", "lunch", "dinner", "snack"])
-    create_schema = vol.Schema(
-        {
-            vol.Required("name"): vol.All(cv.string, vol.Length(min=1, max=120)),
-            vol.Required("meal_type"): meal_type,
-            vol.Required("calories"): non_negative,
-            vol.Optional("protein", default=0): non_negative,
-            vol.Optional("carbs", default=0): non_negative,
-            vol.Optional("fat", default=0): non_negative,
-            vol.Optional("eaten_at"): cv.string,
-            vol.Optional("request_id"): vol.All(cv.string, vol.Length(min=1, max=128)),
-        }
-    )
-    update_schema = vol.Schema(
-        {
-            vol.Required("entry_id"): cv.string,
-            vol.Optional("name"): vol.All(cv.string, vol.Length(min=1, max=120)),
-            vol.Optional("meal_type"): meal_type,
-            vol.Optional("calories"): non_negative,
-            vol.Optional("protein"): non_negative,
-            vol.Optional("carbs"): non_negative,
-            vol.Optional("fat"): non_negative,
-            vol.Optional("eaten_at"): cv.string,
-        }
-    )
-    hass.services.async_register(
-        DOMAIN,
-        "log_meal",
-        log_meal,
-        schema=create_schema,
-        supports_response=SupportsResponse.OPTIONAL,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        "list_meals",
-        list_meals,
-        schema=vol.Schema({vol.Optional("date"): cv.string}),
-        supports_response=SupportsResponse.ONLY,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        "update_meal",
-        update_meal,
-        schema=update_schema,
-        supports_response=SupportsResponse.OPTIONAL,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        "delete_meal",
-        delete_meal,
-        schema=vol.Schema({vol.Required("entry_id"): cv.string}),
-        supports_response=SupportsResponse.OPTIONAL,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        "clear_day",
-        clear_day,
-        schema=vol.Schema({vol.Optional("date"): cv.string}),
-        supports_response=SupportsResponse.OPTIONAL,
-    )
+    for service,action in SERVICE_ACTIONS.items():
+        async_register_admin_service(hass,DOMAIN,service,handler_for(action),
+            schema=vol.Schema(dict),
+            supports_response=SupportsResponse.ONLY if action in READ_ACTIONS else SupportsResponse.OPTIONAL)
     return True
 
 
-async def async_setup_entry(hass, entry) -> bool:
-    from .coordinator import MealTrackerCoordinator
+async def _async_panel(hass) -> None:
+    """Serve public code only. Private diary data uses the authenticated WS API."""
+    if not getattr(hass,"http",None):
+        return  # A deliberately headless HA runtime does not have a panel.
+    from homeassistant.components import frontend,panel_custom
+    from homeassistant.components.http import StaticPathConfig
+    runtime = hass.data.setdefault(DOMAIN,{})
+    if not runtime.get("assets_registered"):
+        await hass.http.async_register_static_paths([
+            StaticPathConfig("/macromate-assets",str(Path(__file__).parent / "frontend"),False)
+        ])
+        runtime["assets_registered"] = True
+    if not frontend.async_panel_exists(hass,DOMAIN):
+        await panel_custom.async_register_panel(hass,frontend_url_path=DOMAIN,
+            webcomponent_name="macromate-panel",sidebar_title="MacroMate",sidebar_icon="mdi:food-apple-outline",
+            module_url="/macromate-assets/panel.js",embed_iframe=False,trust_external=False,
+            require_admin=True,config={"version":"0.3.0"})
 
-    runtime = MealTrackerCoordinator(hass, _settings(entry))
+
+async def async_setup_entry(hass,entry) -> bool:
+    from .coordinator import MealTrackerCoordinator
+    runtime = MealTrackerCoordinator(hass,_settings(entry))
     await runtime.async_load()
     entry.runtime_data = runtime
+    await runtime.async_record_goal()
     entry.async_on_unload(runtime.async_start())
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry,PLATFORMS)
+    await _async_panel(hass)
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     return True
 
 
-async def _async_reload(hass, entry) -> None:
+async def _async_reload(hass,entry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_unload_entry(hass, entry) -> bool:
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+async def async_unload_entry(hass,entry) -> bool:
+    unloaded = await hass.config_entries.async_unload_platforms(entry,PLATFORMS)
+    if unloaded:
+        from homeassistant.components import frontend
+        if frontend.async_panel_exists(hass,DOMAIN):
+            frontend.async_remove_panel(hass,DOMAIN)
+    return unloaded
 
 
-async def async_remove_entry(hass, entry) -> None:
-    """Delete locally stored meal data when the integration is removed."""
+async def async_remove_entry(hass,entry) -> None:
+    """The user removing this integration also removes its private local dataset."""
     from homeassistant.helpers.storage import Store
-
-    from .const import STORE_KEY, STORE_VERSION
-
-    await Store(hass, STORE_VERSION, STORE_KEY).async_remove()
+    from .const import STORE_KEY,STORE_VERSION
+    await Store(hass,STORE_VERSION,STORE_KEY).async_remove()

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="shipped decoder has pinned identity, legal files and a scoped reproducible input inventory" time="0.006946" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-artifact.test.mjs"/>
+	<testcase name="frontend runtime source has no raw HTML, token access, browser credential storage or remote module imports" time="0.002114" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-artifact.test.mjs"/>
+	<testcase name="extended nutrient vocabulary has all 54 wire-domain keys and explicit mass/volume units" time="0.000801" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-artifact.test.mjs"/>
+	<testcase name="GTIN accepts only ASCII 8/12/13/14 with check digit and preserves the original string" time="0.001159" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-barcode.test.mjs"/>
+	<testcase name="camera cancellation stops a late permission stream and never starts decoding" time="0.000794" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-barcode.test.mjs"/>
+	<testcase name="camera errors are visible safe messages and acquired tracks stop when playback fails" time="0.000941" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-barcode.test.mjs"/>
+	<testcase name="diary loads HA-local today, shows unknown nutrients and dated goals, and navigates without timezone shifts" time="0.459579" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="manual local search escapes product text, fetches detail, logs ml portions and saves favorite templates" time="0.676304" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="quick entry stores total nutrients and edit/copy/delete target entry IDs" time="0.538954" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="food entry editing scales immutable entry snapshot without fetching current food" time="0.452776" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="custom food form keeps per100 ml values, omits unknown nutrients and saves a named serving" time="0.339667" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="extended nutrients use explicit mg and microgram units without treating missing nutrients as zero" time="0.318423" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="phone controls keep readable unbroken labels and compact adjacent online checkbox" time="0.219400" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="real bundled ZXing decodes generated EAN13 pixels without BarcodeDetector" time="0.221644" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="barcode manual input preserves leading zeros and scanner image input decodes pixels before lookup" time="0.351160" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="disconnecting the panel releases camera tracks and closes scanner even without a decoded result" time="0.227726" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="uncertain writes show a modal-safe explicit retry, retain request ID, and unlock only after success" time="0.337072" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="actual getUserMedia video frames from Chromium virtual camera decode EAN and stop on result" time="0.757976" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="pending diary date changes block writes and ignore late stale responses" time="0.176983" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-browser.test.mjs"/>
+	<testcase name="commands use existing hass auth and preserve a write ID across uncertain explicit retry" time="0.005195" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-client.test.mjs"/>
+	<testcase name="known HA non-admin users are denied locally without sending private nutrition commands" time="0.000277" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-client.test.mjs"/>
+	<testcase name="definitive validation failure clears pending write so corrected input receives a new logical ID" time="0.000273" classname="test" file="/home/valentin/homeassistant-meal-tracker/tests/frontend/macromate-client.test.mjs"/>
+	<!-- tests 22 -->
+	<!-- suites 0 -->
+	<!-- pass 22 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 5322.600658 -->
+</testsuites>
