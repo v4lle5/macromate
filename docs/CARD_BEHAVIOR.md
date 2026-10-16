@@ -4,7 +4,11 @@ MacroMate is a full dashboard card in Home Assistant's **Panel (single card)** v
 
 ## Appearance
 
-**Glass Wave** is an optional light theme in Settings → Appearance → Colour theme. Existing themes and saved preferences are unchanged unless explicitly selected. The main application background is transparent so the dashboard background remains visible. Cards use `rgba(253, 248, 239, 0.72)`; dialogs use warm paper `#F9EFDA`. Accent, text and secondary text are `#416F8F`, `#263B47` and `#53666E`; semantic success, warning and error colors are `#576C65`, `#C19A3F` and `#B46F52`. There is no new gradient, blur or backdrop filter. Active segmented controls use white text and touch-sized targets.
+**Glass Wave** is an optional light theme in Settings → Appearance → Colour theme. Existing themes and saved preferences are unchanged unless explicitly selected. The main application background is transparent so the dashboard background remains visible. Cards use `rgba(253, 248, 239, 0.72)`; dialogs use warm paper `#F9EFDA`. Accent, text and secondary text are `#416F8F`, `#263B47` and `#53666E`; semantic success, warning and error colors are `#576C65`, `#C19A3F` and `#B46F52`. There is no new gradient, blur or backdrop filter. Active segmented controls use white text and touch-sized targets. The explicit
+retry button and nested planner add buttons have at least 44 × 44 CSS-pixel
+targets, verified through the installed native panel. Existing photo-caption
+legibility and functional calorie-ring gradients are retained; no additional
+decorative gradient is introduced.
 
 Locale strings are plain text, not HTML entity fragments. Rendering continues to use Lit text bindings and DOM text nodes; no general HTML decoding or unsafe HTML insertion is needed for ampersands.
 
@@ -18,9 +22,9 @@ Ordinary language, units and theme changes were exercised on disposable native H
 
 ## Shopping removal
 
-The internal shopping component, navigation, recipe/weekly-plan transfer controls and frontend transfer bridges are removed. Shopping operations are not offered by the generic card action forms, even if a backend still advertises legacy descriptors. The dashboard neither loads shopping records nor writes them. Bring! remains a separate integration; no new Bring! connection is implemented.
+The internal shopping component, navigation, recipe/weekly-plan transfer controls and frontend transfer bridges are removed. Shopping operations are not offered by the generic card action forms, and the backend no longer advertises or accepts their retired descriptors. The dashboard neither loads shopping records nor writes them. Bring! remains a separate integration; no new Bring! connection is implemented.
 
-This frontend retirement does not delete or migrate historical shopping data. Backend API/registry retirement and compatibility/data-retention decisions are separate coordinated changes. Historical feature-inventory rows explicitly mark the retired UI rather than claiming it still works.
+This frontend retirement does not delete or migrate historical shopping data. The backend registry and transports are retired too; only inert backup/restore and historical decoder compatibility remain. Historical feature-inventory rows explicitly mark the retired UI rather than claiming it still works.
 
 ## Reproducible acceptance
 

@@ -63,12 +63,8 @@ class RestoreCapacityTests(unittest.IsolatedAsyncioTestCase):
         downloaded = await asyncio.to_thread(
             sdk.download_backup, self.origin, self.tokens[0][1], trusted_lan_http=True,
         )
-        async with self.client.post(
-            self.origin + "/api/services/macromate/shopping_lists_create?return_response",
-            headers=self.headers(), json={"name": "Removed by restore", "request_id": "shared-before"},
-        ) as response:
-            self.assertEqual(response.status, 200, await response.text())
-            await response.read()
+        from historical_shopping_fixture import historical_shopping
+        await historical_shopping(self.coord, 'shopping_lists_create', {'name': 'Historical fixture'})
         await asyncio.to_thread(
             sdk.restore_backup, self.origin, self.tokens[0][1], downloaded["data"],
             request_id="replace-shared", confirm=True, trusted_lan_http=True,

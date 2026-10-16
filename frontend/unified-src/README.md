@@ -1,3 +1,10 @@
+> **Scope update:** Internal shopping and recipe/plan transfers are retired in
+> both frontend and backend. Historical shopping descriptions below document
+> provenance/compatibility only, not supported actions. No shopping services,
+> WebSocket commands, discovery or standalone imports are registered. Stored
+> records/media remain in complete administrative backup/restore; no Bring!
+> adapter is provided. Current API: [AGENT_API.md](../../docs/AGENT_API.md).
+
 # Unified MacroMate frontend
 
 The installed resource remains `/macromate-assets/macromate-card.js` (JavaScript

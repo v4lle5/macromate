@@ -81,12 +81,11 @@ class UnifiedClientTests(unittest.TestCase):
                     client.call_service(url, TOKEN, "recipes_add", data, trusted_lan_http=True)
             self.assertEqual(records, [])
 
-    def test_documented_recipe_and_shopping_json_matches_actual_schemas(self):
+    def test_documented_recipe_json_matches_actual_schemas(self):
         from custom_components.macromate.recipes import RECIPE_ACTIONS
-        from custom_components.macromate.shopping import SHOPPING_ACTIONS
         from custom_components.macromate.platform_support import validate_payload
 
-        registry = {**RECIPE_ACTIONS, **SHOPPING_ACTIONS}
+        registry = RECIPE_ACTIONS
         root = Path(__file__).resolve().parents[1]
         validated = 0
         for relative in ("docs/AGENT_API.md", "agent-skill/SKILL.md"):
@@ -178,16 +177,23 @@ class UnifiedClientTests(unittest.TestCase):
                  "global_timers_get", "timer_presets_get", "shopping_products_get", "shopping_categories_get_all",
                  "shopping_loyalty_get", "shopping_regions_get", "shopping_get_integration_settings", "preferences_get"}
         with server() as (url, records):
+            accepted_count = 0
             for index, (action, original) in enumerate(cases.items()):
                 payload = dict(original)
                 if action not in reads:
                     payload["request_id"] = f"sample-{index}-v1"
                 with self.subTest(action=action):
                     result = self.cli(url, "--trusted-lan-http", "call", action, payload=json.dumps(payload))
+                    if action.startswith('shopping_') or action in ('recipe_to_shopping', 'plan_to_shopping'):
+                        self.assertEqual(result.returncode, 1)
+                        self.assertIn('retired', result.stderr)
+                        self.assertEqual(len(records), accepted_count)
+                        continue
+                    accepted_count += 1
                     self.assertEqual(result.returncode, 0, result.stderr)
                     self.assertEqual(json.loads(result.stdout), {"echo": payload})
                     self.assertEqual(records[-1][:2], (f"/api/services/macromate/{action}?return_response", payload))
-            self.assertEqual(len(records), len(cases))
+            self.assertEqual(len(records), accepted_count)
 
     def test_legacy_cli_commands_and_missing_environment_remain_compatible(self):
         cases = [(["list", "--date", "2026-10-14"], "list_meals", {"date": "2026-10-14"}),

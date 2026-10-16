@@ -25,7 +25,7 @@ try{
  page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text());});
  page.on('request',r=>{if(!/^(blob:|data:)/.test(r.url())&&new URL(r.url()).origin!==cfg.url)external.push(r.url());});
  await page.goto(cfg.url+'/native-card/');await page.waitForFunction(()=>window.ready);
- const connect=async index=>{await page.evaluate(options=>window.connectBackend(options),cfg.accounts[index]);await page.waitForFunction(()=>window.card?.api?.actions?.shopping_lists_get_all);};
+ const connect=async index=>{await page.evaluate(options=>window.connectBackend(options),cfg.accounts[index]);await page.waitForFunction(()=>window.card?.api?.actions?.describe);};
  await connect(0);
  const view=async name=>{await page.getByRole('button',{name,exact:true}).click();};
  const store=async label=>control({op:'store',label});
@@ -216,7 +216,7 @@ try{
  });
  await test('native-reader-denials',async()=>{
   await connect(2);await assert.rejects(()=>native('diary',{}));await assert.rejects(()=>native('recipes_get_all',{}));
-  await assert.rejects(()=>native('shopping_lists_get',{list_id:cfg.shared_list_id}));
+  await assert.rejects(()=>native('shopping_lists_get_all',{}));
   assert.equal(await page.locator('mm-nutrition').count(),0);return {reader_not_admin:true,private_denied:true};
  });
  await test('native-lovelace-panel-view-auto-module-layout-and-cleanup',async()=>{
@@ -278,6 +278,8 @@ try{
   assert.equal((await agent('preferences_get')).preferences.recipe_settings.theme,'ocean','Lost response really committed through native WS');
   await dashboard.waitForTimeout(300);
   assert.equal(await dashboard.evaluate(()=>settingsWire.length),1,'No automatic retries');
+  const retryTarget=await banner.getByRole('button',{name:'Gleiche Anfrage erneut senden',exact:true}).boundingBox();
+  assert.ok(retryTarget.height>=44&&retryTarget.width>=44,'Retry target must be at least 44px: '+JSON.stringify(retryTarget));
   await banner.getByRole('button',{name:'Gleiche Anfrage erneut senden',exact:true}).click();
   await dashboard.locator('macromate-card').evaluate(async c=>{const end=Date.now()+10000;while(c.api.pending&&Date.now()<end)await new Promise(r=>setTimeout(r,20));if(c.api.pending)throw Error('Replay did not clear pending');});
   const settingsWire=await dashboard.evaluate(()=>window.settingsWire);assert.equal(settingsWire.length,2);assert.deepEqual(settingsWire[0],settingsWire[1]);
@@ -303,6 +305,15 @@ try{
   for(const name of ['Meal Planner','Timers','Nutrition','Home']){
    const button=dashboard.locator('macromate-card').getByRole('button',{name,exact:true});
    await button.click();
+   if(name==='Meal Planner'){
+    await dashboard.setViewportSize({width:390,height:844});
+    const add=dashboard.locator('rm-meal-planner .add-slot-btn').first();
+    const target=await add.boundingBox();
+    assert.ok(target.height>=44&&target.width>=44,'Planner add target must be at least 44px: '+JSON.stringify(target));
+    await add.click();
+    await dashboard.locator('rm-meal-planner').evaluate(el=>{el._pickerOpen=false;el.requestUpdate();});
+    await dashboard.setViewportSize({width:1280,height:900});
+   }
   }
   await dashboard.screenshot({path:resolve(cfg.output,'native-lovelace-panel-desktop.png')});
   for(let i=0;i<16;i++)await agent('log_meal',{name:`Panel scroll meal ${i}`,calories:10,meal_type:'snack',request_id:`panel-scroll-${i}`});

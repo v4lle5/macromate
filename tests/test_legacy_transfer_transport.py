@@ -10,7 +10,7 @@ from custom_components.macromate import storage_budget as budget
 class LegacyTransferTransportTests(unittest.TestCase):
     def test_legacy_import_posts_exact_explicit_conservative_envelope(self):
         self.assertTrue(callable(getattr(sdk, "import_legacy", None)), "missing bounded legacy SDK transfer")
-        for source, extra in (("recipe_manager", {}), ("shopping_list_manager", {"country": "de"})):
+        for source, extra in (("recipe_manager", {}),):
             with self.subTest(source=source), serve(b'{"imported":true}') as (origin, calls):
                 with patch.object(sdk, "build_opener", wraps=sdk.build_opener) as opener:
                     result = sdk.import_legacy(

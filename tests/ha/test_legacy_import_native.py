@@ -48,8 +48,8 @@ class LegacyImportNativeTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(schema["properties"]["confirm"], {"const": True})
         self.assertEqual(
-            schema["properties"]["source"]["enum"],
-            ["recipe_manager", "shopping_list_manager"],
+            schema["properties"]["source"],
+            {"const": "recipe_manager"},
         )
 
 
@@ -68,7 +68,8 @@ class LegacyImportNativeTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(source=invalid["source"], country=invalid.get("country")), self.assertRaises(ValueError):
                 validate_payload(invalid, schema)
         shopping = {**recipe, "source": "shopping_list_manager", "country": "GB"}
-        self.assertEqual(validate_payload(shopping, schema), shopping)
+        with self.assertRaises(ValueError):
+            validate_payload(shopping, schema)
 
     def test_legacy_raw_category_and_auxiliary_tag_arrays_are_valid_schema_inputs(self):
         from custom_components.macromate.platform_api import ACTIONS
@@ -77,8 +78,6 @@ class LegacyImportNativeTests(unittest.IsolatedAsyncioTestCase):
         base = {"preserve_permissions": False, "confirm": True, "request_id": "literal-array"}
         for payload in (
             {**base, "source": "recipe_manager", "stores": {"recipe_manager.tags": []}},
-            {**base, "source": "shopping_list_manager", "country": "GB",
-             "stores": {"shopping_list_manager.categories": []}},
         ):
             self.assertEqual(validate_payload(payload, ACTIONS["legacy_import"]["schema"]), payload)
 
@@ -208,42 +207,19 @@ class LegacyImportNativeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(limits["client_default_response_bytes"], 4194304)
         self.assertEqual(limits["native_ha_http_request_bytes"], 16777216)
 
-    async def test_legacy_region_store_import_is_atomic_durable_and_replayable(self):
-        status, _ = await self.service("preferences_update", {"preferences": {"keep": "unrelated"}})
-        self.assertEqual(status, 200)
-        key = "shopping_list_manager.custom_regions"
-        payload = {
-            "source": "shopping_list_manager", "country": "GB",
-            "stores": {key: {
-                "version": 2, "minor_version": 1, "key": key,
-                "data": {"regions": {"XQ": "  Legacy Region / Home  "}},
-            }},
-            "preserve_permissions": False, "confirm": True,
-            "request_id": "legacy-region-native",
-        }
-        path = Path(self.tmp.name) / ".storage" / "macromate.meals"
-        with patch.object(self.coord._store, "async_save", wraps=self.coord._store.async_save) as save:
-            status, result = await self.service("legacy_import", payload)
-            self.assertEqual(status, 200, str(result))
-            self.assertEqual(save.call_count, 1)
-            durable_bytes = path.read_bytes()
-            durable = json.loads(durable_bytes)["data"]
-            self.assertEqual(durable, self.coord._state())
-            region = durable["kitchen"]["regions"]["XQ"]
-            self.assertEqual(region["code"], "XQ")
-            self.assertEqual(region["name"], "  Legacy Region / Home  ")
-            self.assertEqual(region["owner_id"], self.owner.id)
-            self.assertEqual(region["allowed_users"], [])
-            self.assertEqual(durable["kitchen"]["preferences"][self.owner.id]["ui"], {"keep": "unrelated"})
-            again_status, again = await self.service("legacy_import", payload)
-            self.assertEqual(again_status, 200, str(again))
-            self.assertEqual(again["service_response"], result["service_response"])
-            self.assertEqual(save.call_count, 1)
-            self.assertEqual(path.read_bytes(), durable_bytes)
-        from custom_components.macromate.coordinator import MealTrackerCoordinator
-        restarted = MealTrackerCoordinator(self.hass, self.coord.settings)
-        await restarted.async_load()
-        self.assertEqual(restarted._state(), durable)
+    async def test_retired_legacy_shopping_refused_by_services_and_private_route(self):
+        payload = {'source': 'shopping_list_manager', 'stores': {'shopping_list_manager.custom_regions': {}},
+                   'country': 'GB', 'preserve_permissions': False, 'confirm': True, 'request_id': 'retired'}
+        before = self.coord._state()
+        with patch.object(self.coord._store, 'async_save', wraps=self.coord._store.async_save) as save:
+            status, _ = await self.service('legacy_import', payload)
+            self.assertEqual(status, 400)
+            async with self.client.post(self.origin + '/api/macromate/legacy-import', headers=self.headers(), json=payload) as response:
+                self.assertEqual(response.status, 400)
+                await response.read()
+            save.assert_not_called()
+        self.assertEqual(self.coord._state(), before)
+
 
     async def test_conflicting_recipe_declarations_reject_create_update_and_legacy_before_save(self):
         from tools import macromate_transfer as sdk
@@ -278,7 +254,7 @@ class LegacyImportNativeTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result["restored"])
         self.assertEqual(json.loads(path.read_bytes())["data"], self.coord._state())
 
-    async def test_shopping_image_parent_acl_and_literal_records_use_one_native_commit(self):
+    async def test_historical_shopping_image_bytes_and_acl_survive_full_restore(self):
         from PIL import Image
         from tools import macromate_transfer as sdk
         from copy import deepcopy
@@ -298,12 +274,19 @@ class LegacyImportNativeTests(unittest.IsolatedAsyncioTestCase):
                 "unit": "bottles", "image_url": reference}]},
         }
         original = deepcopy(stores)
-        options: dict[str, Any] = dict(source="shopping_list_manager", stores=stores, country="GB",
-            images={reference: base64.b64encode(image.getvalue()).decode("ascii")},
-            preserve_permissions=True, confirm=True, request_id="native-shopping-old", trusted_lan_http=True)
+        # Dormant decoder constructs an old upgrade fixture; shopping import
+        # routes are retired. Only complete administrative restore is callable.
+        from custom_components.macromate.legacy_shopping import import_legacy_shopping
+        from custom_components.macromate.platform_support import Actor
+        stage = deepcopy(self.coord._state())
+        result = import_legacy_shopping(stage, stores,
+            {reference: base64.b64encode(image.getvalue()).decode('ascii')},
+            Actor(self.owner.id, is_admin=True), '2026-10-01T12:00:00+00:00',
+            country='GB', preserve_permissions=True)
+        options = dict(request_id='historical-full-restore', confirm=True, trusted_lan_http=True)
         path = Path(self.tmp.name) / ".storage/macromate.meals"
         with patch.object(self.coord._store, "async_save", wraps=self.coord._store.async_save) as save:
-            result = await asyncio.to_thread(sdk.import_legacy, self.origin, self.tokens[0][1], **options)
+            await asyncio.to_thread(sdk.restore_backup, self.origin, self.tokens[0][1], stage, **options)
             self.assertEqual(save.call_count, 1)
             before = path.read_bytes()
             durable = json.loads(before)["data"]
@@ -316,8 +299,8 @@ class LegacyImportNativeTests(unittest.IsolatedAsyncioTestCase):
             item = kitchen["shopping_items"]["Old.Item"]
             self.assertEqual((item["quantity"], item["unit"]), (2, "bottles"))
             self.assertEqual(item["image_url"], result["image_map"][reference])
-            replay = await asyncio.to_thread(sdk.import_legacy, self.origin, self.tokens[0][1], **options)
-            self.assertEqual(replay, result)
+            replay = await asyncio.to_thread(sdk.restore_backup, self.origin, self.tokens[0][1], stage, **options)
+            self.assertTrue(replay["restored"])
             self.assertEqual(save.call_count, 1)
             self.assertEqual(path.read_bytes(), before)
         self.assertEqual(stores, original)

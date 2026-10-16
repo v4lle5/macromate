@@ -5,7 +5,7 @@ import {FoodBrowser} from './foods-ui.js';
 import {CommandClient,publicError} from './client.js';
 import {el,button,field,display,nutrients,shiftDate,MEALS,NUTRIENTS} from './dom.js';
 
-export class MacroMatePanel extends HTMLElement {
+export class MacroMateNutritionBase extends HTMLElement {
  constructor(){super();this.attachShadow({mode:'open'});this.diarySequence=0;this.date=null;this.followToday=true;this.liveGeneration=0;}
  set hass(hass){
   const changed=this._hass&&(this._hass.connection!==hass.connection||this._hass.user?.id!==hass.user?.id||this._hass.user?.is_admin!==hass.user?.is_admin);
@@ -113,4 +113,3 @@ export class MacroMatePanel extends HTMLElement {
   this.diaryNode.dataset.testid='diary';
  }
 }
-if(!customElements.get('macromate-panel'))customElements.define('macromate-panel',MacroMatePanel);

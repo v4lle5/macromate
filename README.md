@@ -8,7 +8,7 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 
 ## Features
 
-- Responsive local MacroMate sidebar panel, using Home Assistant's existing authenticated connection.
+- One responsive local MacroMate dashboard card, using Home Assistant's existing authenticated connection.
 - Automatic calorie and macro goals from a readable profile; no technical kcal/kg or protein/fat multipliers in normal onboarding.
 - Date navigation, signed calorie balance and breakfast/lunch/dinner/snack groups with daily nutrient totals.
 - Reusable foods: stable product ID, name, producer, explicit g/ml basis, declared nutrients, product-specific servings, exact barcode strings, source/licensing metadata and favorite portion templates.
@@ -21,7 +21,7 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 - Local private storage, bounded persistent retry history, summary/goal sensors and authenticated actions for automations/agent clients.
 - Recipe library, taxonomy, ratings/favorites, manual editing, consented imports and private normalized images.
 - Weekly planning; logging recipe portions to the diary is a separate action with an immutable nutrition snapshot.
-- Internal shopping UI and recipe/plan shopping transfers have been removed. Use Bring! separately; MacroMate does not connect to it. Existing shopping data is retained, not deleted or migrated.
+- Internal shopping UI, backend services/WebSocket actions, discovery, settings and recipe/plan transfers have been removed. Use Bring! separately; MacroMate does not connect to it. Existing shopping data is retained, not deleted or migrated.
 - Cooking timers/presets and complete local agent CRUD through the same authenticated, validated command model as the card.
 
 No bundled inference model, fasting tracker, photo-based food recognition or analytics. Agents need no cloud model, browser automation or extra MCP server to use the API. See the [local agent guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md). This development branch is not automatically published or installed.
@@ -38,7 +38,7 @@ For a local development installation:
 2. Copy the entire `custom_components/macromate` directory to `/config/custom_components/macromate`, including `frontend/` and `brand/`. No npm build or extra server is needed at runtime.
 3. Restart Home Assistant.
 4. Add MacroMate under **Settings → Devices & services**, or open the existing entry's options.
-5. Complete the profile. The sidebar panel is available to administrators when HA HTTP/frontend is enabled.
+5. Complete the profile, then add the MacroMate dashboard card as described below. No separate MacroMate sidebar menu is registered.
 
 The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tests also run on Python 3.11; that does not establish older HA compatibility. Local branding is supported by HA 2026.3+; HACS pre-install listings may still show a placeholder.
 
@@ -52,7 +52,7 @@ The integration loads the card module automatically, just like Recipe Manager. N
 2. Set its **Layout** to **Panel (single card)** (German: **Panel (einzelne Karte)**).
 3. **Add card → By card → MacroMate → Save**, as the only card in that view. Leave **Full application** selected in its visual editor.
 
-The view URL is a simple view name, **not a JavaScript URL**. This is the complete dashboard app, not the separate legacy diary-only sidebar item (which remains unchanged). Recipes, Meal Planner, Timers and Nutrition stay together in one responsive, full-width card.
+The view URL is a simple view name, **not a JavaScript URL**. This is the complete dashboard app, with no separate legacy diary-only sidebar item. Recipes, Meal Planner, Timers and Nutrition stay together in one responsive, full-width card.
 
 The visual editor also offers the original read-only **Compact summary**. Existing `type: custom:macromate-card` / `mode: summary` configurations remain supported. The default combined card is editable according to server-side permissions.
 
@@ -90,7 +90,7 @@ Barcodes are preserved as strings, including leading zeros. MacroMate requires A
 
 ## Home Assistant actions
 
-Private nutrition, recipes/planning and administrative actions require an administrator when a user context is present. Shopping members can access only permitted records; read-only HA users cannot mutate them. Actors come from native authenticated service/WebSocket contexts, never payload role flags. Userless internal automations are trusted: do not expose them through untrusted scripts/webhooks. The private sidebar remains administrator-only. Discover the current canonical registry with `macromate.describe`; the legacy nutrition services below remain supported aliases.
+Private nutrition, recipes/planning and administrative actions require an administrator when a user context is present. Retired shopping records are inaccessible through the command API; read-only HA users cannot mutate current domains. Actors come from native authenticated service/WebSocket contexts, never payload role flags. Userless internal automations are trusted: do not expose them through untrusted scripts/webhooks. Discover the current canonical registry with `macromate.describe`; the legacy nutrition services below remain supported aliases.
 
 Read actions require response data:
 
@@ -183,7 +183,7 @@ python3 tools/macromate_client.py delete ENTRY_ID --request-id delete-1
 python3 tools/macromate_client.py clear-day --date 2026-10-14 --confirm --request-id clear-1
 ```
 
-The legacy conveniences cover diary CRUD; `describe`, generic `call ACTION` and Python `call_service` cover every advertised domain. Bounded Python helpers in `tools/macromate_transfer.py` handle large private backup/restore transfers and administrator-confirmed [standalone legacy Store/image migrations](docs/LEGACY_MIGRATION.md) separately. HTTP/protocol errors are sanitized and HA response envelopes unwrapped. Full recipe/planner/shopping/diary CRUD, exact readbacks, destructive confirmation and retry rules are documented in [AGENT_API.md](docs/AGENT_API.md).
+The legacy conveniences cover diary CRUD; `describe`, generic `call ACTION` and Python `call_service` cover every advertised domain. Bounded Python helpers in `tools/macromate_transfer.py` handle large private backup/restore transfers and administrator-confirmed [standalone legacy Store/image migrations](docs/LEGACY_MIGRATION.md) separately. HTTP/protocol errors are sanitized and HA response envelopes unwrapped. Full recipe/planner/diary CRUD, exact readbacks, destructive confirmation and retry rules are documented in [AGENT_API.md](docs/AGENT_API.md).
 
 ## Privacy boundary and verification limits
 

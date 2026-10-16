@@ -22,8 +22,8 @@ before(async()=>{
  browser=process.env.MACROMATE_BROWSER==='firefox'?await firefox.launch({headless:true}):process.env.MACROMATE_BROWSER==='webkit'?await webkit.launch({headless:true}):await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
 });
 after(async()=>{await browser?.close();await new Promise(r=>server?.close(r));assert.deepEqual(pageErrors,[],'no unhandled browser JavaScript errors');});
-async function open(){const page=await browser.newPage({viewport:{width:390,height:844}});page.on('pageerror',error=>pageErrors.push(error.message));await page.goto(base);await page.waitForFunction(()=>document.querySelector('macromate-panel')?.shadowRoot?.querySelector('[data-testid="diary"]'));return page;}
-const panel=page=>page.locator('macromate-panel');
+async function open(){const page=await browser.newPage({viewport:{width:390,height:844}});page.on('pageerror',error=>pageErrors.push(error.message));await page.goto(base);await page.waitForFunction(()=>document.querySelector('test-nutrition-pane')?.shadowRoot?.querySelector('[data-testid="diary"]'));return page;}
+const panel=page=>page.locator('test-nutrition-pane');
 async function calls(page){return page.evaluate(()=>window.calls);}
 function backend(data){
  const python=process.env.HA_PYTHON || '/home/valentin/.hermes/profiles/darlene/cache/scratch/macromate-runtime/venv/bin/python';
@@ -131,7 +131,7 @@ test('quick blank macros remain unknown through the actual command boundary',asy
 test('quick edit blanks clear declared macros and roundtrip unknown instead of zero',async()=>{
  const page=await open();
  const seed=backend({calls:[{action:'log_meal',payload:{name:'Clearable',meal_type:'snack',calories:250,protein:25}}]}).results[0].entry;
- await page.evaluate(entry=>{window.entries=[entry];return document.querySelector('macromate-panel').loadDiary();},seed);
+ await page.evaluate(entry=>{window.entries=[entry];return document.querySelector('test-nutrition-pane').loadDiary();},seed);
  await panel(page).getByRole('button',{name:'Clearable bearbeiten',exact:true}).click();
  const dialog=panel(page).getByRole('dialog');
  assert.equal(await dialog.getByLabel('Kohlenhydrate (g)',{exact:true}).inputValue(),'');
@@ -150,7 +150,7 @@ test('quick edit blanks clear declared macros and roundtrip unknown instead of z
 test('primary aggregates label actual backend partial nutrition and suppress exact progress',async()=>{
  const page=await open();
  const real=backend({calls:[{action:'log_meal',payload:{name:'Only energy',meal_type:'snack',calories:250}}]});
- await page.evaluate(data=>{const original=window.hass.callWS;window.hass.callWS=msg=>msg.action==='diary'?Promise.resolve({...data,recommendation:{calorie_target:2000,protein:100,carbs:250,fat:60}}):original(msg);return document.querySelector('macromate-panel').loadDiary();},real.diary);
+ await page.evaluate(data=>{const original=window.hass.callWS;window.hass.callWS=msg=>msg.action==='diary'?Promise.resolve({...data,recommendation:{calorie_target:2000,protein:100,carbs:250,fat:60}}):original(msg);return document.querySelector('test-nutrition-pane').loadDiary();},real.diary);
  assert.match(await panel(page).locator('.metric.protein').innerText(),/Unvollständig.*bekannt/s);
  assert.equal(await panel(page).locator('.metric.protein progress').count(),0);
  assert.equal(await panel(page).locator('.metric.calories progress').count(),1);
@@ -158,14 +158,14 @@ test('primary aggregates label actual backend partial nutrition and suppress exa
  assert.match(await panel(page).locator('main').innerText(),/Unbekannt/);
  const seed={food_id:'fixture',name:'Only food energy',base_unit:'g',nutrients_per_100:{calories:100},servings:[],barcodes:[]};
  const food=backend({seed_food:seed,calls:[{action:'log_food',payload:{food_id:'fixture',amount:100,meal_type:'snack'}}]});
- await page.evaluate(data=>{window.hass.callWS=async()=>data;return document.querySelector('macromate-panel').loadDiary();},food.diary);
+ await page.evaluate(data=>{window.hass.callWS=async()=>data;return document.querySelector('test-nutrition-pane').loadDiary();},food.diary);
  assert.match(await panel(page).locator('.metric.protein').innerText(),/Unvollständig/);
  await page.close();
 });
 
 test('food entry editing scales immutable entry snapshot without fetching current food',async()=>{
  const page=await open();
- await page.evaluate(()=>{window.entries=[{entry_id:'foodentry1',food_id:'milk1',name:'Historischer Drink',base_unit:'ml',amount:250,meal_type:'snack',calories:125,protein:5,nutrients:{calories:125,protein:5}}];return document.querySelector('macromate-panel').loadDiary();});
+ await page.evaluate(()=>{window.entries=[{entry_id:'foodentry1',food_id:'milk1',name:'Historischer Drink',base_unit:'ml',amount:250,meal_type:'snack',calories:125,protein:5,nutrients:{calories:125,protein:5}}];return document.querySelector('test-nutrition-pane').loadDiary();});
  await panel(page).getByRole('button',{name:'Historischer Drink bearbeiten'}).click();
  const dialog=panel(page).getByRole('dialog');
  await dialog.getByLabel('Menge (ml)',{exact:true}).fill('500');
@@ -286,8 +286,8 @@ test('disconnecting the panel releases camera tracks and closes scanner even wit
  });
  await panel(page).getByRole('button',{name:'EAN scannen',exact:true}).click();
  await panel(page).getByRole('button',{name:'Kamera starten',exact:true}).click();
- await page.waitForFunction(()=>document.querySelector('macromate-panel').shadowRoot.querySelector('video').srcObject!==null);
- await page.evaluate(()=>document.querySelector('macromate-panel').remove());
+ await page.waitForFunction(()=>document.querySelector('test-nutrition-pane').shadowRoot.querySelector('video').srcObject!==null);
+ await page.evaluate(()=>document.querySelector('test-nutrition-pane').remove());
  assert.equal(await page.evaluate(()=>window.syntheticStream.getTracks()[0].readyState),'ended');
  await page.close();
 });
@@ -309,11 +309,11 @@ test('uncertain writes show a modal-safe explicit retry, retain request ID, and 
  assert.equal((await calls(page)).filter(c=>c.action==='diary').length,readsBefore,'background refresh cannot overlap an uncertain write');
  assert.equal((await calls(page)).filter(c=>c.action==='log_meal').length,1,'no automatic writer retry');
  await retry.click();
- await page.waitForFunction(()=>document.querySelector('macromate-panel').client.pending===null);
+ await page.waitForFunction(()=>document.querySelector('test-nutrition-pane').client.pending===null);
  const writes=(await calls(page)).filter(c=>c.action==='log_meal');assert.equal(writes.length,2);assert.deepEqual(writes[1],writes[0]);
  assert.equal(await panel(page).getByRole('dialog').count(),0);
  assert.equal(await panel(page).getByRole('button',{name:'Schnelleintrag',exact:true}).isEnabled(),true);
- await page.evaluate(()=>{window.permissionError=true;return document.querySelector('macromate-panel').loadDiary();});
+ await page.evaluate(()=>{window.permissionError=true;return document.querySelector('test-nutrition-pane').loadDiary();});
  assert.match(await panel(page).locator('.message').innerText(),/Administratoren/);
  assert.doesNotMatch(await panel(page).locator('.message').innerText(),/SECRET/);
  await page.close();
@@ -355,7 +355,7 @@ test('live events coalesce external updates without overlapping reads and clean 
  await page.evaluate(()=>{window.release();window.release=null;});
  await page.waitForFunction(()=>window.release!==null);
  assert.equal((await calls(page)).filter(c=>c.action==='diary').length,3);
- await page.evaluate(()=>{window.release();document.querySelector('macromate-panel').remove();window.emitUpdate();});
+ await page.evaluate(()=>{window.release();document.querySelector('test-nutrition-pane').remove();window.emitUpdate();});
  assert.equal(await page.evaluate(()=>window.unsubscribed),1);
  const count=(await calls(page)).length;await page.waitForTimeout(250);assert.equal((await calls(page)).length,count);
  await page.close();
@@ -364,14 +364,14 @@ test('live events coalesce external updates without overlapping reads and clean 
 test('live connection replacement discards stale reads and unsubscribes late subscriptions',async()=>{
  const page=await open();
  await page.evaluate(()=>{
-  const app=document.querySelector('macromate-panel');
+  const app=document.querySelector('test-nutrition-pane');
   const original=window.hass.callWS;
   window.lateUnsub=0;
   app.hass={...window.hass,connection:{subscribeEvents:()=>new Promise(resolve=>window.finishSubscribe=()=>resolve(()=>window.lateUnsub++))},callWS:msg=>msg.action==='diary'?new Promise(resolve=>{window.finishOldRead=()=>resolve({date:'OLD',today:'OLD',entries:[],totals:{},meals:{}});}):original(msg)};
  });
  await page.waitForFunction(()=>!!window.finishOldRead&&!!window.finishSubscribe,{},{timeout:2000});
- await page.evaluate(()=>{const app=document.querySelector('macromate-panel');app.hass=window.hass;window.finishSubscribe();window.finishOldRead();});
- await page.waitForFunction(()=>document.querySelector('macromate-panel').date==='2026-10-14');
+ await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane');app.hass=window.hass;window.finishSubscribe();window.finishOldRead();});
+ await page.waitForFunction(()=>document.querySelector('test-nutrition-pane').date==='2026-10-14');
  assert.equal(await page.evaluate(()=>window.lateUnsub),1);
  assert.equal(await page.evaluate(()=>window.unsubscribed),1);
  await page.close();
@@ -379,11 +379,11 @@ test('live connection replacement discards stale reads and unsubscribes late sub
 
 test('nonadmins make no reads or subscriptions and downgrade clears private panel state',async()=>{
  const page=await open();
- await page.evaluate(()=>{const app=document.querySelector('macromate-panel');app.hass={...window.hass,user:{id:'reader',is_admin:false}};window.emitUpdate();});
+ await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane');app.hass={...window.hass,user:{id:'reader',is_admin:false}};window.emitUpdate();});
  assert.equal(await page.evaluate(()=>window.updateListeners.size),0);
  assert.doesNotMatch(await panel(page).locator('main').innerText(),/Haferfrühstück/);
  const count=(await calls(page)).length;
- await page.evaluate(()=>document.querySelector('macromate-panel').loadDiary());
+ await page.evaluate(()=>document.querySelector('test-nutrition-pane').loadDiary());
  await page.waitForTimeout(250);assert.equal((await calls(page)).length,count);
  await page.close();
  const guest=await browser.newPage();await guest.addInitScript(()=>window.testAdmin=false);await guest.goto(base);
@@ -394,7 +394,7 @@ test('nonadmins make no reads or subscriptions and downgrade clears private pane
 
 async function delayedFoodContext(page,action,change,{reject=false}={}){
  return page.evaluate(async({action,change,reject})=>{
-  const app=document.querySelector('macromate-panel');
+  const app=document.querySelector('test-nutrition-pane');
   const original=window.hass.callWS;
   let resolve,rejectRead;
   app.hass={...window.hass,callWS:msg=>{
@@ -478,7 +478,7 @@ for(const action of ['search_foods','food','barcode']){
   try{
    for(const change of ['authorization','identity','connection','disconnect']){
     const state=await page.evaluate(async({action,change})=>{
-     const app=document.querySelector('macromate-panel');app.hass={...window.hass,user:{id:'admin',is_admin:true}};
+     const app=document.querySelector('test-nutrition-pane');app.hass={...window.hass,user:{id:'admin',is_admin:true}};
      const original=window.hass.callWS;let resolve;
      app.hass={...app.hass,callWS:msg=>msg.action===action?new Promise(yes=>resolve=yes):original(msg)};
      const browser=app.foodBrowser;browser.invalidate();
@@ -505,7 +505,7 @@ test('ordinary hass state updates preserve pending food reads in the same author
  const page=await open();
  try{
   const state=await page.evaluate(async()=>{
-   const app=document.querySelector('macromate-panel');const original=window.hass.callWS;let resolve;
+   const app=document.querySelector('test-nutrition-pane');const original=window.hass.callWS;let resolve;
    app.hass={...window.hass,callWS:msg=>msg.action==='food'?new Promise(yes=>resolve=yes):original(msg)};
    const read=app.foodBrowser.pick('milk1');const sequence=app.foodBrowser.sequence;
    app.hass={...app.hass,states:{}};resolve({food:window.product});await read;
@@ -517,18 +517,18 @@ test('ordinary hass state updates preserve pending food reads in the same author
 
 test('bounded fallback follows HA-local today but preserves explicitly selected history',async()=>{
  const page=await open();await page.clock.install();
- await page.evaluate(()=>{const app=document.querySelector('macromate-panel');const original=window.hass.callWS;window.backendToday='2026-10-14';window.fallbackCalls=0;app.hass={...window.hass,connection:null,callWS:async msg=>{if(msg.action!=='diary')return original(msg);window.fallbackCalls++;return {date:msg.payload.date||window.backendToday,today:window.backendToday,entries:[],totals:{calories:987},nutrition_missing:[],meals:{}};}};});
+ await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane');const original=window.hass.callWS;window.backendToday='2026-10-14';window.fallbackCalls=0;app.hass={...window.hass,connection:null,callWS:async msg=>{if(msg.action!=='diary')return original(msg);window.fallbackCalls++;return {date:msg.payload.date||window.backendToday,today:window.backendToday,entries:[],totals:{calories:987},nutrition_missing:[],meals:{}};}};});
  await page.waitForFunction(()=>window.fallbackCalls===1);
  await page.evaluate(()=>window.backendToday='2026-10-15');
  await page.clock.runFor(60200);
- assert.equal(await page.evaluate(()=>document.querySelector('macromate-panel').date),'2026-10-15');
+ assert.equal(await page.evaluate(()=>document.querySelector('test-nutrition-pane').date),'2026-10-15');
  assert.equal(await page.evaluate(()=>window.fallbackCalls),2);
- await page.evaluate(()=>document.querySelector('macromate-panel').loadDiary('2026-10-12'));
+ await page.evaluate(()=>document.querySelector('test-nutrition-pane').loadDiary('2026-10-12'));
  await page.evaluate(()=>window.backendToday='2026-10-16');
  await page.clock.runFor(60200);
- assert.equal(await page.evaluate(()=>document.querySelector('macromate-panel').date),'2026-10-12');
- assert.equal(await page.evaluate(()=>document.querySelector('macromate-panel').today),'2026-10-16');
- await page.evaluate(()=>document.querySelector('macromate-panel').remove());
+ assert.equal(await page.evaluate(()=>document.querySelector('test-nutrition-pane').date),'2026-10-12');
+ assert.equal(await page.evaluate(()=>document.querySelector('test-nutrition-pane').today),'2026-10-16');
+ await page.evaluate(()=>document.querySelector('test-nutrition-pane').remove());
  const count=await page.evaluate(()=>window.fallbackCalls);await page.clock.runFor(180000);
  assert.equal(await page.evaluate(()=>window.fallbackCalls),count);
  await page.close();
@@ -536,7 +536,7 @@ test('bounded fallback follows HA-local today but preserves explicitly selected 
 
 test('subscription setup failure falls back without uncaught browser errors',async()=>{
  const page=await open();await page.clock.install();
- await page.evaluate(()=>{const app=document.querySelector('macromate-panel');app.hass={...window.hass,connection:{subscribeEvents(){throw Error('subscription unavailable');}}};});
+ await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane');app.hass={...window.hass,connection:{subscribeEvents(){throw Error('subscription unavailable');}}};});
  const count=(await calls(page)).filter(c=>c.action==='diary').length;
  await page.clock.runFor(60200);
  assert.equal((await calls(page)).filter(c=>c.action==='diary').length,count+1);
@@ -556,12 +556,12 @@ test('live refresh waits for an open edit dialog to close before disabling write
 
 test('pending diary date changes block writes and ignore late stale responses',async()=>{
  const page=await open();
- await page.evaluate(()=>{const original=window.hass.callWS;window.waiting=[];window.hass.callWS=msg=>msg.action==='diary'?new Promise(resolve=>window.waiting.push(()=>original(msg).then(resolve))):original(msg);const app=document.querySelector('macromate-panel');window.firstLoad=app.loadDiary('2026-10-12');window.secondLoad=app.loadDiary('2026-10-13');});
+ await page.evaluate(()=>{const original=window.hass.callWS;window.waiting=[];window.hass.callWS=msg=>msg.action==='diary'?new Promise(resolve=>window.waiting.push(()=>original(msg).then(resolve))):original(msg);const app=document.querySelector('test-nutrition-pane');window.firstLoad=app.loadDiary('2026-10-12');window.secondLoad=app.loadDiary('2026-10-13');});
  assert.equal(await panel(page).getByRole('button',{name:'Schnelleintrag',exact:true}).isDisabled(),true);
  await page.evaluate(async()=>{window.waiting[1]();await window.secondLoad;});
- assert.equal(await page.evaluate(()=>document.querySelector('macromate-panel').date),'2026-10-13');
+ assert.equal(await page.evaluate(()=>document.querySelector('test-nutrition-pane').date),'2026-10-13');
  await page.evaluate(async()=>{window.waiting[0]();await window.firstLoad;});
- assert.equal(await page.evaluate(()=>document.querySelector('macromate-panel').date),'2026-10-13');
+ assert.equal(await page.evaluate(()=>document.querySelector('test-nutrition-pane').date),'2026-10-13');
  assert.equal(await panel(page).getByRole('button',{name:'Schnelleintrag',exact:true}).isEnabled(),true);
  await page.close();
 });

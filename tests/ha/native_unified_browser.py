@@ -170,6 +170,8 @@ async def main():
         await hass.async_block_till_done()
         entry = flow['result']
         assert entry.state.value == 'loaded'
+        assert not ha_frontend.async_panel_exists(hass, 'macromate'), 'Retired standalone MacroMate sidebar must not be registered'
+        report['standalone_sidebar_absent'] = True
         modules = hass.data[ha_frontend.DATA_EXTRA_MODULE_URL].urls
         assert any(url.split('?')[0] == '/macromate-assets/macromate-card.js' for url in modules), (
             'MacroMate must load its complete dashboard card automatically, without manual resources')
@@ -269,21 +271,6 @@ async def main():
             pid = plan['id']
             await cli('meal_plan_update', {'entry_id': pid, 'servings': 2, 'request_id': 'cli-plan-edit'})
             assert (await cli('meal_plan_get', {'entry_id': pid}))['entry']['servings'] == 2
-            lid = (await cli('shopping_lists_create', {'name': 'CLI groceries', 'private': True,
-                                                      'request_id': 'cli-list-create'}))['list']['id']
-            await cli('shopping_lists_update', {'list_id': lid, 'name': 'CLI exact groceries', 'request_id': 'cli-list-edit'})
-            assert (await cli('shopping_lists_get', {'list_id': lid}))['list']['name'] == 'CLI exact groceries'
-            iid = (await cli('shopping_items_add', {'list_id': lid, 'name': 'Apple', 'quantity': 2,
-                                                  'price': 1, 'request_id': 'cli-item-create'}))['item']['id']
-            await cli('shopping_items_update', {'item_id': iid, 'quantity': 3, 'price': None, 'request_id': 'cli-item-edit'})
-            exact = (await cli('shopping_items_get_one', {'item_id': iid}))['item']
-            assert exact['quantity'] == 3 and exact['price'] is None
-            transferred = await cli('recipe_to_shopping', {'recipe_id': rid, 'list_id': lid,
-                                                         'ingredient_indexes': [0], 'request_id': 'cli-recipe-shopping'})
-            assert store('cli-cross-shopping')['kitchen']['shopping_items'][transferred['item_ids'][0]]['quantity'] == 40
-            planned = await cli('plan_to_shopping', {'week_start': '2026-10-12', 'list_id': lid,
-                                                    'request_id': 'cli-plan-shopping'})
-            assert planned['plan_entry_ids'] == [pid]
             assert store('cli-plan-not-diary')['entries'] == []
             logged = await cli('recipe_log', {'recipe_id': rid, 'servings': 1, 'date': '2026-10-14',
                                              'meal_type': 'lunch', 'request_id': 'cli-recipe-log'})
@@ -303,10 +290,6 @@ async def main():
             assert not (await cli('recipes_get_all', {}))['recipes']
             assert next(e for e in store('cli-snapshot-after-delete')['entries'] if e['id'] == eid)['recipe_snapshot']['id'] == rid
             await cli('delete_meal', {'entry_id': eid, 'request_id': 'cli-recipe-diary-delete'})
-            await cli('shopping_items_delete', {'item_id': iid, 'request_id': 'cli-item-delete'})
-            assert iid not in store('cli-item-deleted')['kitchen']['shopping_items']
-            await cli('shopping_lists_delete', {'list_id': lid, 'confirm': True, 'request_id': 'cli-list-delete'})
-            assert not (await cli('shopping_lists_get_all', {}))['lists']
             assert store('cli-cycle-clean')['entries'] == []
             report['shipped_client_crud_cross_domain'] = True
         except Exception as error:
@@ -329,12 +312,6 @@ async def main():
                     assert Image.open(io.BytesIO(await response.read())).format == 'WEBP'
                 media_status.append({'actor': actor, 'status': response.status})
         report['private_media'] = media_status
-        shared = (await cli('shopping_lists_create', {'name': 'Synthetic shared groceries', 'private': True,
-                                                    'request_id': 'shared-list'}))['list']
-        await cli('shopping_lists_update_members', {'list_id': shared['id'], 'allowed_users': [users[1].id],
-                                                   'request_id': 'shared-members'})
-        await cli('shopping_items_add', {'list_id': shared['id'], 'name': 'Synthetic member apple',
-                                        'request_id': 'member-item'}, actor=1)
         # Backend denial through actual native transport, not UI permissions alone.
         async with client.ws_connect(url + '/api/websocket') as ws:
             assert (await ws.receive_json())['type'] == 'auth_required'
@@ -356,7 +333,7 @@ async def main():
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         cfg = {'url': url, 'accounts': [{'token': token, 'user': {'id': user.id, 'is_admin': user.is_admin}}
                                       for token, user in zip(tokens, users)],
-               'output': str(run), 'private_recipe_id': private['id'], 'shared_list_id': shared['id']}
+               'output': str(run), 'private_recipe_id': private['id']}
         proc.stdin.write((json.dumps(cfg) + '\n').encode())
         await proc.stdin.drain()
         cfg = None

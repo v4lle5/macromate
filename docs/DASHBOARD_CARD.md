@@ -1,6 +1,6 @@
 # MacroMate dashboard card
 
-One local Home Assistant card for recipes, shopping, weekly planning, cooking timers and nutrition. The nutrition pane retains the calorie ring, macro overview, food database, scanner and diary editing. The original compact read-only overview remains available explicitly with `mode: summary`.
+One local Home Assistant card for recipes, weekly planning, cooking timers and nutrition. The nutrition pane retains the calorie ring, macro overview, food database, scanner and diary editing. The original compact read-only overview remains available explicitly with `mode: summary`.
 
 This is a development candidate. A local checkout is not automatically published, installed or registered in a dashboard. Do not delete/re-add an existing integration as an upgrade procedure.
 
@@ -26,9 +26,9 @@ After the integration is loaded and Home Assistant has been restarted, MacroMate
 1. Open the dashboard you want to use and choose **Edit dashboard**.
 2. Add a view, or choose **Edit view** for an existing one. Under **Layout**, select **Panel (single card)** (German: **Panel (einzelne Karte)**).
 3. Choose **Add card → By card**, search for **MacroMate**, select it and **Save**. Leave **Display → Full application** selected. Add it as the **only card** in that view.
-4. Finish editing. Recipes, Shopping List, Meal Planner, Timers and Nutrition are inside this one full-width, responsive dashboard card.
+4. Finish editing. Recipes, Meal Planner, Timers and Nutrition are inside this one full-width, responsive dashboard card.
 
-The view URL/path is just a normal name such as `macromate` — **never paste a `.js` resource URL into the view URL field**. The dashboard card is not HA's legacy MacroMate sidebar item; that separate diary-only menu remains unchanged for compatibility.
+The view URL/path is just a normal name such as `macromate` — **never paste a `.js` resource URL into the view URL field**. The dashboard card is the only MacroMate UI entry point. The separate diary-only sidebar menu has been removed; internal card navigation is unchanged.
 
 The visual editor also offers **Compact summary (read-only)** for a small overview. Existing `mode: summary` cards keep their original behavior. Advanced users can still configure `type: custom:macromate-card` and `mode: summary` in YAML, but ordinary storage-dashboard setup does not require YAML, a resource URL, entity IDs or an extra bearer token.
 
@@ -36,9 +36,9 @@ The default combined card is editable according to server permissions. The card 
 
 ## Permissions, data and connected workflows
 
-Private nutrition, recipes and planning require an administrator. Shopping members see only authorized records and cannot assume ownership or administer global regions. A read-only HA identity cannot mutate data. Dashboard placement does not grant access; the server enforces permissions for both UI and agents.
+Private nutrition, recipes and planning require an administrator. Internal shopping is retired; historical records stay preserved but have no operational action endpoints. A read-only HA identity cannot mutate data. Dashboard placement does not grant access; the server enforces permissions for both UI and agents.
 
-Recipe/plan → shopping is an explicit atomic transfer, with original ingredient indexes and exact selected catalog IDs. Adding a plan does not silently log calories. Recipe → diary logging is a separate confirmed portion operation; saved nutrition snapshots survive later source edits/deletion. Unknown nutrients stay unknown, not zero. Incomplete totals do not imply exact progress, and over-goal intake is distinct from calories remaining.
+Adding a plan does not silently log calories. Recipe → diary logging is a separate confirmed portion operation; saved nutrition snapshots survive later source edits/deletion. Unknown nutrients stay unknown, not zero. Incomplete totals do not imply exact progress, and over-goal intake is distinct from calories remaining.
 
 The combined interface includes dedicated workflows and **All actions**, whose schema forms cover advanced fields as explicit JSON. Placeholder Cookbook/Sync/Help navigation that was inert upstream stays disabled; it is not a functioning sync service. Recipes/shopping/card share the integration's state, rather than running independent embedded integrations.
 
@@ -55,7 +55,7 @@ Native Lovelace acceptance covers the actual served HA dashboard, visual card pi
 ## Troubleshooting
 
 - **Custom element missing / 404:** verify the complete installed frontend, configured integration, HA restart and automatic module loading. No resource URL belongs in the view URL field. A version number alone does not prove the files are present.
-- **Old UI:** restart HA after the integration update, then refresh the dashboard/browser cache. The full app is the MacroMate dashboard card, not the legacy sidebar diary. A partial chunk update is not a valid installation.
+- **Old UI:** restart HA after the integration update, then refresh the dashboard/browser cache. The full app is the MacroMate dashboard card, with no legacy sidebar diary. A partial chunk update is not a valid installation.
 - **Permission denied:** use an identity authorized for the exact domain/object; do not bypass server restrictions.
 - **Unknown goals:** complete integration profile/options. Missing goals are not an instruction to consume zero calories.
 - **Uncertain write:** inspect the exact target before an operator-approved identical-ID retry. Never create a replacement UUID merely to hide uncertainty.

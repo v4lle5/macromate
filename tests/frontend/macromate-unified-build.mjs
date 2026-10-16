@@ -21,7 +21,7 @@ const dependencyFiles=new Map();
 try{
   await symlink(resolve(root,'frontend'),resolve(resolverRoot,'frontend'),'dir');
   await symlink(dependencyRoot,resolve(resolverRoot,'node_modules'),'dir');
-  result=await build({absWorkingDir:resolverRoot,preserveSymlinks:true,entryPoints:['frontend/unified-src/recipe-manager-card.js'],outdir:resolve(resolverRoot,'frontend/unified'),entryNames:'app',chunkNames:'chunks/[name]-[hash]',bundle:true,format:'esm',splitting:true,minify:true,target:['es2022'],metafile:true,write:false,legalComments:'external',plugins:[{name:'existing-nutrition-runtime',setup(b){b.onResolve({filter:/^\.\.\/\.\.\/panel\.js$/},()=>({path:'../panel.js',external:true}));}}]});
+  result=await build({absWorkingDir:resolverRoot,preserveSymlinks:true,entryPoints:['frontend/unified-src/recipe-manager-card.js'],outdir:resolve(resolverRoot,'frontend/unified'),entryNames:'app',chunkNames:'chunks/[name]-[hash]',bundle:true,format:'esm',splitting:true,minify:true,target:['es2022'],metafile:true,write:false,legalComments:'external',plugins:[{name:'existing-nutrition-runtime',setup(b){b.onResolve({filter:/^\.\.\/\.\.\/nutrition-base\.js$/},()=>({path:'../nutrition-base.js',external:true}));}}]});
   for(const name of Object.keys(result.metafile.inputs)){
     if(name.startsWith('(disabled):'))continue;
     if(!name.startsWith('node_modules/')){

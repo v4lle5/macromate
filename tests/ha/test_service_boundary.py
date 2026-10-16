@@ -110,48 +110,15 @@ class ServiceBoundaryTests(unittest.IsolatedAsyncioTestCase):
                 self.hass, connection, schema(message) if callable(schema) else message
             )
         await self.hass.async_block_till_done()
-        lid = (
-            await self.call(
-                "shopping_lists_create", {"name": "Private"}, Context(user_id=owner.id)
-            )
-        )["list"]["id"]
-        await self.call(
-            "shopping_lists_update_members",
-            {"list_id": lid, "allowed_users": [member.id]},
-            Context(user_id=owner.id),
-        )
+        await self.call('preferences_update', {'preferences': {'language': 'de'}}, Context(user_id=owner.id))
         await self.hass.async_block_till_done()
-        peers[1].events.clear()
-        await self.call(
-            "shopping_lists_update_members",
-            {"list_id": lid, "allowed_users": []},
-            Context(user_id=owner.id),
-        )
-        await self.hass.async_block_till_done()
-        self.assertEqual(peers[1].events, [{"event": "refresh"}])
+        self.assertEqual(peers[0].events, [{'event': 'refresh'}])
+        self.assertEqual(peers[1].events, [])
         self.assertEqual(peers[2].events, [])
-        public_lid = (
-            await self.call(
-                "shopping_lists_create",
-                {"name": "Public", "private": False},
-                Context(user_id=owner.id),
-            )
-        )["list"]["id"]
-
-        def publish(state):
-            state["kitchen"]["shopping_lists"][public_lid]["owner_id"] = None
-            return {}
-
-        await self.coord._transact("synthetic-public-acl", {}, None, publish)
+        await self.call('preferences_update', {'preferences': {'language': 'en'}}, Context(user_id=member.id))
         await self.hass.async_block_till_done()
-        peers[2].events.clear()
-        await self.call(
-            "shopping_items_add",
-            {"list_id": public_lid, "name": "Visible"},
-            Context(user_id=owner.id),
-        )
-        await self.hass.async_block_till_done()
-        self.assertEqual(peers[2].events, [{"event": "refresh"}])
+        self.assertEqual(peers[1].events, [{'event': 'refresh'}])
+        self.assertEqual(peers[2].events, [])
         for connection in peers:
             for cancel in connection.subscriptions.values():
                 cancel()
@@ -172,49 +139,12 @@ class ServiceBoundaryTests(unittest.IsolatedAsyncioTestCase):
         discovery = await self.call("describe", {}, Context(user_id=member.id))
         services = self.hass.services.async_services()["macromate"]
         self.assertTrue(set(discovery["actions"]) <= set(services))
-        lid = (
-            await self.call(
-                "shopping_lists_create", {"name": "Shared"}, Context(user_id=owner.id)
-            )
-        )["list"]["id"]
-        await self.call(
-            "shopping_lists_update_members",
-            {"list_id": lid, "allowed_users": [member.id, reader.id]},
-            Context(user_id=owner.id),
-        )
-        added = await self.call(
-            "shopping_items_add",
-            {"list_id": lid, "name": "Apple", "request_id": "member-item"},
-            Context(user_id=member.id),
-        )
-        self.assertEqual(
-            (
-                await self.call(
-                    "shopping_items_get_one",
-                    {"item_id": added["item"]["id"]},
-                    Context(user_id=member.id),
-                )
-            )["item"]["name"],
-            "Apple",
-        )
-        with self.assertRaises(Unauthorized):
-            await self.call(
-                "shopping_items_add",
-                {"list_id": lid, "name": "Denied"},
-                Context(user_id=reader.id),
-            )
-        self.assertEqual(
-            len(
-                (
-                    await self.call(
-                        "shopping_items_get",
-                        {"list_id": lid},
-                        Context(user_id=reader.id),
-                    )
-                )["items"]
-            ),
-            1,
-        )
+        self.assertFalse(any(name.startswith('shopping_') for name in services))
+        for user in (member, reader):
+            with self.assertRaises(Unauthorized):
+                await self.call('recipes_add', {'name': 'Denied'}, Context(user_id=user.id))
+        recipe = await self.call('recipes_add', {'name': 'Authorized'}, Context(user_id=owner.id))
+        self.assertEqual(recipe['recipe']['name'], 'Authorized')
         self.assertIn("macromate/subscribe", self.hass.data["websocket_api"])
 
     async def test_native_transports_pass_only_server_derived_actor(self):

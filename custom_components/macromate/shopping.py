@@ -1,7 +1,10 @@
-"""Pure staged shopping domain.
+"""Dormant historical shopping compatibility, not an operational integration.
+
+No services, WS actions, discovery or import routes dispatch this module. Keep
+historical schemas/catalog identities/decoding to preserve existing full backups
+and retained media; never initialize, migrate or prune user data on load.
 
 Catalog/data attribution: Copyright (c) 2026 thekiwismarthome (MIT).
-No persistence, Home Assistant, event publication or network I/O lives here.
 """
 from __future__ import annotations
 

@@ -113,6 +113,8 @@ def service_url(
         trusted_lan_http and origin.scheme == "http"
     ):
         raise ValueError("HA_URL must use HTTPS; HTTP requires explicit trusted-LAN opt-in")
+    if isinstance(service, str) and (service.startswith("shopping_") or service in ("recipe_to_shopping", "plan_to_shopping")):
+        raise ValueError("internal shopping actions have been retired")
     if not isinstance(service, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", service):
         raise ValueError("service must be a valid action name")
     url = f"{base_url.rstrip('/')}/api/services/{DOMAIN}/{service}"

@@ -34,6 +34,13 @@ class RestoreIntegrityTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(response.status, 200, await response.text())
             return (await response.json())['service_response']
 
+    async def historical(self, action, payload=None, index=0):
+        """Construct/read dormant historical records, never live transport."""
+        from historical_shopping_fixture import historical_shopping
+        from custom_components.macromate.platform_support import Actor
+        user = self.other if index else self.owner
+        return await historical_shopping(self.coord, action, payload, Actor(user.id, is_admin=user.is_admin))
+
     async def backup(self):
         async with self.client.get(self.origin + '/api/macromate/backup', headers=self.headers()) as response:
             self.assertEqual(response.status, 200)
@@ -87,18 +94,18 @@ class RestoreIntegrityTests(unittest.IsolatedAsyncioTestCase):
         preset = (await self.api('timer_presets_add', {'name': 'Synthetic preset', 'seconds': 30, 'request_id': 'preset'}))['preset']
         timer = (await self.api('global_timers_add', {'label': 'Synthetic paused timer', 'duration': 30, 'running': False, 'paused_remaining': 15, 'preset_id': preset['id'], 'request_id': 'timer'}))['timer']
         plan = (await self.api('meal_plan_add', {'recipe_id': recipe['id'], 'date': '2026-10-14', 'meal_type': 'lunch', 'request_id': 'plan'}))['entry']
-        await self.api('shopping_regions_create', {'code': 'XY', 'name': 'Synthetic region', 'currency': 'XYZ'})
-        category = (await self.api('shopping_categories_add', {'name': 'Synthetic category', 'request_id': 'category'}))['category']
-        product = (await self.api('shopping_products_add', {'name': 'Synthetic product', 'category_id': category['id'], 'nutrition': None, 'substitution_group': None, 'request_id': 'product'}))['product']
-        catalog = (await self.api('shopping_products_get_all'))['products'][0]
-        await self.api('shopping_products_update', {'product_id': catalog['id'], 'price': None, 'request_id': 'catalog-override'})
-        parent = (await self.api('shopping_lists_create', {'name': 'Synthetic shared list', 'request_id': 'full-list'}))['list']
-        await self.api('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': [self.other.id]})
-        await self.api('shopping_lists_set_active', {'list_id': parent['id']})
-        item = (await self.api('shopping_items_add', {'list_id': parent['id'], 'name': product['name'], 'product_id': product['id'], 'category_id': category['id'], 'quantity': 2, 'price': 3, 'currency': 'NZD', 'request_id': 'full-item'}))['item']
-        await self.api('shopping_items_check', {'item_id': item['id'], 'checked': True})
-        card = (await self.api('shopping_loyalty_add', {'name': 'Synthetic loyalty', 'number': '000123', 'request_id': 'loyalty'}))['card']
-        await self.api('shopping_update_integration_settings', {'enable_price_tracking': False})
+        await self.historical('shopping_regions_create', {'code': 'XY', 'name': 'Synthetic region', 'currency': 'XYZ'})
+        category = (await self.historical('shopping_categories_add', {'name': 'Synthetic category', 'request_id': 'category'}))['category']
+        product = (await self.historical('shopping_products_add', {'name': 'Synthetic product', 'category_id': category['id'], 'nutrition': None, 'substitution_group': None, 'request_id': 'product'}))['product']
+        catalog = (await self.historical('shopping_products_get_all'))['products'][0]
+        await self.historical('shopping_products_update', {'product_id': catalog['id'], 'price': None, 'request_id': 'catalog-override'})
+        parent = (await self.historical('shopping_lists_create', {'name': 'Synthetic shared list', 'request_id': 'full-list'}))['list']
+        await self.historical('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': [self.other.id]})
+        await self.historical('shopping_lists_set_active', {'list_id': parent['id']})
+        item = (await self.historical('shopping_items_add', {'list_id': parent['id'], 'name': product['name'], 'product_id': product['id'], 'category_id': category['id'], 'quantity': 2, 'price': 3, 'currency': 'NZD', 'request_id': 'full-item'}))['item']
+        await self.historical('shopping_items_check', {'item_id': item['id'], 'checked': True})
+        card = (await self.historical('shopping_loyalty_add', {'name': 'Synthetic loyalty', 'number': '000123', 'request_id': 'loyalty'}))['card']
+        await self.historical('shopping_update_integration_settings', {'enable_price_tracking': False})
         await self.api('preferences_update', {'preferences': {'language': 'de', 'unknown_extension': None}, 'request_id': 'preferences'})
         food = (await self.api('save_food', {'food': {'name': 'Synthetic food', 'base_unit': 'g', 'nutrients_per_100': {'calories': 100, 'protein': None}}, 'request_id': 'food'}))['food']
         await self.api('favorite', {'food_id': food['food_id'], 'enabled': True, 'amount': 50, 'request_id': 'favorite'})
@@ -130,13 +137,13 @@ class RestoreIntegrityTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(readback['ledger'][-1]['request_id'], self.owner.id + ':' + payload_id)
         self.assertEqual(self.durable(), readback)
         self.assertEqual((await self.api('recipes_get', {'recipe_id': ids['recipe']}))['recipe'], backup['kitchen']['recipes'][ids['recipe']])
-        self.assertEqual((await self.api('shopping_items_get_one', {'item_id': ids['item']}, index=1))['item'], backup['kitchen']['shopping_items'][ids['item']])
+        self.assertEqual((await self.historical('shopping_items_get_one', {'item_id': ids['item']}, index=1))['item'], backup['kitchen']['shopping_items'][ids['item']])
         self.assertEqual((await self.api('meal_plan_get', {'entry_id': ids['plan']}))['entry']['servings'], 1)
         self.assertEqual((await self.api('global_timers_get', {'timer_id': ids['timer']}))['timer']['remaining'], 15)
         self.assertEqual((await self.api('timer_presets_get', {'preset_id': ids['preset']}))['preset'], backup['kitchen']['timer_presets'][ids['preset']])
-        self.assertEqual((await self.api('shopping_products_get', {'product_id': ids['product']}))['product']['name'], 'Synthetic product')
-        self.assertEqual((await self.api('shopping_loyalty_get', {'card_id': ids['card']}))['card'], backup['kitchen']['loyalty_cards'][ids['card']])
-        self.assertEqual((await self.api('shopping_regions_get', {'code': 'XY'}))['region'], backup['kitchen']['regions']['XY'])
+        self.assertEqual((await self.historical('shopping_products_get', {'product_id': ids['product']}))['product']['name'], 'Synthetic product')
+        self.assertEqual((await self.historical('shopping_loyalty_get', {'card_id': ids['card']}))['card'], backup['kitchen']['loyalty_cards'][ids['card']])
+        self.assertEqual((await self.historical('shopping_regions_get', {'code': 'XY'}))['region'], backup['kitchen']['regions']['XY'])
         self.assertEqual((await self.api('preferences_get'))['preferences'], backup['kitchen']['preferences'][self.owner.id]['ui'])
         self.assertEqual(len((await self.api('diary', {'date': '2026-10-14'}))['entries']), 2)
         food_readback = (await self.api('food', {'food_id': ids['food']}))['food']
@@ -254,8 +261,8 @@ class RestoreIntegrityTests(unittest.IsolatedAsyncioTestCase):
         corrupt['kitchen']['preferences'][self.owner.id]['ui']['deep'] = [nested]
         await self.assert_rejected_unchanged(corrupt, 'over-depth')
 
-    async def test_sparse_native_shopping_import_and_deleted_product_snapshots_roundtrip(self):
-        await self.api('shopping_import_data', {'data': {
+    async def test_sparse_historical_shopping_import_and_deleted_product_snapshots_roundtrip(self):
+        await self.historical('shopping_import_data', {'data': {
             'slm_backup_version': '2.0', 'country': 'NZ',
             'user_products': [{'id': 'import-product', 'name': 'Synthetic imported', 'category_id': 'import-category'}],
             'categories': [{'id': 'import-category', 'name': 'Synthetic import category'}],
@@ -264,11 +271,11 @@ class RestoreIntegrityTests(unittest.IsolatedAsyncioTestCase):
             'items': {'import-list': [{'id': 'import-item', 'list_id': 'import-list', 'name': 'Synthetic snapshot', 'product_id': 'import-product'}]},
             'loyalty_cards': [{'id': 'import-card', 'name': 'Synthetic imported card', 'number': '0001'}],
         }, 'request_id': 'sparse-import'})
-        await self.api('shopping_products_delete', {'product_id': 'import-product'})
+        await self.historical('shopping_products_delete', {'product_id': 'import-product'})
         backup = await self.backup()
         self.assertTrue((await self.restore(backup, 'imported-restore'))['restored'])
         self.assertEqual((await self.backup())['kitchen'], backup['kitchen'])
-        self.assertEqual((await self.api('shopping_items_get_one', {'item_id': 'import-item'}))['item']['product_id'], 'import-product')
+        self.assertEqual((await self.historical('shopping_items_get_one', {'item_id': 'import-item'}))['item']['product_id'], 'import-product')
 
     async def test_legacy_schema_migrations_preserve_sections_and_replay(self):
         payload = {'name': 'Synthetic legacy', 'meal_type': 'lunch', 'calories': 100, 'date': '2026-10-14', 'request_id': 'legacy-entry'}
@@ -315,14 +322,14 @@ class RestoreIntegrityTests(unittest.IsolatedAsyncioTestCase):
         await self.assert_rejected_unchanged(corrupt, 'ledger-corrupt')
 
     async def test_revoked_members_stale_active_selection_is_inert_not_a_restore_grant(self):
-        parent = (await self.api('shopping_lists_create', {'name': 'Synthetic revocation'}))['list']
-        await self.api('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': [self.other.id]})
-        await self.api('shopping_lists_set_active', {'list_id': parent['id']}, index=1)
-        await self.api('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': []})
+        parent = (await self.historical('shopping_lists_create', {'name': 'Synthetic revocation'}))['list']
+        await self.historical('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': [self.other.id]})
+        await self.historical('shopping_lists_set_active', {'list_id': parent['id']}, index=1)
+        await self.historical('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': []})
         backup = await self.backup()
         await self.restore(backup, 'revoked-selection')
         self.assertEqual((await self.backup())['kitchen'], backup['kitchen'])
-        self.assertEqual((await self.api('shopping_lists_get_all', index=1))['lists'], [])
+        self.assertEqual((await self.historical('shopping_lists_get_all', index=1))['lists'], [])
 
     async def test_restore_byte_bounds_are_local_and_fail_before_saving(self):
         from custom_components.macromate.platform_api import LIMITS
@@ -353,17 +360,17 @@ class RestoreIntegrityTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.durable(), durable)
 
     async def test_ordinary_items_roundtrip_with_parent_acl_not_forged_local_acl(self):
-        parent = (await self.api('shopping_lists_create', {'name': 'Synthetic list', 'request_id': 'list'}))['list']
-        await self.api('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': [self.other.id]})
-        item = (await self.api('shopping_items_add', {'list_id': parent['id'], 'name': 'Synthetic oats', 'request_id': 'item'}, index=1))['item']
+        parent = (await self.historical('shopping_lists_create', {'name': 'Synthetic list', 'request_id': 'list'}))['list']
+        await self.historical('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': [self.other.id]})
+        item = (await self.historical('shopping_items_add', {'list_id': parent['id'], 'name': 'Synthetic oats', 'request_id': 'item'}, index=1))['item']
         self.assertNotIn('owner_id', item)
         self.assertNotIn('allowed_users', item)
         backup = await self.backup()
         self.assertEqual((await self.api('platform_backup'))['data'], backup)
         self.assertTrue((await self.restore(backup))['restored'])
-        self.assertEqual((await self.api('shopping_items_get_one', {'item_id': item['id']}, index=1))['item'], item)
+        self.assertEqual((await self.historical('shopping_items_get_one', {'item_id': item['id']}, index=1))['item'], item)
         self.assertEqual(self.durable()['kitchen'], backup['kitchen'])
         self.assertEqual(self.durable()['ledger'][:-1], backup['ledger'])
-        await self.api('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': []})
+        await self.historical('shopping_lists_update_members', {'list_id': parent['id'], 'allowed_users': []})
         async with self.client.post(self.origin + '/api/services/macromate/shopping_items_get_one?return_response', headers=self.headers(1), json={'item_id': item['id']}) as response:
             self.assertEqual(response.status, 400)  # Native HA wraps service authorization failures.

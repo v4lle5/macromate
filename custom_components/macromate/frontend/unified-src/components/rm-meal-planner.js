@@ -513,7 +513,8 @@ class RmMealPlanner extends LitElement {
       border-radius: 4px;
       cursor: pointer;
       color: var(--rm-text-secondary, #8e8e93);
-      height: 18px;
+      min-height: 44px;
+      min-width: 44px;
       display: flex;
       align-items: center;
       justify-content: center;

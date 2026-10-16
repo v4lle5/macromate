@@ -107,7 +107,7 @@ def import_legacy(base_url, token, *, source, stores, images=None, country=None,
     """Upload supplied legacy JSON once; never read files, fetch media or retry."""
     if confirm is not True:
         raise ValueError("legacy import requires explicit confirm=True")
-    if source not in ("recipe_manager", "shopping_list_manager"):
+    if source != "recipe_manager":
         raise ValueError("unsupported legacy import source")
     if not isinstance(stores, dict) or images is not None and not isinstance(images, dict):
         raise ValueError("legacy stores and images must be JSON objects")

@@ -14,12 +14,9 @@ from .storage_budget import (
     MAX_DATA_BYTES, MAX_RESTORE_METADATA_BYTES, MAX_RESTORE_RECEIPT_BYTES,
     MAX_RESTORE_RECEIPTS, MAX_STORAGE_BYTES, MAX_TRANSFER_BYTES, validate_storage_root,
 )
-from .shopping import SHOPPING_ACTIONS, shopping_command, shopping_authorize
 from .runtime_api import DiaryCommands
 from .models import MealEntry, NUTRIENTS, MEAL_TYPES
 from uuid import uuid4
-from fractions import Fraction
-from datetime import date, timedelta
 import re
 import math
 
@@ -65,7 +62,6 @@ def descriptor(description, properties=None, required=(), *, read=False, admin=T
 
 ACTIONS = {
     **deepcopy(RECIPE_ACTIONS),
-    **deepcopy(SHOPPING_ACTIONS),
     "describe": descriptor(
         "Discover the authoritative command registry and finite transport limits.",
         read=True,
@@ -86,43 +82,6 @@ ACTIONS = {
         {"food_id": ID},
         ["food_id"],
     ),
-    "recipe_to_shopping": descriptor(
-        "Atomically add selected original ingredient indexes using exact accessible product matches.",
-        {
-            "recipe_id": ID,
-            "list_id": ID,
-            "servings": SERVINGS,
-            "ingredient_indexes": {
-                "type": "array",
-                "items": {"type": "integer", "minimum": 0, "maximum": 999},
-                "maxItems": 1000,
-                "uniqueItems": True,
-            },
-            "ingredient_matches": {
-                "type": "array",
-                "maxItems": 1000,
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "ingredient_index": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 999,
-                        },
-                        "product_id": ID,
-                    },
-                    "required": ["ingredient_index", "product_id"],
-                    "additionalProperties": False,
-                },
-            },
-        },
-        ["recipe_id", "list_id"],
-    ),
-    "plan_to_shopping": descriptor(
-        "Add ingredients from only the exact seven-day plan range.",
-        {"week_start": DAY, "list_id": ID},
-        ["week_start", "list_id"],
-    ),
     "preferences_get": descriptor(
         "Read authenticated-user UI preferences.", read=True, admin=False
     ),
@@ -135,7 +94,7 @@ ACTIONS = {
     "legacy_import": descriptor(
         "Atomically import explicitly supplied standalone legacy stores and images; never read server files or fetch URLs.",
         {
-            "source": {"enum": ["recipe_manager", "shopping_list_manager"]},
+            "source": {"const": "recipe_manager"},
             "stores": {
                 "type": "object", "minProperties": 1, "maxProperties": 8,
                 "additionalProperties": {"type": ["object", "array"]},
@@ -146,10 +105,6 @@ ACTIONS = {
                     "type": "string", "minLength": 4,
                     "maxLength": 4 * ((8 * 1024 * 1024 + 2) // 3) + 64,
                 },
-            },
-            "country": {
-                "type": "string", "minLength": 2, "maxLength": 8,
-                "pattern": "^[A-Z][A-Z0-9_-]{1,7}$",
             },
             "preserve_permissions": {"type": "boolean"},
             "confirm": {"const": True},
@@ -163,12 +118,8 @@ ACTIONS = {
     ),
 }
 
-# Bulk inputs keep one discoverable contract across services, WS and the private
-# bounded HTTP route. A country must never be guessed or silently ignored.
-ACTIONS["legacy_import"]["schema"]["oneOf"] = [
-    {"properties": {"source": {"const": "recipe_manager"}}, "not": {"required": ["country"]}},
-    {"properties": {"source": {"const": "shopping_list_manager"}}, "required": ["country"]},
-]
+# Only recipe migration remains operational; historical shopping is restored
+# exclusively as inert data in a complete administrative backup.
 ACTIONS["legacy_import"]["schema"]["properties"]["request_id"] = {
     **ID, "pattern": r"^[^\x00-\x1f]*[^\s\x00-\x1f][^\x00-\x1f]*$",
 }
@@ -177,8 +128,6 @@ CROSS_ACTIONS = {
     "recipe_log",
     "recipe_entry_update",
     "food_delete",
-    "recipe_to_shopping",
-    "plan_to_shopping",
     "preferences_get",
     "preferences_update",
     "legacy_import",
@@ -328,117 +277,9 @@ LIMITS = {
 
 
 class PlatformCommands(DiaryCommands):
-    def _ingredients_to_shopping(self, kitchen, recipe, values, actor):
-        lid = values["list_id"]
-        shopping_authorize(kitchen, "shopping_items_get", {"list_id": lid}, actor)
-        ingredients = recipe.get("ingredients", [])
-        indexes = values.get(
-            "ingredient_indexes",
-            [i for i, row in enumerate(ingredients) if not row.get("is_heading")],
-        )
-        if any(
-            i >= len(ingredients) or ingredients[i].get("is_heading") for i in indexes
-        ):
-            raise ValueError("invalid selected ingredient index")
-        matches = {}
-        for match in values.get("ingredient_matches", []):
-            index = match["ingredient_index"]
-            if index not in indexes or index in matches:
-                raise ValueError("duplicate or unselected ingredient match")
-            matches[index] = shopping_command(
-                kitchen,
-                "shopping_products_get",
-                {"product_id": match["product_id"]},
-                actor,
-                utc_timestamp(),
-            )["product"]
-        if "servings" in values and not recipe.get("servings"):
-            raise ValueError(
-                "scaling ingredients requires a known positive recipe yield"
-            )
-        servings = values.get("servings", recipe.get("servings") or 1)
-        yield_count = recipe.get("servings") or 1
-        scale = Fraction(str(servings)) / Fraction(str(yield_count))
-        ids, items = [], []
-        conversions = {
-            "g": ("mass", 1),
-            "kg": ("mass", 1000),
-            "mg": ("mass", Fraction(1, 1000)),
-            "ml": ("volume", 1),
-            "l": ("volume", 1000),
-        }
-        for index in indexes:
-            row = ingredients[index]
-            product = matches.get(index)
-            amount = row.get("amount_fraction") or row.get("amount") or ""
-            known = (
-                not row.get("amount_range")
-                and re.fullmatch(r"[0-9]+(?:\.[0-9]+|/[1-9][0-9]*)?", str(amount))
-                is not None
-            )
-            quantity = float(Fraction(str(amount)) * scale) if known else 1
-            if quantity <= 0:
-                known, quantity = False, 1
-            unit = (row.get("unit") or "units") if known else "units"
-            note = row.get("notes") or None
-            if not known:
-                note = "Unquantified ingredient; review original amount: " + (
-                    row.get("raw")
-                    or " ".join(
-                        str(row.get(k) or "") for k in ("amount", "unit", "name")
-                    )
-                )
-            payload = {
-                "list_id": lid,
-                "name": product["name"] if product else row["name"],
-                "quantity": quantity,
-                "unit": unit,
-                "note": note,
-                "product_id": product["id"] if product else None,
-            }
-            if product:
-                payload["category_id"] = product["category_id"]
-            existing = None
-            if product and known:
-                dimension, factor = conversions.get(unit.casefold(), (unit, 1))
-                for item in kitchen["shopping_items"].values():
-                    other_dim, other_factor = conversions.get(
-                        item["unit"].casefold(), (item["unit"], 1)
-                    )
-                    if (
-                        item["list_id"] == lid
-                        and not item["checked"]
-                        and item.get("product_id") == product["id"]
-                        and dimension == other_dim
-                        and item.get("note") == note
-                    ):
-                        existing = item
-                        payload = {
-                            "item_id": item["id"],
-                            "quantity": float(
-                                Fraction(str(item["quantity"]))
-                                + Fraction(str(quantity)) * factor / other_factor
-                            ),
-                        }
-                        break
-            result = shopping_command(
-                kitchen,
-                "shopping_items_update" if existing else "shopping_items_add",
-                payload,
-                actor,
-                utc_timestamp(),
-            )
-            item = result["item"]
-            ids.append(item["id"])
-            items.append(item)
-        return {
-            "item_ids": list(dict.fromkeys(ids)),
-            "items": list({item["id"]: item for item in items}.values()),
-            "list_id": lid,
-        }
-
     def _validate_restore(self, data):
         from .foods import FoodProduct, ServingDefinition
+        # Dormant historical schemas/catalog references only, never dispatch.
         from . import shopping
         from .platform_support import empty_kitchen, identifier, validate_json
         from .recipes import _ID as recipe_id_schema, _epoch
@@ -715,20 +556,12 @@ class PlatformCommands(DiaryCommands):
         if action == "legacy_import":
             # The coordinator owns this detached stage and executor. Importers
             # never open source files, fetch URLs, publish or persist anything.
-            if values["source"] == "recipe_manager":
-                from .legacy_recipes import import_legacy_recipes
-                result = import_legacy_recipes(
-                    state, values["stores"], values.get("images", {}),
-                    actor, utc_timestamp(),
-                    preserve_permissions=values["preserve_permissions"],
-                )
-            else:
-                from .legacy_shopping import import_legacy_shopping
-                result = import_legacy_shopping(
-                    state, values["stores"], values.get("images", {}),
-                    actor, utc_timestamp(), country=values["country"],
-                    preserve_permissions=values["preserve_permissions"],
-                )
+            from .legacy_recipes import import_legacy_recipes
+            result = import_legacy_recipes(
+                state, values["stores"], values.get("images", {}),
+                actor, utc_timestamp(),
+                preserve_permissions=values["preserve_permissions"],
+            )
             # Validate the complete resulting persisted model, not just an
             # import projection, before the transaction can add its receipt/save.
             self._validate_restore(state)
@@ -748,39 +581,6 @@ class PlatformCommands(DiaryCommands):
                 patch = validate_json(values["preferences"], max_bytes=2097152)
                 target.setdefault("ui", {}).update(patch)
             return {"preferences": deepcopy(target.get("ui", {}))}
-        if action == "recipe_to_shopping":
-            return self._ingredients_to_shopping(
-                state["kitchen"],
-                state["kitchen"]["recipes"][values["recipe_id"]],
-                values,
-                actor,
-            )
-        if action == "plan_to_shopping":
-            shopping_authorize(
-                state["kitchen"],
-                "shopping_items_get",
-                {"list_id": values["list_id"]},
-                actor,
-            )
-            start = date.fromisoformat(values["week_start"])
-            end = start + timedelta(days=6)
-            ids, entries = [], []
-            for plan in state["kitchen"]["meal_plan"].values():
-                if start <= date.fromisoformat(plan["date"]) <= end:
-                    result = self._ingredients_to_shopping(
-                        state["kitchen"],
-                        state["kitchen"]["recipes"][plan["recipe_id"]],
-                        {**values, "servings": plan["servings"]},
-                        actor,
-                    )
-                    ids.extend(result["item_ids"])
-                    entries.append(plan["id"])
-            return {
-                "item_ids": list(dict.fromkeys(ids)),
-                "plan_entry_ids": entries,
-                "list_id": values["list_id"],
-            }
-
         if action == "food_delete":
             fid = values["food_id"]
             if fid not in state["foods"]:
@@ -859,10 +659,7 @@ class PlatformCommands(DiaryCommands):
             return await self.hass.async_add_executor_job(
                 network.normalize_image, values["image_data"]
             )
-        if action in (
-            "recipes_download_image",
-            "shopping_products_download_image",
-        ) or values.get("download_image"):
+        if action == "recipes_download_image" or values.get("download_image"):
             url = values.get("image_url")
             if not url:
                 raise ValueError("explicit image URL required")
@@ -873,34 +670,6 @@ class PlatformCommands(DiaryCommands):
                 )
                 is True,
             )
-        if action == "shopping_users_get_all":
-            return {
-                "users": [
-                    {"id": user.id, "name": user.name}
-                    for user in await self.hass.auth.async_get_users()
-                    if user.is_active and not user.system_generated
-                ]
-            }
-        if action == "shopping_openfoodfacts_fetch":
-            provider = self._online_provider()
-            if values.get("barcode"):
-                food = await provider.async_lookup_barcode(values["barcode"])
-                foods = [food] if food else []
-            else:
-                foods = await provider.async_search(values["query"], submitted=True)
-            # Nutrient foods remain transient, not invented shopping catalog records.
-            return {
-                "products": [
-                    {
-                        "name": food.name,
-                        "barcode": food.barcodes[0] if food.barcodes else None,
-                        "nutrition": food.to_dict()["nutrients_per_100"],
-                        "source": "open_food_facts",
-                        "image_url": None,
-                    }
-                    for food in foods[: values.get("page_size", 20)]
-                ]
-            }
         raise ValueError("unknown preprocessor")
 
     @staticmethod
@@ -990,21 +759,6 @@ class PlatformCommands(DiaryCommands):
             recipe["photos"] = list(dict.fromkeys([*recipe.get("photos", []), url]))
             recipe["updated_at"] = utc_timestamp()
             return {'image_url':url,'local_url':url,'media_id':mid,'recipe_id':recipe['id']}
-        if action == "shopping_products_download_image":
-            if values.get("product_id"):
-                shopping_command(
-                    kitchen,
-                    "shopping_products_update",
-                    {"product_id": values["product_id"], "image_url": url},
-                    actor,
-                    utc_timestamp(),
-                )
-            return {
-                "success": True,
-                "image_url": url,
-                "local_url": url,
-                "media_id": mid,
-            }
         raise ValueError("unknown media operation")
 
     async def async_command(self, action, payload, *, actor=None):
@@ -1052,11 +806,7 @@ class PlatformCommands(DiaryCommands):
                 None if action.startswith("preferences_") else require_admin(actor)
             )
         else:
-            command, authorize = (
-                (recipe_command, recipe_authorize)
-                if action in RECIPE_ACTIONS
-                else (shopping_command, shopping_authorize)
-            )
+            command, authorize = recipe_command, recipe_authorize
         network_action = (
             ACTIONS[action].get("network")
             or values.get("download_image")

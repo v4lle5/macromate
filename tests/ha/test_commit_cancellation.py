@@ -108,7 +108,7 @@ class CommitCancellationTests(unittest.IsolatedAsyncioTestCase):
     def disk(self):
         return json.loads(Path(self.coord._store.path).read_text())["data"]
 
-    async def test_cancelled_write_settles_before_later_mutation_and_acl_revocation(self):
+    async def test_cancelled_write_settles_before_later_mutations_and_preserves_history(self):
         # This test must import the working tree, never the preserved review snapshot.
         import custom_components.macromate.coordinator as live
 
@@ -117,16 +117,10 @@ class CommitCancellationTests(unittest.IsolatedAsyncioTestCase):
             Path(__file__).resolve().parents[2]
             / "custom_components/macromate/coordinator.py",
         )
-        created = await self.api("shopping_lists_create", {"name": "Synthetic shared"})
-        lid = created["list"]["id"]
-        await self.api(
-            "shopping_lists_update_members",
-            {"list_id": lid, "allowed_users": ["member"]},
-        )
-        member_payload = {
-            "list_id": lid, "name": "Synthetic item", "request_id": "member-write"
-        }
-        await self.api("shopping_items_add", member_payload, MEMBER)
+        from historical_shopping_fixture import historical_shopping
+        created = await historical_shopping(self.coord, 'shopping_lists_create', {'name': 'Historical private'}, OWNER)
+        lid = created['list']['id']
+        member_payload = {'list_id': lid, 'name': 'No longer callable', 'request_id': 'member-write'}
         before = self.coord._state()
         gate = WriteGate(self.coord._store._write_prepared_data)
         self.gates.append(gate)
@@ -166,8 +160,8 @@ class CommitCancellationTests(unittest.IsolatedAsyncioTestCase):
             second = self.spawn(self.api("recipes_add", SECOND))
             await asyncio.wait_for(self.coord._lock.attempts.get(), TIMEOUT)
             revoked = self.spawn(self.api(
-                "shopping_lists_update_members",
-                {"list_id": lid, "allowed_users": [], "request_id": "revoke"},
+                "preferences_update",
+                {"preferences": {"language": "de"}, "request_id": "preferences"},
             ))
             await asyncio.wait_for(self.coord._lock.attempts.get(), TIMEOUT)
             self.assertFalse(second.done())
@@ -193,7 +187,7 @@ class CommitCancellationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(final["kitchen"]["shopping_lists"][lid]["allowed_users"], [])
         ids = [row["request_id"] for row in final["ledger"]]
         for request_id in (
-            "owner:cancelled-a", "owner:acknowledged-b", "owner:revoke", "member:member-write"
+            "owner:cancelled-a", "owner:acknowledged-b", "owner:preferences"
         ):
             self.assertEqual(ids.count(request_id), 1)
         self.assertEqual(len(publications), 3)
@@ -212,9 +206,9 @@ class CommitCancellationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await self.api("recipes_add", SECOND), acknowledged)
         replay_first = await self.api("recipes_add", FIRST)
         self.assertEqual(replay_first["recipe"]["name"], FIRST["name"])
-        with self.assertRaises(PermissionError):
+        with self.assertRaises((ValueError, PermissionError)):
             await self.api("shopping_items_get", {"list_id": lid}, MEMBER)
-        with self.assertRaises(PermissionError):
+        with self.assertRaises((ValueError, PermissionError)):
             await self.api("shopping_items_add", member_payload, MEMBER)
         self.assertEqual(self.coord._state(), final)
         self.assertEqual(self.disk(), final)
@@ -393,7 +387,7 @@ async def read_restarted_store(config_dir, lid):
         ):
             try:
                 await coord.async_command(action, payload, actor=MEMBER)
-            except PermissionError:
+            except (ValueError, PermissionError):
                 pass
             else:
                 raise AssertionError("revoked member retained access after restart")

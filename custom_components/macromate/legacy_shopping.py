@@ -1,9 +1,11 @@
-"""Explicit, detached Shopping List Manager Store migration (no source I/O).
+"""Dormant historical shopping compatibility, not an operational integration.
 
-Input keys/formats are pinned to shopping-list-manager c55e90d (MIT,
-Copyright (c) 2026 thekiwismarthome). No upstream code is imported/executed.
-Missing Stores are optional; malformed supplied Stores fail the entire import.
-The native parent must run its full-root restore validator before committing.
+No services, WS actions, discovery or import routes dispatch this module. Keep
+historical schemas/catalog identities/decoding to preserve existing full backups
+and retained media; never initialize, migrate or prune user data on load.
+
+Source-format reference: shopping-list-manager c55e90d (MIT),
+Copyright (c) 2026 thekiwismarthome. No upstream code is executed.
 """
 from __future__ import annotations
 

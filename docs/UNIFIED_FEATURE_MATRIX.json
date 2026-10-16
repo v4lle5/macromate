@@ -2898,19 +2898,14 @@
       "upstream_commands": [
         "shopping_list_manager/categories/get_all"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_all_six_real_catalogs_and_packaged_categories"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -2941,19 +2936,14 @@
       "upstream_commands": [
         "shopping_list_manager/export_data"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_import_export_complete_acl_filtered_additive_roundtrip"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -2984,19 +2974,14 @@
       "upstream_commands": [
         "shopping_list_manager/get_integration_settings"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3027,19 +3012,14 @@
       "upstream_commands": [
         "shopping_list_manager/import_data"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_import_export_complete_acl_filtered_additive_roundtrip"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3070,19 +3050,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/add"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3113,19 +3088,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/bulk_check"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3156,19 +3126,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/check"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3199,19 +3164,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/clear_checked"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3242,19 +3202,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/delete"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3285,19 +3240,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/get"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3328,19 +3278,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/get_total"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_totals_preserve_unknown_and_separate_currencies"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3371,19 +3316,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/increment"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3414,19 +3354,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/reorder"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3457,19 +3392,14 @@
       "upstream_commands": [
         "shopping_list_manager/items/update"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_items_full_crud_order_delta_check_and_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3500,19 +3430,14 @@
       "upstream_commands": [
         "shopping_list_manager/lists/create"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3548,19 +3473,14 @@
       "upstream_commands": [
         "shopping_list_manager/lists/delete"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3591,19 +3511,14 @@
       "upstream_commands": [
         "shopping_list_manager/lists/get_all"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3634,19 +3549,14 @@
       "upstream_commands": [
         "shopping_list_manager/lists/set_active"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3677,19 +3587,14 @@
       "upstream_commands": [
         "shopping_list_manager/lists/update"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3725,19 +3630,14 @@
       "upstream_commands": [
         "shopping_list_manager/lists/update_members"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3768,19 +3668,14 @@
       "upstream_commands": [
         "shopping_list_manager/loyalty/add"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_loyalty_private_shared_crud_and_owner_management"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3816,19 +3711,14 @@
       "upstream_commands": [
         "shopping_list_manager/loyalty/delete"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_loyalty_private_shared_crud_and_owner_management"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3859,19 +3749,14 @@
       "upstream_commands": [
         "shopping_list_manager/loyalty/get_all"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_loyalty_private_shared_crud_and_owner_management"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3907,19 +3792,14 @@
       "upstream_commands": [
         "shopping_list_manager/loyalty/update"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_loyalty_private_shared_crud_and_owner_management"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3955,19 +3835,14 @@
       "upstream_commands": [
         "shopping_list_manager/loyalty/update_members"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_loyalty_private_shared_crud_and_owner_management"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -3993,19 +3868,14 @@
       "upstream_commands": [
         "shopping_list_manager/openfoodfacts/fetch"
       ],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_parent_preprocessors_are_explicit_not_fake_network"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4036,19 +3906,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/add"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4079,19 +3944,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/delete"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4117,19 +3977,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/download_image"
       ],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_parent_preprocessors_are_explicit_not_fake_network"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4160,19 +4015,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/get_by_ids"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4203,19 +4053,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/search"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4241,19 +4086,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/search_by_barcode"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4284,19 +4124,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/substitutes"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4327,19 +4162,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/suggestions"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4370,19 +4200,14 @@
       "upstream_commands": [
         "shopping_list_manager/products/update"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4418,19 +4243,14 @@
       "upstream_commands": [
         "shopping_list_manager/regions/create"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4466,19 +4286,14 @@
       "upstream_commands": [
         "shopping_list_manager/regions/delete"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4514,19 +4329,14 @@
       "upstream_commands": [
         "shopping_list_manager/set_country"
       ],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4557,19 +4367,14 @@
       "upstream_commands": [
         "shopping_list_manager/subscribe"
       ],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4595,19 +4400,14 @@
       "upstream_commands": [
         "shopping_list_manager/users/get_all"
       ],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_parent_preprocessors_are_explicit_not_fake_network"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Canonical command with corrected ACL, validation and staged state.",
@@ -4646,19 +4446,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_import_export_complete_acl_filtered_additive_roundtrip"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Unsafe stale public automatic files are not copied; explicit ACL-filtered export plus parent durable Store.",
@@ -4687,19 +4482,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_all_six_real_catalogs_and_packaged_categories"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "13 English/Dutch packaged categories; non-BE fallback uses the actual English set.",
@@ -4723,19 +4513,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_registry_and_pinned_inventory_schema"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Bundled datasets are hash-checked in tests; missing or malformed package data raises rather than inventing categories.",
@@ -4764,19 +4549,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_all_six_real_catalogs_and_packaged_categories"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Preserve dataset currency, metadata and explicit zero; namespace product IDs by region.",
@@ -4800,19 +4580,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Load only allowlisted package-local catalogs; custom regions have no synthetic catalog.",
@@ -4836,19 +4611,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_all_six_real_catalogs_and_packaged_categories"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Preserve real declared unit/default-quantity values; UI metric preference does not convert quantities or impose fabricated units.",
@@ -4882,19 +4652,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_all_six_real_catalogs_and_packaged_categories"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Six complete catalogs: five times 172, Belgium 62.",
@@ -4923,19 +4688,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "All three booleans and current country persist in staged shared kitchen; price visibility/metric display remain UI preferences, not deletion.",
@@ -4964,19 +4724,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_registry_and_pinned_inventory_schema"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Unified integration owns config-entry lifecycle; shopping reads default to NZ without a hidden write.",
@@ -5007,19 +4762,14 @@
       "upstream_commands": [
         "shopping_list_manager/subscribe"
       ],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_deleted_list_and_card_retain_private_event_audience"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Parent publishes generic ACL-filtered refresh after durable save; domain supplies private event audience for removals.",
@@ -5043,19 +4793,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_registry_and_pinned_inventory_schema"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "No frontend existed in pinned backend; unified card is outside this pure-domain module.",
@@ -5084,19 +4829,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_parent_preprocessors_are_explicit_not_fake_network"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Parent normalizes private media; no unbounded downloads or public-file paths in domain.",
@@ -5120,19 +4860,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_parent_preprocessors_are_explicit_not_fake_network"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Unregistered local image enumeration is not represented as a working command; authenticated media belongs to parent.",
@@ -5161,19 +4896,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_parent_preprocessors_are_explicit_not_fake_network"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Original setup helper was never called by registered commands. Preserve explicit image metadata; do not fake automatic search or placeholder data.",
@@ -5202,19 +4932,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_registry_and_pinned_inventory_schema"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "No filesystem migration is performed by pure shopping; legacy local media must be explicitly migrated by the parent if imported.",
@@ -5238,19 +4963,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_custom_regions_settings_and_category_order_persist"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Parent integration lifecycle only; pure state is JSON-serializable and settings/overrides survive roundtrip.",
@@ -5279,19 +4999,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Stable UUID records and caller-supplied UTC timestamps; copied JSON responses.",
@@ -5315,19 +5030,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_totals_preserve_unknown_and_separate_currencies"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Known unit-price times quantity only; null price clears estimate; currency breakdown for mixtures.",
@@ -5351,19 +5061,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "All rich fields editable for custom products and current-user catalog overrides; no fabricated nutrition.",
@@ -5392,19 +5097,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_registry_and_pinned_inventory_schema"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Upstream legacy Store string-wrapper migration belongs to administrative migration, not hidden read-time mutation.",
@@ -5433,19 +5133,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Query derived current permitted data; no stale global mutable index.",
@@ -5469,19 +5164,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Tested Unicode casefold/stdlib fuzzy name and alias ranking; not a claim of bit-identical RapidFuzz scores.",
@@ -5505,19 +5195,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Taxonomy filtering is explicitly exposed instead of dormant helper-only metadata.",
@@ -5546,19 +5231,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_product_crud_catalog_overrides_usage_and_search"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Authenticated-user frequency/last-used survives country changes and is never shared as another user's usage.",
@@ -5582,19 +5262,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_all_six_real_catalogs_and_packaged_categories"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Default NZ catalog and packaged categories are immutable read projections; no persistent list is created by a read.",
@@ -5623,19 +5298,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_import_export_complete_acl_filtered_additive_roundtrip"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "One staged kitchen, no Store or file writes; parent lock/ledger/durable save owns transactions.",
@@ -5664,19 +5334,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_all_six_real_catalogs_and_packaged_categories"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Brands and store-card metadata preserved, not live retailer pricing or stock.",
@@ -5705,19 +5370,14 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "pending_parent_acceptance",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "custom_components/macromate/shopping.py"
+        "Historical storage/schema/media compatibility only; no active shopping API or UI"
       ],
       "executable_evidence": [
-        {
-          "command": "python3 -B -m unittest discover -s tests -p test_shopping.py -v",
-          "tests": [
-            "test_private_list_crud_and_member_acl"
-          ],
-          "tier": "pure-domain",
-          "scope": "Does not prove HA registration, preprocessing, persistence or publication."
-        }
+        "tests/ha/test_shopping_retirement.py",
+        "tests/ha/test_shopping_export_native.py",
+        "tests/ha/test_unified_restart.py"
       ],
       "revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
       "adaptation": "Nullable ha_todo_entity_id metadata preserved; upstream never implemented synchronization.",

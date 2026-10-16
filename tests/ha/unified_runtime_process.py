@@ -34,6 +34,14 @@ async def run(path, mode):
     await hass.config_entries.async_initialize()
     assert await async_setup_component(hass, "macromate", {})
     if mode == "write":
+        # Upgrade fixture: historical records precede entry setup/load.
+        from homeassistant.helpers.storage import Store
+        from historical_shopping_fixture import historical_dataset
+        historical = historical_dataset()
+        await Store(hass, 1, "macromate.meals").async_save({
+            "schema": 3, "entries": [], "foods": {}, "favorites": {},
+            "daily_goals": {}, "ledger": [], "kitchen": historical,
+        })
         flow = await hass.config_entries.flow.async_init(
             "macromate", context={"source": "user"}, data=PROFILE
         )
@@ -76,22 +84,6 @@ async def run(path, mode):
                 },
             )
         )["entry"]
-        shopping = (
-            await api(
-                "shopping_lists_create",
-                {"name": "Restart list", "request_id": "restart-list"},
-            )
-        )["list"]
-        item = (
-            await api(
-                "shopping_items_add",
-                {
-                    "list_id": shopping["id"],
-                    "name": "Restart item",
-                    "request_id": "restart-item",
-                },
-            )
-        )["item"]
         logged = await api(
             "recipe_log",
             {
@@ -101,10 +93,6 @@ async def run(path, mode):
                 "meal_type": "lunch",
                 "request_id": "restart-log",
             },
-        )
-        await api(
-            "shopping_items_delete",
-            {"item_id": item["id"], "request_id": "restart-delete"},
         )
         food = (
             await api(
@@ -128,11 +116,12 @@ async def run(path, mode):
                 "request_id": "restart-favorite",
             },
         )
+        for bucket in historical:
+            if bucket != "recipes" and bucket != "meal_plan":
+                assert coord.kitchen[bucket] == historical[bucket], bucket
         expected = {
             "recipe_id": recipe["id"],
             "plan_id": plan["id"],
-            "list_id": shopping["id"],
-            "item_id": item["id"],
             "entry_id": logged["entry_id"],
             "food_id": food["food_id"],
             "state": coord._state(),
@@ -154,11 +143,8 @@ async def run(path, mode):
             )
         )["recipe"]
         assert recipe["id"] == expected["recipe_id"]
-        deleted = await api(
-            "shopping_items_delete",
-            {"item_id": expected["item_id"], "request_id": "restart-delete"},
-        )
-        assert expected["item_id"] not in coord.kitchen["shopping_items"]
+        assert not hass.services.has_service("macromate", "shopping_items_delete")
+        assert coord.kitchen["shopping_items"] == expected["state"]["kitchen"]["shopping_items"]
         assert expected["food_id"] in coord.favorites
         assert any(row.id == expected["entry_id"] for row in coord.log.entries)
     states = hass.states.async_all("sensor")

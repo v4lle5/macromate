@@ -227,35 +227,6 @@ class NativeHTTPTests(unittest.IsolatedAsyncioTestCase):
             (await api("meal_plan_get", {"entry_id": plan["id"]}))["entry"]["date"],
             "2026-10-15",
         )
-        lid = (
-            await api(
-                "shopping_lists_create",
-                {"name": "HTTP groceries", "request_id": "http-list"},
-            )
-        )["list"]["id"]
-        selected = await api(
-            "recipe_to_shopping",
-            {
-                "recipe_id": rid,
-                "list_id": lid,
-                "ingredient_indexes": [0],
-                "request_id": "http-selection",
-            },
-        )
-        iid = selected["item_ids"][0]
-        await api(
-            "shopping_items_update",
-            {
-                "item_id": iid,
-                "quantity": 50,
-                "price": None,
-                "request_id": "http-item-edit",
-            },
-        )
-        self.assertEqual(
-            (await api("shopping_items_get_one", {"item_id": iid}))["item"]["quantity"],
-            50,
-        )
         logged = await api(
             "recipe_log",
             {
@@ -278,19 +249,12 @@ class NativeHTTPTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(raw["version"], 1)
         self.assertEqual(raw["data"]["schema"], 3)
         self.assertEqual(raw["data"]["entries"][0]["id"], logged["entry_id"])
-        self.assertEqual(raw["data"]["kitchen"]["shopping_items"][iid]["quantity"], 50)
         await api(
             "meal_plan_remove",
             {"entry_id": plan["id"], "request_id": "http-plan-delete"},
         )
         self.assertEqual(
             (await api("meal_plan_get", {"week_start": "2026-10-12"}))["entries"], []
-        )
-        await api(
-            "shopping_items_delete", {"item_id": iid, "request_id": "http-item-delete"}
-        )
-        self.assertEqual(
-            (await api("shopping_items_get", {"list_id": lid}))["items"], []
         )
         await api(
             "recipes_delete", {"recipe_id": rid, "request_id": "http-recipe-delete"}
@@ -307,11 +271,6 @@ class NativeHTTPTests(unittest.IsolatedAsyncioTestCase):
             {"entry_id": logged["entry_id"], "request_id": "http-diary-delete"},
         )
         self.assertEqual((await api("diary", {"date": "2026-10-14"}))["entries"], [])
-        await api(
-            "shopping_lists_delete",
-            {"list_id": lid, "confirm": True, "request_id": "http-list-delete"},
-        )
-        self.assertEqual((await api("shopping_lists_get_all", {}))["lists"], [])
 
     async def test_native_authenticated_websocket_commands_and_subscription(self):
         async with self.client.ws_connect(self.origin + "/api/websocket") as ws:

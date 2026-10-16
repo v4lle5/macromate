@@ -9,8 +9,8 @@
   "files": [
     {
       "path": "frontend/README.md",
-      "bytes": 6575,
-      "sha256": "acb9d9312ab76ec7d35431d03b600beb2099589d49588f95a6f4680545cebe0e"
+      "bytes": 1073,
+      "sha256": "b49eeadebec867647a2ea43eb66a04ed4a78a27ffff63f3681aeb4e69647fb23"
     },
     {
       "path": "frontend/barcode-ui.js",
@@ -64,18 +64,18 @@
     },
     {
       "path": "frontend/macromate-card.js",
-      "bytes": 5026,
-      "sha256": "508d36a64a0f40b38628b53e6a1b3d2e9b8481380d0d08fa7d183dfa41202491"
+      "bytes": 5057,
+      "sha256": "99f1fa758b308329e9acec6c55efdd5d24ae73458049cbab92da57b736389a93"
+    },
+    {
+      "path": "frontend/nutrition-base.js",
+      "bytes": 8972,
+      "sha256": "60a8c50502401b902e22c3bd0a1e0b91ff61ca4668044b89a0f655e5d88ea504"
     },
     {
       "path": "frontend/panel.css",
       "bytes": 4303,
       "sha256": "14998e2661c79be0959c28f0672b491406a69cc6fac836fd44926e0551e78d71"
-    },
-    {
-      "path": "frontend/panel.js",
-      "bytes": 9063,
-      "sha256": "1aa7bd1c8f4a88e5ec7bd91c04fd772f640de4ca601181535646597f8dd97a69"
     },
     {
       "path": "frontend/scanner.js",
@@ -84,8 +84,8 @@
     },
     {
       "path": "frontend/unified-src/README.md",
-      "bytes": 10984,
-      "sha256": "9892be215e77cb9801a880d46fee900a52674d23043207903f6de1f8bc62ffd4"
+      "bytes": 11449,
+      "sha256": "09048fffb32b88593803537458e878de068f75721c0f973fff945f6e99bbf101"
     },
     {
       "path": "frontend/unified-src/RECIPE-MANAGER-CARD-LICENSE.txt",
@@ -104,8 +104,8 @@
     },
     {
       "path": "frontend/unified-src/components/nutrition.js",
-      "bytes": 2885,
-      "sha256": "5806537d0a27c79ac18ed28e147503c73d1a5723da78a33b0b6347c14f45e8fe"
+      "bytes": 2910,
+      "sha256": "5bc9559494d883e6d3f521675dd465b2829e3a8833d9e5b8a3b1e14c3774b229"
     },
     {
       "path": "frontend/unified-src/components/recipe-log.js",
@@ -119,8 +119,8 @@
     },
     {
       "path": "frontend/unified-src/components/rm-meal-planner.js",
-      "bytes": 21953,
-      "sha256": "ea6b459cd76a69ba6c26a23e3642dca2f5647e1e9e127935e24a5f4a7b7a3018"
+      "bytes": 21980,
+      "sha256": "4e88d6d8657335d7dddbd75a4f9323b4d6a58daf7be871a7dcd2e83b5c0b11e8"
     },
     {
       "path": "frontend/unified-src/components/rm-recipe-detail.js",
@@ -299,8 +299,8 @@
     },
     {
       "path": "tests/frontend/macromate-unified-build.mjs",
-      "bytes": 6719,
-      "sha256": "30c302c27085a73c4731d67f99461714876576657dabbd6ac2a5bb2b64961c62"
+      "bytes": 6737,
+      "sha256": "fca87fb6894146d13e65aa278d1c002fbb3e43cdb55793c8b6c3b7e385251b2f"
     },
     {
       "path": "tests/frontend/macromate-unified-build.test.mjs",
@@ -324,8 +324,8 @@
     },
     {
       "path": "tests/frontend/macromate-unified-native.mjs",
-      "bytes": 38528,
-      "sha256": "e75ba6b310503079d459017d2d9e12bb05a17df27c444db04cc9560c2bb6c2f3"
+      "bytes": 39259,
+      "sha256": "9e602205375ba5f47738efb9b7076f1dc636538e45909dc5e697a3e62cc203a4"
     },
     {
       "path": "tests/frontend/macromate-unified-nutrition-browser.mjs",

@@ -1,4 +1,4 @@
-"""MacroMate: local nutrition diary, optional open food data and private panel."""
+"""MacroMate: local nutrition diary, optional open food data and dashboard card."""
 
 from __future__ import annotations
 
@@ -59,6 +59,10 @@ async def async_setup(hass, config) -> bool:
     from .private_media import register_views
 
     register_views(hass)
+    if getattr(hass, "http", None):
+        from .agent_api import async_register_agent_views
+
+        await async_register_agent_views(hass)
 
     def handler_for(action):
         async def handle(call):
@@ -120,11 +124,10 @@ async def async_setup(hass, config) -> bool:
     return True
 
 
-async def _async_panel(hass) -> None:
-    """Serve public code only. Private diary data uses the authenticated WS API."""
+async def _async_assets(hass) -> None:
+    """Serve dashboard code only; never register a standalone sidebar panel."""
     if not getattr(hass, "http", None):
-        return  # A deliberately headless HA runtime does not have a panel.
-    from homeassistant.components import frontend, panel_custom
+        return  # A deliberately headless HA runtime has no HTTP asset server.
     from homeassistant.components.http import StaticPathConfig
 
     runtime = hass.data.setdefault(DOMAIN, {})
@@ -137,19 +140,6 @@ async def _async_panel(hass) -> None:
             ]
         )
         runtime["assets_registered"] = True
-    if not frontend.async_panel_exists(hass, DOMAIN):
-        await panel_custom.async_register_panel(
-            hass,
-            frontend_url_path=DOMAIN,
-            webcomponent_name="macromate-panel",
-            sidebar_title="MacroMate",
-            sidebar_icon="mdi:food-apple-outline",
-            module_url="/macromate-assets/panel.js",
-            embed_iframe=False,
-            trust_external=False,
-            require_admin=True,
-            config={"version": "0.3.0"},
-        )
 
 
 async def _async_card_resource(hass) -> None:
@@ -176,7 +166,13 @@ async def async_setup_entry(hass, entry) -> bool:
     await runtime.async_record_goal()
     entry.async_on_unload(runtime.async_start())
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    await _async_panel(hass)
+    # HTTP may have become available since a headless async_setup. This hook
+    # registers only routes; credentials still require explicit operator minting.
+    if getattr(hass, "http", None):
+        from .agent_api import async_register_agent_views
+
+        await async_register_agent_views(hass)
+    await _async_assets(hass)
     await _async_card_resource(hass)
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     return True
@@ -188,11 +184,6 @@ async def _async_reload(hass, entry) -> None:
 
 async def async_unload_entry(hass, entry) -> bool:
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unloaded:
-        from homeassistant.components import frontend
-
-        if frontend.async_panel_exists(hass, DOMAIN):
-            frontend.async_remove_panel(hass, DOMAIN)
     return unloaded
 
 

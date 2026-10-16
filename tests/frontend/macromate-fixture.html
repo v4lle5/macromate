@@ -1,5 +1,6 @@
-<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MacroMate – synthetic HA test fixture</title><style>body{margin:0}aside{padding:6px;background:#fff3c9;font:12px system-ui}</style><aside>SYNTHETISCHE TESTUMGEBUNG · kein echter HA-Zugriff</aside><macromate-panel></macromate-panel><script type="module">
-import '/macromate-assets/panel.js';
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MacroMate – synthetic HA test fixture</title><style>body{margin:0}aside{padding:6px;background:#fff3c9;font:12px system-ui}</style><aside>SYNTHETISCHE TESTUMGEBUNG · kein echter HA-Zugriff</aside><test-nutrition-pane></test-nutrition-pane><script type="module">
+import {MacroMateNutritionBase} from '/macromate-assets/nutrition-base.js';
+customElements.define('test-nutrition-pane',MacroMateNutritionBase);
 window.calls=[];
 window.entries=[{entry_id:'quick1',name:'Haferfrühstück',meal_type:'breakfast',calories:300,protein:10,carbs:40,fat:9,eaten_at:'2026-10-14T12:00:00+02:00'}];
 window.product={food_id:'milk1',name:'<img src=x onerror=alert(1)> Haferdrink',producer:'Lokal',base_unit:'ml',nutrients_per_100:{calories:45,protein:1,carbs:7,fat:1.5,fiber:0.8},servings:[{serving_id:'cup',label:'Glas',amount:250}],barcodes:['4006381333931'],source:'local',is_custom:true,is_favorite:false};
@@ -23,5 +24,5 @@ window.hass={user:{id:'admin',is_admin:window.testAdmin??true},connection:{subsc
   default:throw {code:'invalid_request'};
  }
 }};
-document.querySelector('macromate-panel').hass=window.hass;
+document.querySelector('test-nutrition-pane').hass=window.hass;
 </script></html>
