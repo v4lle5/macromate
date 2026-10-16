@@ -6,8 +6,8 @@
         "title": "Dein Profil und automatische Ziele",
         "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Das Begleitpanel ist automatisch in Home Assistant verfügbar; kein eigener Server oder Port ist nötig.",
         "data": {
-          "formula_sex": "Geschlecht für die Energieformel",
-          "birthday": "Geburtsdatum",
+          "formula_sex": "Geschlecht",
+          "birthday": "Geburtsdatum (JJJJ-MM-TT)",
           "height_cm": "Körpergröße (cm)",
           "weight_kg": "Aktuelles Profilgewicht (kg)",
           "target_weight_kg": "Zielgewicht (kg)",
@@ -21,7 +21,8 @@
           "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
         },
         "data_description": {
-          "formula_sex": "Wähle den physiologischen Geschlechtskoeffizienten der Formel, nicht die Geschlechtsidentität. Diese Schätzung passt möglicherweise nicht für alle.",
+          "birthday": "Geburtsdatum direkt als JJJJ-MM-TT eingeben, z. B. 1990-07-23 (Jahr-Monat-Tag). Nur für Erwachsene von 18–120 Jahren.",
+          "formula_sex": "Wird zur Schätzung des Kalorienbedarfs verwendet.",
           "target_weight_kg": "Zum Halten das aktuelle Profilgewicht verwenden. Zum Abnehmen/Zunehmen ein niedrigeres/höheres Ziel wählen.",
           "weekly_pace_kg": "Zum Abnehmen oder Zunehmen einen positiven Wert angeben; zum Halten null. Die Zielauswahl bestimmt die Richtung.",
           "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
@@ -50,8 +51,8 @@
         "title": "Dein Profil und automatische Ziele",
         "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Das Begleitpanel ist automatisch in Home Assistant verfügbar; kein eigener Server oder Port ist nötig.",
         "data": {
-          "formula_sex": "Geschlecht für die Energieformel",
-          "birthday": "Geburtsdatum",
+          "formula_sex": "Geschlecht",
+          "birthday": "Geburtsdatum (JJJJ-MM-TT)",
           "height_cm": "Körpergröße (cm)",
           "weight_kg": "Aktuelles Profilgewicht (kg)",
           "target_weight_kg": "Zielgewicht (kg)",
@@ -65,7 +66,8 @@
           "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
         },
         "data_description": {
-          "formula_sex": "Wähle den physiologischen Geschlechtskoeffizienten der Formel, nicht die Geschlechtsidentität. Diese Schätzung passt möglicherweise nicht für alle.",
+          "birthday": "Geburtsdatum direkt als JJJJ-MM-TT eingeben, z. B. 1990-07-23 (Jahr-Monat-Tag). Nur für Erwachsene von 18–120 Jahren.",
+          "formula_sex": "Wird zur Schätzung des Kalorienbedarfs verwendet.",
           "target_weight_kg": "Zum Halten das aktuelle Profilgewicht verwenden. Zum Abnehmen/Zunehmen ein niedrigeres/höheres Ziel wählen.",
           "weekly_pace_kg": "Zum Abnehmen oder Zunehmen einen positiven Wert angeben; zum Halten null. Die Zielauswahl bestimmt die Richtung.",
           "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
@@ -2568,8 +2570,8 @@
   "selector": {
     "formula_sex": {
       "options": {
-        "female": "Weibliche Physiologie",
-        "male": "Männliche Physiologie"
+        "female": "Weiblich",
+        "male": "Männlich"
       }
     },
     "goal": {

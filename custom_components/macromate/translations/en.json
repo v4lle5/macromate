@@ -7,7 +7,7 @@
         "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The companion panel is available automatically inside Home Assistant; no separate server or port is needed.",
         "data": {
           "formula_sex": "Sex used by the energy formula",
-          "birthday": "Date of birth",
+          "birthday": "Date of birth (YYYY-MM-DD)",
           "height_cm": "Height (cm)",
           "weight_kg": "Current profile weight (kg)",
           "target_weight_kg": "Target weight (kg)",
@@ -21,6 +21,7 @@
           "enable_food_database": "Allow explicit online food searches with Open Food Facts"
         },
         "data_description": {
+          "birthday": "Type your date of birth as YYYY-MM-DD, e.g. 1990-07-23 (year-month-day). Adults aged 18–120 only.",
           "formula_sex": "Select the physiological sex coefficient used by the formula, not gender identity. This estimate may not suit everyone.",
           "target_weight_kg": "For maintenance, use your current profile weight. For loss/gain, choose a lower/higher target.",
           "weekly_pace_kg": "Enter a positive pace for loss or gain; use zero for maintenance. The goal determines the direction.",
@@ -51,7 +52,7 @@
         "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The companion panel is available automatically inside Home Assistant; no separate server or port is needed.",
         "data": {
           "formula_sex": "Sex used by the energy formula",
-          "birthday": "Date of birth",
+          "birthday": "Date of birth (YYYY-MM-DD)",
           "height_cm": "Height (cm)",
           "weight_kg": "Current profile weight (kg)",
           "target_weight_kg": "Target weight (kg)",
@@ -65,6 +66,7 @@
           "enable_food_database": "Allow explicit online food searches with Open Food Facts"
         },
         "data_description": {
+          "birthday": "Type your date of birth as YYYY-MM-DD, e.g. 1990-07-23 (year-month-day). Adults aged 18–120 only.",
           "formula_sex": "Select the physiological sex coefficient used by the formula, not gender identity. This estimate may not suit everyone.",
           "target_weight_kg": "For maintenance, use your current profile weight. For loss/gain, choose a lower/higher target.",
           "weekly_pace_kg": "Enter a positive pace for loss or gain; use zero for maintenance. The goal determines the direction.",

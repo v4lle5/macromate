@@ -7,9 +7,10 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
-    DateSelector, EntitySelector, EntitySelectorConfig,
+    EntitySelector, EntitySelectorConfig,
     NumberSelector, NumberSelectorConfig, NumberSelectorMode,
     SelectSelector, SelectSelectorConfig, SelectSelectorMode,
+    TextSelector, TextSelectorConfig, TextSelectorType,
 )
 from homeassistant.util import dt as dt_util
 
@@ -36,7 +37,8 @@ def _select(options, key):
 def _schema(hass, values: dict[str, Any]) -> vol.Schema:
     fields = {
         CONF_FORMULA_SEX: _select(("female", "male"), "formula_sex"),
-        CONF_BIRTHDAY: DateSelector(), CONF_HEIGHT_CM: _number(100, 250, 0.1),
+        CONF_BIRTHDAY: TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+        CONF_HEIGHT_CM: _number(100, 250, 0.1),
         CONF_WEIGHT_KG: _number(30, 350, 0.1), CONF_TARGET_WEIGHT_KG: _number(30, 350, 0.1),
         CONF_GOAL: _select(("lose", "maintain", "gain"), "goal"),
         CONF_WEEKLY_PACE_KG: _number(0, 1.5, 0.05),

@@ -57,6 +57,92 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
         flow.handler = entry.entry_id
         return flow
 
+    async def test_birthday_is_manual_text_without_an_implicit_today_in_both_forms(self):
+        import voluptuous as vol
+        from homeassistant.helpers.selector import TextSelector
+        from homeassistant.helpers import config_validation as cv
+        from probatio import to_field_list as convert
+
+        forms = [await self.flow().async_step_user()]
+        entry = self.register_entry({"profile_complete": False})
+        forms.append(await self.options_flow(entry).async_step_init())
+        for form in forms:
+            schema = form["data_schema"]
+            field = next(key for key in schema.schema if str(key) == "birthday")
+            self.assertIs(field.default, vol.UNDEFINED)
+            selector = schema.schema[field]
+            self.assertIsInstance(selector, TextSelector)
+            self.assertEqual(selector.config["type"], "text")
+            self.assertFalse(selector.config["multiline"])
+            serialized = convert(schema, custom_serializer=cv.custom_serializer)
+            birthday = next(item for item in serialized if item["name"] == "birthday")
+            self.assertNotIn("default", birthday)
+            self.assertIn("text", birthday["selector"])
+            self.assertNotIn("date", birthday["selector"])
+            missing = dict(PROFILE_INPUT)
+            missing.pop("birthday")
+            with self.assertRaises(vol.Invalid):
+                schema(missing)
+
+    async def test_manual_iso_birthday_survives_setup_options_save_and_reopen(self):
+        birthday = "1988-02-29"
+        flow = self.flow()
+        form = await flow.async_step_user()
+        result = await flow.async_step_user(form["data_schema"]({**PROFILE_INPUT, "birthday": birthday}))
+        self.assertEqual(result["data"]["birthday"], birthday)
+        entry = self.register_entry(result["data"])
+        for expected in (birthday, "1992-07-23"):
+            options = self.options_flow(entry)
+            form = await options.async_step_init()
+            field = next(key for key in form["data_schema"].schema if str(key) == "birthday")
+            self.assertEqual(field.default(), entry.options.get("birthday", birthday))
+            submitted = form["data_schema"]({**PROFILE_INPUT, "birthday": expected})
+            result = await options.async_step_init(submitted)
+            self.assertEqual(result["data"]["birthday"], expected)
+            await self.hass.config_entries.options.async_finish_flow(options, result)
+            exact = self.hass.config_entries.async_get_known_entry(entry.entry_id)
+            self.assertEqual(exact.options["birthday"], expected)
+            reopened = await self.options_flow(exact).async_step_init()
+            field = next(key for key in reopened["data_schema"].schema if str(key) == "birthday")
+            self.assertEqual(field.default(), expected)
+        self.assertEqual(entry.data["birthday"], birthday)
+
+    async def test_manual_birthday_errors_keep_typed_value_in_both_forms(self):
+        entry = self.register_entry(self.module._normalized(PROFILE_INPUT))
+        for value, code in (("", "invalid_profile"), ("1990-02-30", "invalid_profile"),
+                            ("23.07.1992", "invalid_profile"), ("07/23/1992", "invalid_profile"),
+                            ("19920723", "invalid_profile"), ("2027-01-01", "invalid_profile"),
+                            ("2008-10-15", "adults_only"), ("1905-01-01", "adults_only")):
+            for kind in ("config", "options"):
+                with self.subTest(value=value, kind=kind):
+                    if kind == "config":
+                        # A separate native flow avoids single-instance rejection.
+                        self.hass.config_entries._entries.pop(entry.entry_id, None)
+                        flow = self.flow()
+                        step = flow.async_step_user
+                    else:
+                        self.hass.config_entries._entries[entry.entry_id] = entry
+                        step = self.options_flow(entry).async_step_init
+                    form = await step()
+                    submitted = form["data_schema"]({**PROFILE_INPUT, "birthday": value})
+                    result = await step(submitted)
+                    self.assertEqual(result["type"], "form")
+                    self.assertEqual(result["errors"], {"birthday": code})
+                    field = next(key for key in result["data_schema"].schema if str(key) == "birthday")
+                    self.assertEqual(field.default(), value)
+        self.assertEqual(entry.data["birthday"], PROFILE_INPUT["birthday"])
+        self.assertEqual(dict(entry.options), {})
+
+    async def test_manual_birthday_accepts_exact_adult_boundary_in_both_forms(self):
+        birthday = "2008-10-14"
+        config = await self.flow().async_step_user({**PROFILE_INPUT, "birthday": birthday})
+        self.assertEqual(config["data"]["birthday"], birthday)
+        entry = self.register_entry(self.module._normalized(PROFILE_INPUT))
+        options = self.options_flow(entry)
+        form = await options.async_step_init()
+        result = await options.async_step_init(form["data_schema"]({**PROFILE_INPUT, "birthday": birthday}))
+        self.assertEqual(result["data"]["birthday"], birthday)
+
     async def test_options_submission_clears_sources_without_reintroducing_data_defaults(self):
         settings = self.module._normalized(PROFILE_INPUT)
         data = {**settings, "weight_entity": "sensor.original_weight", "bmr_entity": "sensor.original_bmr",
