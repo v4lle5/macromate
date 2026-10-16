@@ -35,7 +35,7 @@ async def main(data):
                     payload["food_id"] = saved["food"]["food_id"]
                 results.append(await runtime.async_command(call["action"], payload))
             await runtime.async_load()
-            return {"results": results, "diary": runtime.diary_data(), "state": runtime._state()}
+            return {"results": results, "diary": runtime.diary_data(data.get("date")), "state": runtime._state()}
         finally:
             await hass.async_stop(force=True)
 

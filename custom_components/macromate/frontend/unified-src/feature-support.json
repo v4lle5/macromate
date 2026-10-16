@@ -1,0 +1,2678 @@
+{
+  "schema_version": 1,
+  "scope": "Frontend handoff, not native HA or production acceptance. Each original feature row is retained, including intentionally replaced external/browser-only shopping paths.",
+  "counts": {
+    "standalone-card": 43,
+    "bundled-recipe-ui": 25
+  },
+  "upstreamPlaceholders": [
+    {
+      "feature": "Cookbook, Sync and Help sidebar navigation",
+      "status": "upstream-inert",
+      "note": "Disabled upstream sidebar placeholders are kept disabled; real Settings Sync and Help tabs remain separate."
+    }
+  ],
+  "evidenceFiles": [
+    "workflow-evidence.json",
+    "domain-browser-captured.json",
+    "coordinator-nutrition-captured.json",
+    "coordinator-store-evidence.json",
+    "schema-form-evidence.json",
+    "verification.json",
+    "recipe-workflow-readback.json",
+    "refresh-regression-evidence.json"
+  ],
+  "targetedRegressions": [
+    {
+      "name": "Accepted mutation refresh arrives before its response",
+      "test": "tests/frontend/macromate-unified-refresh-browser.mjs",
+      "evidence": "refresh-regression-evidence.json",
+      "scope": "Real Chromium, HA coordinator and durable Store; synthetic event delivery bridge, not full native transport acceptance",
+      "checks": [
+        "Event published after durable acceptance reaches callback while pending",
+        "Post-acceptance notification and coalesced list reads refresh dedicated recipe selector",
+        "Schema draft/focus, dirty recipe editor and planner date/picker survive refresh",
+        "Deferred recipe reads resume after context closes, including closure during a read",
+        "Uncertain write keeps stable UUID/payload until explicit same-request retry",
+        "In-place account changes block stale reads; removal releases subscriptions"
+      ]
+    }
+  ],
+  "remainingGlobalGates": [
+    "native HA dashboard/editor and authenticated WS/services/media",
+    "packaged asset byte equality after parent mirrors COMPLETE frontend",
+    "physical camera and capture controls, audio autoplay/alarms and wake-lock availability",
+    "server ACL and import/network security through native transports",
+    "independent review and exact-revision publication CI"
+  ],
+  "rows": [
+    {
+      "inventory": "standalone-card",
+      "id": "navigation",
+      "title": "Desktop/mobile shell",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 1016,
+            "anchor": "_renderSidebar()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "default combined shell, member navigation",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "reduced-motion-navigation",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "state",
+      "title": "View and scroll continuity",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 438,
+            "anchor": "_saveViewState()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "adaptation": "Caches are scoped to the HA user and removed on permission/account change, not origin-wide upstream state.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "load",
+      "title": "Backend loading and subscription",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 492,
+            "anchor": "async _init()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-adapter.mjs",
+            "assertion": "stale reads, context and subscriptions",
+            "tier": "node-adapter"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "search",
+      "title": "Live recipe search",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 601,
+            "anchor": "get _filteredRecipes()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-grid.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "library-search-taxonomy-rating-favorite-recent",
+            "tier": "chromium-source-behavior"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "filter",
+      "title": "Recipe library filters",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-grid.js",
+            "line": 154,
+            "anchor": "_getFilteredList()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-grid.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "library-search-taxonomy-rating-favorite-recent",
+            "tier": "chromium-source-behavior"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "rating_filter",
+      "title": "Rating filter and sort",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-grid.js",
+            "line": 279,
+            "anchor": "_renderRatingMenu()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-grid.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "library-search-taxonomy-rating-favorite-recent",
+            "tier": "chromium-source-behavior"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "tiles",
+      "title": "Photo-led recipe library",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-grid.js",
+            "line": 234,
+            "anchor": "_renderRecipeCard(recipe)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-grid.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "favourite",
+      "title": "Recipe favourites",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 577,
+            "anchor": "_handleToggleFav()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "actual favorite event and exact recipe readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "rating",
+      "title": "Quick star rating",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 1006,
+            "anchor": "async _handleRateRecipe(n)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "actual quick-rating event and exact recipe readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "detail",
+      "title": "Responsive recipe detail",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1081,
+            "anchor": "_renderWide(r)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "responsive-core-views",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "markdown",
+      "title": "Formatted descriptions and notes",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 26,
+            "anchor": "function renderMarkdown(text)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "formatted-notes-and-step-completion",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "scale",
+      "title": "Serving quantity multiplier",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1034,
+            "anchor": "_renderScaler()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-amounts.mjs",
+            "assertion": "ASCII/Unicode/mixed fractions and ambiguous amounts",
+            "tier": "node-source"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "units",
+      "title": "Imperial/metric display conversion",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 92,
+            "anchor": "const IMPERIAL_TO_METRIC ="
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Volume converts only to volume, mass only to mass; tbsp remains unchanged; ambiguous ranges remain unchanged. No density inference.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "unit-dimension-and-ambiguous-preservation",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "ingredients",
+      "title": "Ingredient section grouping",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1338,
+            "anchor": "_groupIngredients(ingredients)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "ingredient headings and exact reordered readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "steps",
+      "title": "Cook-step completion",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1208,
+            "anchor": "_toggleStepComplete(i)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "formatted-notes-and-step-completion",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "inline_timer",
+      "title": "Timers from recipe directions",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1471,
+            "anchor": "_renderStepWithTimers(text)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "nutrition",
+      "title": "Recipe nutrition and RDA",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1195,
+            "anchor": "_renderNutritionRing(r)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Original imported text is separate from declared numeric values. Known zero stays known, absent values stay unknown, RDA only for per-serving declarations.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "recipe-declared-original-zero-basis",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "incomplete macro percentages and original text",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "slideshow",
+      "title": "Wide recipe image slideshow",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 894,
+            "anchor": "_renderSlideshow(r)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "authenticated-media-pixels-and-slideshow",
+            "tier": "chromium-synthetic-media"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "photos",
+      "title": "Narrow photo management",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1320,
+            "anchor": "_renderPhotos(r)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "authenticated-media-pixels-and-slideshow",
+            "tier": "chromium-synthetic-media"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "physical-device-camera-audio-wakelock-or-cross-device",
+        "native-server-network-media-import-export-acceptance"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "edit",
+      "title": "Recipe edit overlay",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 1228,
+            "anchor": "_renderEditPanel()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "declared calories retained on actual edit/save with exact recipe readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "taxonomies",
+      "title": "Recipe taxonomy pickers",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 337,
+            "anchor": "_renderListPicker(field, label, allValues)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "taxonomy add and exact recipe readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "ingredient_editor",
+      "title": "Edit/reorder ingredients",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 413,
+            "anchor": "_startEditIngredient(idx)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "ingredient add, heading and reorder-save with exact readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "direction_editor",
+      "title": "Edit/reorder directions",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 502,
+            "anchor": "_editAddStep(text)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "direction add and reorder-save with exact readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "delete",
+      "title": "Recipe deletion confirmation",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 604,
+            "anchor": "_handleDeleteRecipe()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "recipes_delete through schema forms",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "add",
+      "title": "Manual recipe creation",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-add-recipe-dialog.js",
+            "line": 327,
+            "anchor": "_renderManualMode()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "manual recipe declarations and exact readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "scrape",
+      "title": "URL recipe import preview",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-add-recipe-dialog.js",
+            "line": 75,
+            "anchor": "async _handleScrape()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "explicit consent, read-only scrape payload and rejected result",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "native-server-network-media-import-export-acceptance"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "import",
+      "title": "Recipe Keeper ZIP import",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-add-recipe-dialog.js",
+            "line": 128,
+            "anchor": "async _handleImport()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "bounded archive payload, stable request ID and rejected import",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "hostile-photo-free-archive-preflight",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "native-server-network-media-import-export-acceptance"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "planner",
+      "title": "Weekly meal calendar",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-meal-planner.js",
+            "line": 164,
+            "anchor": "render()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-meal-planner.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "meal_plan add/update/readback/remove",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "exact-week plan_to_shopping payload",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "atomic-cross-domain-store-readback"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "plan_picker",
+      "title": "Meal-plan recipe picker",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-meal-planner.js",
+            "line": 262,
+            "anchor": "_renderPicker()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-meal-planner.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "actual planner picker servings, exact domain readback and removal",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "plan_from_recipe",
+      "title": "Recipe-to-planner handoff",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 890,
+            "anchor": "_handleShowPlanner()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-meal-planner.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "recipe-to-planner handoff and return to original recipe",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "shopping_select",
+      "title": "Recipe ingredient shopping selection",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 617,
+            "anchor": "_openShoppingPicker()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "recipe-shopping-original-indexes-fail-closed",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "atomic-cross-domain-store-readback"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "shopping_review",
+      "title": "Catalog product matching review",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-recipe-detail.js",
+            "line": 642,
+            "anchor": "async _handleAddToShopping()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "adaptation": "ingredient_matches maps ORIGINAL ingredient_index to the exact selected product_id. Backend derives trusted name/category; recipe quantities/units remain authoritative. Unsupported matching descriptors block writes, not silently discard matches.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "recipe-shopping-original-indexes-fail-closed",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "atomic-cross-domain-store-readback"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "shopping_merge",
+      "title": "Cross-recipe item deduplication",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/services/api.js",
+            "line": 160,
+            "anchor": "async addIngredientsToShoppingList("
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/services/api.js"
+      ],
+      "adaptation": "Unsafe name-only deduplication is deliberately replaced. Legacy callers create separate items; atomic recipe_to_shopping owns compatible merging. No note-only quantity loss, cross-unit inference or automatic write retry.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "actual domain quantity preservation, incompatible units, chosen snapshots",
+            "tier": "node-pure-shopping-domain"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "atomic-cross-domain-store-readback"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "shopping_embed",
+      "title": "Embedded full Shopping List Manager card",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-shopping-view.js",
+            "line": 47,
+            "anchor": "_mountSlmCard()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/shopping.js"
+      ],
+      "adaptation": "Replaced with the native shared MacroMate shopping workspace. No external shopping-list-manager-card dependency.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "native shopping list/item/category/loyalty/product/region CRUD and exact readbacks",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "shopping_local",
+      "title": "Browser-local shopping fallback",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-shopping-view.js",
+            "line": 135,
+            "anchor": "_renderLocalMode()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/shopping.js"
+      ],
+      "adaptation": "Browser-only fallback deliberately replaced by shared API-backed lists; no unscoped private shopping content is stored in localStorage.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "native shared shopping replacement, check/uncheck, confirmed clear/delete",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "timers",
+      "title": "Multiple local/global countdown timers",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 1206,
+            "anchor": "_renderTimersView()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "UI global timer start/pause/resume/stop",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "user-scoped local timer survives reload",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "presets",
+      "title": "Timer preset persistence",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 788,
+            "anchor": "_addPresetTimer()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "visible preset persistence and schema CRUD",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "alarm",
+      "title": "Timer completion alarm queue",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 1492,
+            "anchor": "_renderTimerAlarm()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "custom-audio-rejects-remote-references",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "local-timer-pause-extend-alarm-queue",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "wake",
+      "title": "Shared screen wake locks",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/recipe-manager-card.js",
+            "line": 643,
+            "anchor": "async _toggleGlobalWakeLock()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-wake.mjs",
+            "assertion": "delayed disposal and concurrent reasons share one sentinel",
+            "tier": "node-synthetic-wake-api"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "settings",
+      "title": "Appearance and advanced preferences",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-settings-view.js",
+            "line": 83,
+            "anchor": "_update(patch)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "eight palettes and seven locales",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "all-theme-main-text-contrast",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "sound",
+      "title": "Custom timer audio",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-settings-view.js",
+            "line": 373,
+            "anchor": "_handleSoundFileChange(e)"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "custom-audio-rejects-remote-references",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "backup",
+      "title": "JSON data export",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-settings-view.js",
+            "line": 45,
+            "anchor": "async _backup()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "settings-help-version-and-rejected-backup",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review",
+        "native-server-network-media-import-export-acceptance",
+        "accepted-backup-download-and-content-readback"
+      ]
+    },
+    {
+      "inventory": "standalone-card",
+      "id": "help",
+      "title": "Support and installed versions",
+      "upstream": {
+        "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+        "source": [
+          {
+            "file": "src/components/rm-settings-view.js",
+            "line": 114,
+            "anchor": "_renderHelp()"
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "adaptation": "HACS-specific backend version lookup replaced by platform_info; integration identity and links remain MacroMate.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "settings-help-version-and-rejected-backup",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "native-ha-dashboard-and-authenticated-transport",
+        "independent-review"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.search_filters",
+      "title": "View and scroll continuity / Live recipe search / Recipe library filters / Rating filter and sort / Recipe favourites",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              1,
+              191
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js",
+        "frontend/unified-src/components/rm-recipe-grid.js",
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "standaloneRows": [
+        "search",
+        "filter",
+        "rating_filter",
+        "favourite",
+        "state"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "library-search-taxonomy-rating-favorite-recent",
+            "tier": "chromium-source-behavior"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "library-search-taxonomy-rating-favorite-recent",
+            "tier": "chromium-source-behavior"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "library-search-taxonomy-rating-favorite-recent",
+            "tier": "chromium-source-behavior"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "actual favorite event and exact recipe readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.recipe_detail",
+      "title": "Desktop/mobile shell / Photo-led recipe library / Responsive recipe detail",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              601,
+              910
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js",
+        "frontend/unified-src/components/rm-recipe-grid.js",
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "standaloneRows": [
+        "navigation",
+        "detail",
+        "tiles"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "default combined shell, member navigation",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "reduced-motion-navigation",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "responsive-core-views",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.rating",
+      "title": "Recipe favourites / Quick star rating",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              557,
+              635
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "rating",
+        "favourite"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "actual favorite event and exact recipe readback",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "actual quick-rating event and exact recipe readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.scaling",
+      "title": "Serving quantity multiplier",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              658,
+              671
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "scale"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-amounts.mjs",
+            "assertion": "ASCII/Unicode/mixed fractions and ambiguous amounts",
+            "tier": "node-source"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.conversion",
+      "title": "Imperial/metric display conversion",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              910,
+              910
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "units"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "unit-dimension-and-ambiguous-preservation",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.cooking_checks",
+      "title": "Ingredient section grouping / Cook-step completion / Recipe ingredient shopping selection",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              910,
+              991
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "ingredients",
+        "steps",
+        "shopping_select"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "ingredient headings and exact reordered readback",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "formatted-notes-and-step-completion",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "recipe-shopping-original-indexes-fail-closed",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "atomic-cross-domain-store-readback",
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.edit_lists",
+      "title": "Recipe taxonomy pickers / Edit/reorder ingredients / Edit/reorder directions",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              523,
+              1360
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "ingredient_editor",
+        "direction_editor",
+        "taxonomies"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "taxonomy add and exact recipe readback",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "ingredient add, heading and reorder-save with exact readback",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "direction add and reorder-save with exact readback",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.photo_controls",
+      "title": "Wide recipe image slideshow / Narrow photo management",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              557,
+              578
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "photos",
+        "slideshow"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "authenticated-media-pixels-and-slideshow",
+            "tier": "chromium-synthetic-media"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "authenticated-media-pixels-and-slideshow",
+            "tier": "chromium-synthetic-media"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "native-server-network-media-import-export-acceptance",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.manual_url_import",
+      "title": "Manual recipe creation / URL recipe import preview / Recipe Keeper ZIP import",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              2557,
+              2687
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+      ],
+      "standaloneRows": [
+        "add",
+        "scrape",
+        "import"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "manual recipe declarations and exact readback",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "explicit consent, read-only scrape payload and rejected result",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "bounded archive payload, stable request ID and rejected import",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "hostile-photo-free-archive-preflight",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "native-server-network-media-import-export-acceptance"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.planner",
+      "title": "Weekly meal calendar / Meal-plan recipe picker / Recipe-to-planner handoff",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3238,
+              3328
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-meal-planner.js"
+      ],
+      "standaloneRows": [
+        "planner",
+        "plan_picker",
+        "plan_from_recipe"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "meal_plan add/update/readback/remove",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "exact-week plan_to_shopping payload",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "actual planner picker servings, exact domain readback and removal",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "recipe-to-planner handoff and return to original recipe",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "atomic-cross-domain-store-readback",
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.shopping_cross_integration",
+      "title": "Recipe ingredient shopping selection / Cross-recipe item deduplication",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              1,
+              1
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js",
+        "frontend/unified-src/services/api.js"
+      ],
+      "standaloneRows": [
+        "shopping_select",
+        "shopping_merge"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "recipe-shopping-original-indexes-fail-closed",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "actual domain quantity preservation, incompatible units, chosen snapshots",
+            "tier": "node-pure-shopping-domain"
+          }
+        ]
+      },
+      "remainingGates": [
+        "atomic-cross-domain-store-readback",
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.shopping_review",
+      "title": "Catalog product matching review",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              523,
+              578
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "shopping_review"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "recipe-shopping-original-indexes-fail-closed",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "atomic-cross-domain-store-readback",
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.shopping_embed",
+      "title": "Embedded full Shopping List Manager card",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              4180,
+              4188
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/shopping.js"
+      ],
+      "standaloneRows": [
+        "shopping_embed"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "native shopping list/item/category/loyalty/product/region CRUD and exact readbacks",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.shopping_local",
+      "title": "Browser-local shopping fallback",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              4180,
+              4229
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/shopping.js"
+      ],
+      "standaloneRows": [
+        "shopping_local"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "native shared shopping replacement, check/uncheck, confirmed clear/delete",
+            "tier": "chromium-pure-domains"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.timer_local",
+      "title": "Multiple local/global countdown timers / Timer preset persistence / Timer completion alarm queue",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              4405,
+              4405
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "standaloneRows": [
+        "timers",
+        "presets",
+        "alarm"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "UI global timer start/pause/resume/stop",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "user-scoped local timer survives reload",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "visible preset persistence and schema CRUD",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "custom-audio-rejects-remote-references",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "local-timer-pause-extend-alarm-queue",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.timer_directions",
+      "title": "Timers from recipe directions",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              989,
+              991
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js"
+      ],
+      "standaloneRows": [
+        "inline_timer"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.timer_global",
+      "title": "Multiple local/global countdown timers",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              4642,
+              4785
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "standaloneRows": [
+        "timers"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+            "assertion": "UI global timer start/pause/resume/stop",
+            "tier": "chromium-pure-domains"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "user-scoped local timer survives reload",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.timer_sounds",
+      "title": "Custom timer audio",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3864,
+              3906
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "standaloneRows": [
+        "sound"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "custom-audio-rejects-remote-references",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.wakelock",
+      "title": "Shared screen wake locks",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3910,
+              3940
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "standaloneRows": [
+        "wake"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-wake.mjs",
+            "assertion": "delayed disposal and concurrent reasons share one sentinel",
+            "tier": "node-synthetic-wake-api"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.themes",
+      "title": "Appearance and advanced preferences",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3737,
+              3863
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "standaloneRows": [
+        "settings"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "eight palettes and seven locales",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "all-theme-main-text-contrast",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.languages",
+      "title": "Appearance and advanced preferences",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3719,
+              3759
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "standaloneRows": [
+        "settings"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "eight palettes and seven locales",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "all-theme-main-text-contrast",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.slideshow_options",
+      "title": "Wide recipe image slideshow / Appearance and advanced preferences",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3961,
+              3977
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-recipe-detail.js",
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "standaloneRows": [
+        "slideshow",
+        "settings"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "authenticated-media-pixels-and-slideshow",
+            "tier": "chromium-synthetic-media"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-browser.mjs",
+            "assertion": "eight palettes and seven locales",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "all-theme-main-text-contrast",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "physical-device-camera-audio-wakelock-or-cross-device"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.backup_download",
+      "title": "JSON data export",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3719,
+              3719
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "standaloneRows": [
+        "backup"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "settings-help-version-and-rejected-backup",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "accepted-backup-download-and-content-readback",
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport",
+        "native-server-network-media-import-export-acceptance"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.hacs_version_help",
+      "title": "Support and installed versions",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              3719,
+              4047
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/components/rm-settings-view.js"
+      ],
+      "standaloneRows": [
+        "help"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "settings-help-version-and-rejected-backup",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    },
+    {
+      "inventory": "bundled-recipe-ui",
+      "id": "ui.view_persistence",
+      "title": "View and scroll continuity",
+      "upstream": {
+        "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
+        "source": [
+          {
+            "file": "custom_components/recipe_manager/www/recipe-manager-card.js",
+            "lines": [
+              4405,
+              4405
+            ]
+          }
+        ]
+      },
+      "implementation": [
+        "frontend/unified-src/recipe-manager-card.js"
+      ],
+      "standaloneRows": [
+        "state"
+      ],
+      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "verification": {
+        "status": "partial-local-evidence",
+        "checks": [
+          {
+            "command": "node tests/frontend/macromate-unified-workflows.mjs",
+            "assertion": "view-cache-tiles-ingredients-inline-timer",
+            "tier": "chromium-synthetic"
+          }
+        ]
+      },
+      "remainingGates": [
+        "independent-review",
+        "native-ha-dashboard-and-authenticated-transport"
+      ]
+    }
+  ],
+  "schemaForms": {
+    "verification": "All 81 current pure-domain descriptors rendered every schema property and explicit confirmation in Chromium, with no automatic mutation.",
+    "check": {
+      "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
+      "assertion": "all actual domain descriptor forms",
+      "tier": "chromium-pure-domain-descriptors"
+    },
+    "evidenceFile": "schema-form-evidence.json",
+    "limitation": "Rendering is not acceptance of every advanced mutation or native HA transport."
+  },
+  "summaryCompatibility": {
+    "check": "node --test --test-skip-pattern=installable card assets tests/frontend/macromate-card.test.mjs tests/frontend/macromate-barcode.test.mjs tests/frontend/macromate-client.test.mjs tests/frontend/macromate-browser.test.mjs",
+    "result": "77 passing existing frontend assertions; packaged-card equality intentionally excluded before parent mirror. Includes actual decoded pixels and Chromium virtual getUserMedia stream, not a physical camera."
+  }
+}

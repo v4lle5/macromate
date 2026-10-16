@@ -120,7 +120,7 @@ test('quick blank macros remain unknown through the actual command boundary',asy
  await dialog.getByLabel('Protein (g)',{exact:true}).fill('0');
  await dialog.getByRole('button',{name:'Speichern',exact:true}).click();
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='log_meal'));
- const real=backend({calls:(await calls(page)).filter(c=>c.action==='log_meal')});
+ const real=backend({date:'2026-10-14',calls:(await calls(page)).filter(c=>c.action==='log_meal')});
  assert.deepEqual(real.results[0].entry.nutrients,{calories:250,protein:0});
  assert.equal(real.state.entries[0].protein,0);
  assert.equal(real.diary.nutrition_missing.includes('protein'),false);

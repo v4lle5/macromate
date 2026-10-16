@@ -1,0 +1,2201 @@
+{
+  "schema": 1,
+  "upstream_revision": "c55e90d74f5efd39f5c083b3020fbfe48a19f267",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 thekiwismarthome",
+  "scope": "Pure staged domain and immutable package assets; network, HA lifecycle, durable persistence and event transport are parent-owned.",
+  "commands": [
+    {
+      "upstream": "shopping_list_manager/categories/get_all",
+      "action": "shopping_categories_get_all",
+      "status": "pure_domain",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "upstream_properties": [],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1121,
+        1135
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/export_data",
+      "action": "shopping_export_data",
+      "status": "pure_domain",
+      "test": "test_import_export_complete_acl_filtered_additive_roundtrip",
+      "upstream_properties": [],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1359,
+        1367
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/get_integration_settings",
+      "action": "shopping_get_integration_settings",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "upstream_properties": [],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1204,
+        1235
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/import_data",
+      "action": "shopping_import_data",
+      "status": "pure_domain",
+      "test": "test_import_export_complete_acl_filtered_additive_roundtrip",
+      "upstream_properties": [
+        "data"
+      ],
+      "upstream_required": [
+        "data"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1377,
+        1385
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/add",
+      "action": "shopping_items_add",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "list_id",
+        "name",
+        "category_id",
+        "product_id",
+        "quantity",
+        "unit",
+        "note",
+        "price",
+        "image_url",
+        "barcode"
+      ],
+      "upstream_required": [
+        "list_id",
+        "name"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        516,
+        561
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/bulk_check",
+      "action": "shopping_items_bulk_check",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "item_ids",
+        "checked"
+      ],
+      "upstream_required": [
+        "item_ids",
+        "checked"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        742,
+        767
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/check",
+      "action": "shopping_items_check",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "item_id",
+        "checked"
+      ],
+      "upstream_required": [
+        "item_id",
+        "checked"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        631,
+        660
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/clear_checked",
+      "action": "shopping_items_clear_checked",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "list_id"
+      ],
+      "upstream_required": [
+        "list_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        777,
+        797
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/delete",
+      "action": "shopping_items_delete",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "item_id"
+      ],
+      "upstream_required": [
+        "item_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        670,
+        698
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/get",
+      "action": "shopping_items_get",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "list_id"
+      ],
+      "upstream_required": [
+        "list_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        478,
+        497
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/get_total",
+      "action": "shopping_items_get_total",
+      "status": "pure_domain",
+      "test": "test_totals_preserve_unknown_and_separate_currencies",
+      "upstream_properties": [
+        "list_id"
+      ],
+      "upstream_required": [
+        "list_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        807,
+        818
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/increment",
+      "action": "shopping_items_increment",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "item_id",
+        "amount"
+      ],
+      "upstream_required": [
+        "item_id",
+        "amount"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        204,
+        242
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/reorder",
+      "action": "shopping_items_reorder",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "list_id",
+        "item_order"
+      ],
+      "upstream_required": [
+        "list_id",
+        "item_order"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        709,
+        731
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/items/update",
+      "action": "shopping_items_update",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "upstream_properties": [
+        "item_id",
+        "name",
+        "quantity",
+        "unit",
+        "note",
+        "price",
+        "category_id",
+        "image_url"
+      ],
+      "upstream_required": [
+        "item_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        578,
+        620
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/lists/create",
+      "action": "shopping_lists_create",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "upstream_properties": [
+        "name",
+        "icon",
+        "private"
+      ],
+      "upstream_required": [
+        "name"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        308,
+        335
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/lists/delete",
+      "action": "shopping_lists_delete",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "upstream_properties": [
+        "list_id"
+      ],
+      "upstream_required": [
+        "list_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        397,
+        430
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/lists/get_all",
+      "action": "shopping_lists_get_all",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "upstream_properties": [],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        279,
+        296
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/lists/set_active",
+      "action": "shopping_lists_set_active",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "upstream_properties": [
+        "list_id"
+      ],
+      "upstream_required": [
+        "list_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        440,
+        464
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/lists/update",
+      "action": "shopping_lists_update",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "upstream_properties": [
+        "list_id",
+        "name",
+        "icon",
+        "category_order",
+        "ha_todo_entity_id"
+      ],
+      "upstream_required": [
+        "list_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        349,
+        387
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/lists/update_members",
+      "action": "shopping_lists_update_members",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "upstream_properties": [
+        "list_id",
+        "allowed_users"
+      ],
+      "upstream_required": [
+        "list_id",
+        "allowed_users"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1400,
+        1425
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/loyalty/add",
+      "action": "shopping_loyalty_add",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "upstream_properties": [
+        "name",
+        "number",
+        "barcode",
+        "barcode_type",
+        "logo",
+        "notes",
+        "color",
+        "private"
+      ],
+      "upstream_required": [
+        "name",
+        "number"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1487,
+        1507
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/loyalty/delete",
+      "action": "shopping_loyalty_delete",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "upstream_properties": [
+        "card_id"
+      ],
+      "upstream_required": [
+        "card_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1551,
+        1571
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/loyalty/get_all",
+      "action": "shopping_loyalty_get_all",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "upstream_properties": [],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1461,
+        1472
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/loyalty/update",
+      "action": "shopping_loyalty_update",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "upstream_properties": [
+        "card_id",
+        "name",
+        "number",
+        "barcode",
+        "barcode_type",
+        "logo",
+        "notes",
+        "color"
+      ],
+      "upstream_required": [
+        "card_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1522,
+        1543
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/loyalty/update_members",
+      "action": "shopping_loyalty_update_members",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "upstream_properties": [
+        "card_id",
+        "allowed_users"
+      ],
+      "upstream_required": [
+        "card_id",
+        "allowed_users"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1580,
+        1600
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/openfoodfacts/fetch",
+      "action": "shopping_openfoodfacts_fetch",
+      "status": "parent_preprocessor",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "upstream_properties": [
+        "query",
+        "barcode",
+        "page_size"
+      ],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1151,
+        1191
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/add",
+      "action": "shopping_products_add",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "name",
+        "category_id",
+        "aliases",
+        "default_unit",
+        "default_quantity",
+        "price",
+        "barcode",
+        "image_url"
+      ],
+      "upstream_required": [
+        "name",
+        "category_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1011,
+        1040
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/delete",
+      "action": "shopping_products_delete",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "product_id"
+      ],
+      "upstream_required": [
+        "product_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1097,
+        1108
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/download_image",
+      "action": "shopping_products_download_image",
+      "status": "parent_preprocessor",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "upstream_properties": [
+        "image_url",
+        "product_name"
+      ],
+      "upstream_required": [
+        "image_url",
+        "product_name"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        833,
+        881
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/get_by_ids",
+      "action": "shopping_products_get_by_ids",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "product_ids"
+      ],
+      "upstream_required": [
+        "product_ids"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        250,
+        269
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/search",
+      "action": "shopping_products_search",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "query",
+        "limit",
+        "exclude_allergens",
+        "include_tags",
+        "substitution_group"
+      ],
+      "upstream_required": [
+        "query"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        947,
+        970
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/search_by_barcode",
+      "action": "shopping_products_search_by_barcode",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "barcode"
+      ],
+      "upstream_required": [
+        "barcode"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        891,
+        903
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/substitutes",
+      "action": "shopping_products_substitutes",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "product_id",
+        "limit"
+      ],
+      "upstream_required": [
+        "product_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        914,
+        934
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/suggestions",
+      "action": "shopping_products_suggestions",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "limit"
+      ],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        978,
+        994
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/products/update",
+      "action": "shopping_products_update",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "upstream_properties": [
+        "product_id",
+        "name",
+        "category_id",
+        "price",
+        "default_unit",
+        "default_quantity",
+        "aliases",
+        "image_url"
+      ],
+      "upstream_required": [
+        "product_id"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1057,
+        1087
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/regions/create",
+      "action": "shopping_regions_create",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "upstream_properties": [
+        "code",
+        "name",
+        "currency_symbol",
+        "language"
+      ],
+      "upstream_required": [
+        "code",
+        "name"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1287,
+        1311
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/regions/delete",
+      "action": "shopping_regions_delete",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "upstream_properties": [
+        "code"
+      ],
+      "upstream_required": [
+        "code"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1321,
+        1346
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/set_country",
+      "action": "shopping_set_country",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "upstream_properties": [
+        "country"
+      ],
+      "upstream_required": [
+        "country"
+      ],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1247,
+        1274
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/subscribe",
+      "action": null,
+      "status": "replaced_by_filtered_subscription",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "upstream_properties": [],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        152,
+        196
+      ]
+    },
+    {
+      "upstream": "shopping_list_manager/users/get_all",
+      "action": "shopping_users_get_all",
+      "status": "parent_preprocessor",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "upstream_properties": [],
+      "upstream_required": [],
+      "source": "custom_components/shopping_list_manager/websocket/handlers.py",
+      "source_lines": [
+        1438,
+        1450
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "api:categories/get_all",
+      "name": "Handle get all categories command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1121,
+          "end_line": 1135
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 764,
+          "end_line": 766
+        }
+      ]
+    },
+    {
+      "id": "api:export_data",
+      "name": "Export all user-created data as a JSON-serialisable dict.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_import_export_complete_acl_filtered_additive_roundtrip",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1359,
+          "end_line": 1367
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 659,
+          "end_line": 677
+        }
+      ]
+    },
+    {
+      "id": "api:get_integration_settings",
+      "name": "Return current country and available country options.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1204,
+          "end_line": 1235
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 850,
+          "end_line": 852
+        }
+      ]
+    },
+    {
+      "id": "api:import_data",
+      "name": "Import user data from a backup payload.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_import_export_complete_acl_filtered_additive_roundtrip",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1377,
+          "end_line": 1385
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 679,
+          "end_line": 727
+        }
+      ]
+    },
+    {
+      "id": "api:items/add",
+      "name": "Handle add item command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 516,
+          "end_line": 561
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 306,
+          "end_line": 333
+        }
+      ]
+    },
+    {
+      "id": "api:items/bulk_check",
+      "name": "Handle bulk check/uncheck items command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 742,
+          "end_line": 767
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 382,
+          "end_line": 400
+        }
+      ]
+    },
+    {
+      "id": "api:items/check",
+      "name": "Handle check/uncheck item command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 631,
+          "end_line": 660
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 354,
+          "end_line": 368
+        }
+      ]
+    },
+    {
+      "id": "api:items/clear_checked",
+      "name": "Handle clear checked items command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 777,
+          "end_line": 797
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 402,
+          "end_line": 415
+        }
+      ]
+    },
+    {
+      "id": "api:items/delete",
+      "name": "Handle delete item command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 670,
+          "end_line": 698
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 370,
+          "end_line": 380
+        }
+      ]
+    },
+    {
+      "id": "api:items/get",
+      "name": "Handle get items command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 478,
+          "end_line": 497
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 302,
+          "end_line": 304
+        }
+      ]
+    },
+    {
+      "id": "api:items/get_total",
+      "name": "Handle get list total command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_totals_preserve_unknown_and_separate_currencies",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 807,
+          "end_line": 818
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 417,
+          "end_line": 432
+        }
+      ]
+    },
+    {
+      "id": "api:items/increment",
+      "name": "Increment item quantity atomically.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 204,
+          "end_line": 242
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 335,
+          "end_line": 352
+        }
+      ]
+    },
+    {
+      "id": "api:items/reorder",
+      "name": "Handle reorder items command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 709,
+          "end_line": 731
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 234,
+          "end_line": 249
+        }
+      ]
+    },
+    {
+      "id": "api:items/update",
+      "name": "Handle update item command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_items_full_crud_order_delta_check_and_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 578,
+          "end_line": 620
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 335,
+          "end_line": 352
+        }
+      ]
+    },
+    {
+      "id": "api:lists/create",
+      "name": "Handle create list command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 308,
+          "end_line": 335
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 218,
+          "end_line": 232
+        }
+      ]
+    },
+    {
+      "id": "api:lists/delete",
+      "name": "Handle delete list command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 397,
+          "end_line": 430
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 263,
+          "end_line": 275
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 207,
+          "end_line": 209
+        }
+      ]
+    },
+    {
+      "id": "api:lists/get_all",
+      "name": "Handle get all lists command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 279,
+          "end_line": 296
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 191,
+          "end_line": 205
+        }
+      ]
+    },
+    {
+      "id": "api:lists/set_active",
+      "name": "Handle set active list command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 440,
+          "end_line": 464
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 277,
+          "end_line": 291
+        }
+      ]
+    },
+    {
+      "id": "api:lists/update",
+      "name": "Handle update list command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 349,
+          "end_line": 387
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 234,
+          "end_line": 249
+        }
+      ]
+    },
+    {
+      "id": "api:lists/update_members",
+      "name": "Update the allowed_users for a private list.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1400,
+          "end_line": 1425
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 207,
+          "end_line": 209
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 251,
+          "end_line": 261
+        }
+      ]
+    },
+    {
+      "id": "api:loyalty/add",
+      "name": "Add a new loyalty card.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1487,
+          "end_line": 1507
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 794,
+          "end_line": 805
+        }
+      ]
+    },
+    {
+      "id": "api:loyalty/delete",
+      "name": "Delete a loyalty card.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1551,
+          "end_line": 1571
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 823,
+          "end_line": 831
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 790,
+          "end_line": 792
+        }
+      ]
+    },
+    {
+      "id": "api:loyalty/get_all",
+      "name": "Return all loyalty cards visible to the current user.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1461,
+          "end_line": 1472
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 774,
+          "end_line": 788
+        }
+      ]
+    },
+    {
+      "id": "api:loyalty/update",
+      "name": "Update an existing loyalty card.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1522,
+          "end_line": 1543
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 790,
+          "end_line": 792
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 807,
+          "end_line": 821
+        }
+      ]
+    },
+    {
+      "id": "api:loyalty/update_members",
+      "name": "Update the allowed_users for a private loyalty card.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_loyalty_private_shared_crud_and_owner_management",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1580,
+          "end_line": 1600
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 790,
+          "end_line": 792
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 833,
+          "end_line": 844
+        }
+      ]
+    },
+    {
+      "id": "api:openfoodfacts/fetch",
+      "name": "Proxy OpenFoodFacts requests through HA to avoid browser CORS restrictions.",
+      "upstream_status": "implemented_static",
+      "status": "parent_preprocessor",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1151,
+          "end_line": 1191
+        }
+      ]
+    },
+    {
+      "id": "api:products/add",
+      "name": "Handle add product command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1011,
+          "end_line": 1040
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 562,
+          "end_line": 576
+        }
+      ]
+    },
+    {
+      "id": "api:products/delete",
+      "name": "Handle delete product command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1097,
+          "end_line": 1108
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 628,
+          "end_line": 638
+        }
+      ]
+    },
+    {
+      "id": "api:products/download_image",
+      "name": "Download a remote image and save it as WebP to the local images directory.",
+      "upstream_status": "implemented_static",
+      "status": "parent_preprocessor",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 833,
+          "end_line": 881
+        }
+      ]
+    },
+    {
+      "id": "api:products/get_by_ids",
+      "name": "Return products matching given product IDs.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 250,
+          "end_line": 269
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 490,
+          "end_line": 492
+        }
+      ]
+    },
+    {
+      "id": "api:products/search",
+      "name": "Handle search products command with enhanced filters.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 947,
+          "end_line": 970
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 498,
+          "end_line": 535
+        }
+      ]
+    },
+    {
+      "id": "api:products/search_by_barcode",
+      "name": "Find a single product by exact barcode match.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 891,
+          "end_line": 903
+        }
+      ]
+    },
+    {
+      "id": "api:products/substitutes",
+      "name": "Handle get product substitutes command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 914,
+          "end_line": 934
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 537,
+          "end_line": 554
+        }
+      ]
+    },
+    {
+      "id": "api:products/suggestions",
+      "name": "Handle get product suggestions command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 978,
+          "end_line": 994
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 556,
+          "end_line": 560
+        }
+      ]
+    },
+    {
+      "id": "api:products/update",
+      "name": "Handle update product command.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1057,
+          "end_line": 1087
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 640,
+          "end_line": 653
+        }
+      ]
+    },
+    {
+      "id": "api:regions/create",
+      "name": "Create a custom region.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1287,
+          "end_line": 1311
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 854,
+          "end_line": 867
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 850,
+          "end_line": 852
+        }
+      ]
+    },
+    {
+      "id": "api:regions/delete",
+      "name": "Delete a custom region.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1321,
+          "end_line": 1346
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 869,
+          "end_line": 876
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 850,
+          "end_line": 852
+        }
+      ]
+    },
+    {
+      "id": "api:set_country",
+      "name": "Switch to a different country catalog. Preserves user-added products.",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1247,
+          "end_line": 1274
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 850,
+          "end_line": 852
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 578,
+          "end_line": 626
+        }
+      ]
+    },
+    {
+      "id": "api:subscribe",
+      "name": "Subscribe to shopping list manager events via WebSocket.",
+      "upstream_status": "implemented_static",
+      "status": "replaced_by_filtered_subscription",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 152,
+          "end_line": 196
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 207,
+          "end_line": 209
+        }
+      ]
+    },
+    {
+      "id": "api:users/get_all",
+      "name": "Return all active, non-system HA users.",
+      "upstream_status": "implemented_static",
+      "status": "parent_preprocessor",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "implementation": "Canonical command with corrected ACL, validation and staged state.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1438,
+          "end_line": 1450
+        }
+      ]
+    },
+    {
+      "id": "backup:auto-config-file",
+      "name": "Automatic JSON backup side effect",
+      "upstream_status": "implemented_static",
+      "status": "replaced_by_parent_atomic_store",
+      "test": "test_import_export_complete_acl_filtered_additive_roundtrip",
+      "implementation": "Unsafe stale public automatic files are not copied; explicit ACL-filtered export plus parent durable Store.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 218,
+          "end_line": 232
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 562,
+          "end_line": 575
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 640,
+          "end_line": 653
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 729,
+          "end_line": 745
+        }
+      ]
+    },
+    {
+      "id": "catalog:categories-localized",
+      "name": "Category data/localization",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "implementation": "13 English/Dutch packaged categories; non-BE fallback uses the actual English set.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/data/category_loader.py",
+          "start_line": 11,
+          "end_line": 62
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 748,
+          "end_line": 766
+        }
+      ]
+    },
+    {
+      "id": "catalog:fallback-categories",
+      "name": "Category emergency fallback",
+      "upstream_status": "implemented_static",
+      "status": "replaced_fail_closed",
+      "test": "test_registry_and_pinned_inventory_schema",
+      "implementation": "Bundled datasets are hash-checked in tests; missing or malformed package data raises rather than inventing categories.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/data/category_loader.py",
+          "start_line": 65,
+          "end_line": 98
+        }
+      ]
+    },
+    {
+      "id": "catalog:import-normalization",
+      "name": "Catalog model materialization",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "implementation": "Preserve dataset currency, metadata and explicit zero; namespace product IDs by region.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 119,
+          "end_line": 143
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 593,
+          "end_line": 615
+        }
+      ]
+    },
+    {
+      "id": "catalog:loader",
+      "name": "Packaged catalog loading/failure policy",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "Load only allowlisted package-local catalogs; custom regions have no synthetic catalog.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/data/catalog_loader.py",
+          "start_line": 10,
+          "end_line": 62
+        }
+      ]
+    },
+    {
+      "id": "catalog:metric-defaults",
+      "name": "Declared unit and quantity vocabularies",
+      "upstream_status": "implemented_static",
+      "status": "metadata_only",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "implementation": "Preserve real declared unit/default-quantity values; UI metric preference does not convert quantities or impose fabricated units.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/const.py",
+          "start_line": 88,
+          "end_line": 130
+        }
+      ]
+    },
+    {
+      "id": "catalog:regions",
+      "name": "Six complete regional catalog datasets",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "implementation": "Six complete catalogs: five times 172, Belgium 62.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/data/catalog_loader.py",
+          "start_line": 10,
+          "end_line": 62
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 111,
+          "end_line": 150
+        },
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1213,
+          "end_line": 1220
+        }
+      ]
+    },
+    {
+      "id": "config:options",
+      "name": "Region and boolean configuration",
+      "upstream_status": "partially_implemented",
+      "status": "pure_domain",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "All three booleans and current country persist in staged shared kitchen; price visibility/metric display remain UI preferences, not deletion.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/config_flow.py",
+          "start_line": 48,
+          "end_line": 94
+        },
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 1204,
+          "end_line": 1235
+        }
+      ]
+    },
+    {
+      "id": "config:single-instance",
+      "name": "UI-only single-instance config entry",
+      "upstream_status": "implemented_static",
+      "status": "parent_owned",
+      "test": "test_registry_and_pinned_inventory_schema",
+      "implementation": "Unified integration owns config-entry lifecycle; shopping reads default to NZ without a hidden write.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/config_flow.py",
+          "start_line": 9,
+          "end_line": 45
+        },
+        {
+          "path": "custom_components/shopping_list_manager/__init__.py",
+          "start_line": 28,
+          "end_line": 32
+        }
+      ]
+    },
+    {
+      "id": "events:bus",
+      "name": "Six HA bus events",
+      "upstream_status": "implemented_static",
+      "status": "parent_owned",
+      "test": "test_deleted_list_and_card_retain_private_event_audience",
+      "implementation": "Parent publishes generic ACL-filtered refresh after durable save; domain supplies private event audience for removals.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/const.py",
+          "start_line": 67,
+          "end_line": 73
+        },
+        {
+          "path": "custom_components/shopping_list_manager/__init__.py",
+          "start_line": 73,
+          "end_line": 84
+        }
+      ]
+    },
+    {
+      "id": "frontend:separate-card",
+      "name": "Frontend absent from pinned backend",
+      "upstream_status": "not_in_this_repository",
+      "status": "parent_owned",
+      "test": "test_registry_and_pinned_inventory_schema",
+      "implementation": "No frontend existed in pinned backend; unified card is outside this pure-domain module.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/__init__.py",
+          "start_line": 301,
+          "end_line": 305
+        }
+      ]
+    },
+    {
+      "id": "image:declared-targets",
+      "name": "Image target constants",
+      "upstream_status": "partially_implemented",
+      "status": "parent_preprocessor",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "implementation": "Parent normalizes private media; no unbounded downloads or public-file paths in domain.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/const.py",
+          "start_line": 75,
+          "end_line": 86
+        },
+        {
+          "path": "custom_components/shopping_list_manager/const.py",
+          "start_line": 132,
+          "end_line": 135
+        }
+      ]
+    },
+    {
+      "id": "image:helper-list",
+      "name": "Local available image enumeration",
+      "upstream_status": "helper_only",
+      "status": "upstream_inert_helper",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "implementation": "Unregistered local image enumeration is not represented as a working command; authenticated media belongs to parent.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/utils/images.py",
+          "start_line": 117,
+          "end_line": 132
+        }
+      ]
+    },
+    {
+      "id": "image:helper-priority",
+      "name": "Local/external image helper",
+      "upstream_status": "helper_only",
+      "status": "upstream_inert_helper",
+      "test": "test_parent_preprocessors_are_explicit_not_fake_network",
+      "implementation": "Original setup helper was never called by registered commands. Preserve explicit image metadata; do not fake automatic search or placeholder data.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/utils/images.py",
+          "start_line": 19,
+          "end_line": 115
+        },
+        {
+          "path": "custom_components/shopping_list_manager/__init__.py",
+          "start_line": 51,
+          "end_line": 52
+        }
+      ]
+    },
+    {
+      "id": "image:legacy-migration",
+      "name": "Legacy image directory and URL migration",
+      "upstream_status": "implemented_static",
+      "status": "parent_owned_migration",
+      "test": "test_registry_and_pinned_inventory_schema",
+      "implementation": "No filesystem migration is performed by pure shopping; legacy local media must be explicitly migrated by the parent if imported.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 440,
+          "end_line": 488
+        },
+        {
+          "path": "custom_components/shopping_list_manager/utils/images.py",
+          "start_line": 35,
+          "end_line": 48
+        }
+      ]
+    },
+    {
+      "id": "lifecycle:reload",
+      "name": "Entry options reload / globals",
+      "upstream_status": "implemented_static",
+      "status": "parent_owned",
+      "test": "test_custom_regions_settings_and_category_order_persist",
+      "implementation": "Parent integration lifecycle only; pure state is JSON-serializable and settings/overrides survive roundtrip.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/__init__.py",
+          "start_line": 35,
+          "end_line": 105
+        }
+      ]
+    },
+    {
+      "id": "model:ids-timestamps",
+      "name": "UUID / UTC / serialisation",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Stable UUID records and caller-supplied UTC timestamps; copied JSON responses.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/models.py",
+          "start_line": 8,
+          "end_line": 15
+        },
+        {
+          "path": "custom_components/shopping_list_manager/models.py",
+          "start_line": 18,
+          "end_line": 139
+        }
+      ]
+    },
+    {
+      "id": "model:item-estimate",
+      "name": "Per-item estimated total",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_totals_preserve_unknown_and_separate_currencies",
+      "implementation": "Known unit-price times quantity only; null price clears estimate; currency breakdown for mixtures.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/models.py",
+          "start_line": 68,
+          "end_line": 96
+        }
+      ]
+    },
+    {
+      "id": "model:product-metadata",
+      "name": "Rich product metadata",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "All rich fields editable for custom products and current-user catalog overrides; no fabricated nutrition.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/models.py",
+          "start_line": 34,
+          "end_line": 65
+        }
+      ]
+    },
+    {
+      "id": "regions:legacy-migration",
+      "name": "Custom region format migration",
+      "upstream_status": "implemented_static",
+      "status": "parent_owned_migration",
+      "test": "test_registry_and_pinned_inventory_schema",
+      "implementation": "Upstream legacy Store string-wrapper migration belongs to administrative migration, not hidden read-time mutation.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 161,
+          "end_line": 174
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 850,
+          "end_line": 880
+        }
+      ]
+    },
+    {
+      "id": "search:index-lifecycle",
+      "name": "Search engine lifecycle",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Query derived current permitted data; no stale global mutable index.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 176,
+          "end_line": 183
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 498,
+          "end_line": 575
+        }
+      ]
+    },
+    {
+      "id": "search:scoring",
+      "name": "Fuzzy ranking weights",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Tested Unicode casefold/stdlib fuzzy name and alias ranking; not a claim of bit-identical RapidFuzz scores.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/utils/search.py",
+          "start_line": 20,
+          "end_line": 156
+        }
+      ]
+    },
+    {
+      "id": "search:taxonomy-helper",
+      "name": "Taxonomy filters / threshold helper",
+      "upstream_status": "helper_only",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Taxonomy filtering is explicitly exposed instead of dormant helper-only metadata.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/utils/search.py",
+          "start_line": 20,
+          "end_line": 95
+        }
+      ]
+    },
+    {
+      "id": "search:usage",
+      "name": "Product frequency/last-used metadata",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_product_crud_catalog_overrides_usage_and_search",
+      "implementation": "Authenticated-user frequency/last-used survives country changes and is never shared as another user's usage.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 323,
+          "end_line": 329
+        },
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 556,
+          "end_line": 560
+        }
+      ]
+    },
+    {
+      "id": "storage:load-defaults",
+      "name": "Startup restore/default global list",
+      "upstream_status": "implemented_static",
+      "status": "pure_domain",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "implementation": "Default NZ catalog and packaged categories are immutable read projections; no persistent list is created by a read.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 64,
+          "end_line": 183
+        }
+      ]
+    },
+    {
+      "id": "storage:six-stores",
+      "name": "Six independently saved HA Stores",
+      "upstream_status": "implemented_static",
+      "status": "replaced_by_parent_atomic_store",
+      "test": "test_import_export_complete_acl_filtered_additive_roundtrip",
+      "implementation": "One staged kitchen, no Store or file writes; parent lock/ledger/durable save owns transactions.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/storage.py",
+          "start_line": 36,
+          "end_line": 62
+        },
+        {
+          "path": "custom_components/shopping_list_manager/const.py",
+          "start_line": 6,
+          "end_line": 13
+        }
+      ]
+    },
+    {
+      "id": "store:retailer-metadata-only",
+      "name": "Supermarket and store options",
+      "upstream_status": "metadata_only",
+      "status": "metadata_only",
+      "test": "test_all_six_real_catalogs_and_packaged_categories",
+      "implementation": "Brands and store-card metadata preserved, not live retailer pricing or stock.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/models.py",
+          "start_line": 34,
+          "end_line": 65
+        },
+        {
+          "path": "custom_components/shopping_list_manager/models.py",
+          "start_line": 99,
+          "end_line": 139
+        }
+      ]
+    },
+    {
+      "id": "todo:link-only",
+      "name": "HA todo entity link metadata",
+      "upstream_status": "metadata_only",
+      "status": "metadata_only",
+      "test": "test_private_list_crud_and_member_acl",
+      "implementation": "Nullable ha_todo_entity_id metadata preserved; upstream never implemented synchronization.",
+      "source_refs": [
+        {
+          "path": "custom_components/shopping_list_manager/models.py",
+          "start_line": 135,
+          "end_line": 135
+        },
+        {
+          "path": "custom_components/shopping_list_manager/websocket/handlers.py",
+          "start_line": 338,
+          "end_line": 387
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "file": "categories.json",
+      "sha256": "a29f2ed44be2fda20e60bbd2d1a547782ae5ec4094e3ea352e3fa09b2516e3d7",
+      "records": 13
+    },
+    {
+      "file": "categories_be.json",
+      "sha256": "dc5764db912cbbed6a48d8252cf706da0a8c0801e9ebae0a5745ab358d482c84",
+      "records": 13
+    },
+    {
+      "file": "products_catalog_au.json",
+      "sha256": "fab63c95635dcdff7d0aa83643856f5552dcf3b2446113572d4e3df8d39ebfbb",
+      "records": 172
+    },
+    {
+      "file": "products_catalog_be.json",
+      "sha256": "a5798a67633afc9bb3080901630138597d5e4f51dd85f805a30b7453e893b3ea",
+      "records": 62
+    },
+    {
+      "file": "products_catalog_ca.json",
+      "sha256": "cea5860593b683650cb9ca0ce5b675e35b308ac64e730f639c2c83840ce1cec8",
+      "records": 172
+    },
+    {
+      "file": "products_catalog_gb.json",
+      "sha256": "3378718376b81de329c0617a88221fe4fd71c3056af98c1ef22f9fdf71cfb8a0",
+      "records": 172
+    },
+    {
+      "file": "products_catalog_nz.json",
+      "sha256": "c8b6660435ce9b00ee03ba7604a0e7cf8849d0132b9896d83818aa65417aa5ae",
+      "records": 172
+    },
+    {
+      "file": "products_catalog_us.json",
+      "sha256": "45bcc18d7d358aa8f052b76b01c0c9bbe6c184cddaebf6b0f757b89446fb5d41",
+      "records": 172
+    }
+  ],
+  "unregistered_upstream_constants": [
+    {
+      "constant": "WS_TYPE_CATEGORIES_REORDER",
+      "command": "shopping_list_manager/categories/reorder",
+      "reason": "No matching decorated handler or registration in pinned source"
+    },
+    {
+      "constant": "WS_TYPE_UNSUBSCRIBE",
+      "command": "shopping_list_manager/unsubscribe",
+      "reason": "No matching decorated handler or registration in pinned source"
+    },
+    {
+      "constant": "WS_TYPE_BARCODE_SCAN",
+      "command": "shopping_list_manager/barcode/scan",
+      "reason": "No matching decorated handler or registration in pinned source"
+    },
+    {
+      "constant": "WS_TYPE_BARCODE_ADD",
+      "command": "shopping_list_manager/barcode/add_to_list",
+      "reason": "No matching decorated handler or registration in pinned source"
+    },
+    {
+      "constant": "WS_TYPE_OFF_IMPORT",
+      "command": "shopping_list_manager/openfoodfacts/import",
+      "reason": "No matching decorated handler or registration in pinned source"
+    }
+  ],
+  "actions": [
+    "shopping_categories_add",
+    "shopping_categories_delete",
+    "shopping_categories_get_all",
+    "shopping_categories_reorder",
+    "shopping_categories_update",
+    "shopping_export_data",
+    "shopping_get_integration_settings",
+    "shopping_import_data",
+    "shopping_items_add",
+    "shopping_items_bulk_check",
+    "shopping_items_check",
+    "shopping_items_clear_checked",
+    "shopping_items_delete",
+    "shopping_items_get",
+    "shopping_items_get_one",
+    "shopping_items_get_total",
+    "shopping_items_increment",
+    "shopping_items_reorder",
+    "shopping_items_update",
+    "shopping_lists_create",
+    "shopping_lists_delete",
+    "shopping_lists_get",
+    "shopping_lists_get_all",
+    "shopping_lists_set_active",
+    "shopping_lists_update",
+    "shopping_lists_update_members",
+    "shopping_loyalty_add",
+    "shopping_loyalty_delete",
+    "shopping_loyalty_get",
+    "shopping_loyalty_get_all",
+    "shopping_loyalty_update",
+    "shopping_loyalty_update_members",
+    "shopping_openfoodfacts_fetch",
+    "shopping_products_add",
+    "shopping_products_delete",
+    "shopping_products_download_image",
+    "shopping_products_get",
+    "shopping_products_get_all",
+    "shopping_products_get_by_ids",
+    "shopping_products_recent",
+    "shopping_products_search",
+    "shopping_products_search_by_barcode",
+    "shopping_products_substitutes",
+    "shopping_products_suggestions",
+    "shopping_products_update",
+    "shopping_regions_create",
+    "shopping_regions_delete",
+    "shopping_regions_get",
+    "shopping_regions_get_all",
+    "shopping_regions_update",
+    "shopping_set_country",
+    "shopping_update_integration_settings",
+    "shopping_users_get_all"
+  ]
+}

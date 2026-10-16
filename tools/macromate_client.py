@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small authenticated Home Assistant client for Hermes Agent.
+"""Generic authenticated MacroMate client with legacy diary conveniences.
 
 Secrets are read from HA_TOKEN. Nothing is stored or logged by this script.
 HA_URL is a credential-free origin (no path, query or fragment). HTTPS is
@@ -9,6 +9,10 @@ Redirects are always refused, including same-origin redirects. Use the final
 Home Assistant origin, not a redirecting alias. Validation raises ValueError;
 transport/protocol failures raise sanitized RuntimeError without server text.
 CLI exit codes: 0 success, 1 request/validation failure, 2 usage/missing env.
+Use describe for exact live action names/schemas; call SERVICE reads JSON from
+stdin or --json-file PATH without flattening nested fields or dropping null.
+Requests are bounded to 1 MiB and responses to 4 MiB. No automatic retries or
+request-ID generation occur, including after an ambiguous mutation response.
 """
 
 from __future__ import annotations
@@ -26,10 +30,37 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 DOMAIN = "macromate"
+MAX_REQUEST_BYTES = 1024 * 1024
+MAX_RESPONSE_BYTES = 4 * 1024 * 1024
+
+
+def _validate_json_data(value, depth=0):
+    """Reject Python-only data rather than letting the encoder repair it."""
+    if depth > 32:
+        raise ValueError("service payload nesting exceeds the limit")
+    if isinstance(value, dict):
+        if any(not isinstance(key, str) for key in value):
+            raise ValueError("service payload JSON keys must be strings")
+        for child in value.values():
+            _validate_json_data(child, depth + 1)
+    elif isinstance(value, list):
+        for child in value:
+            _validate_json_data(child, depth + 1)
+    elif value is not None and type(value) not in (str, int, float, bool):
+        raise ValueError("service payload must contain only JSON data")
 
 
 def _reject_constant(value: str) -> None:
     raise ValueError("non-finite JSON number")
+
+
+def _unique_object(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate JSON field")
+        value[key] = item
+    return value
 
 
 def _finite_float(value: str) -> float:
@@ -92,15 +123,24 @@ def call_service(
     base_url: str, token: str, service: str, data: dict, *, response: bool = True,
     trusted_lan_http: bool = False,
 ) -> dict:
+    """Call any named action once; preserve JSON data and unwrap HA's envelope.
+
+    Supply credentials from protected environment management, not literals.
+    Local validation raises ValueError; transport/protocol errors are sanitized
+    RuntimeErrors. A failure does not establish whether a mutation committed.
+    """
     url = service_url(base_url, service, response=response, trusted_lan_http=trusted_lan_http)
     if not isinstance(token, str) or not re.fullmatch(r"[\x21-\x7e]+", token):
         raise ValueError("HA_TOKEN must be a nonempty token without whitespace or control characters")
     if not isinstance(data, dict):
         raise ValueError("service payload must be a JSON object")
     try:
-        encoded = json.dumps(data, allow_nan=False).encode("utf-8")
+        _validate_json_data(data)
+        encoded = json.dumps(data, allow_nan=False, ensure_ascii=False).encode("utf-8")
     except (TypeError, ValueError, RecursionError):
         raise ValueError("service payload must be finite JSON data") from None
+    if len(encoded) > MAX_REQUEST_BYTES:
+        raise ValueError("service payload exceeds the request byte limit")
     request = Request(
         url,
         data=encoded,
@@ -112,7 +152,19 @@ def call_service(
     )
     try:
         with build_opener(_NoRedirects()).open(request, timeout=20) as result:
-            body = json.load(result, parse_constant=_reject_constant, parse_float=_finite_float)
+            length = result.headers.get("Content-Length")
+            expected = int(length) if length is not None else None
+            if expected is not None and expected > MAX_RESPONSE_BYTES:
+                raise RuntimeError("Home Assistant response exceeds the byte limit")
+            raw = result.read(MAX_RESPONSE_BYTES + 1)
+            if len(raw) > MAX_RESPONSE_BYTES:
+                raise RuntimeError("Home Assistant response exceeds the byte limit")
+            if expected is not None and (expected < 0 or len(raw) != expected):
+                raise HTTPException("invalid response length")
+            body = json.loads(raw, parse_constant=_reject_constant, parse_float=_finite_float,
+                              object_pairs_hook=_unique_object)
+            # Reject unpaired surrogates before Python consumers or stdout see them.
+            json.dumps(body, allow_nan=False, ensure_ascii=False).encode("utf-8")
     except HTTPError as err:
         if 300 <= err.code < 400:
             err.close()
@@ -132,11 +184,24 @@ def call_service(
     return body if isinstance(body, dict) else {"result": body}
 
 
+class _SafeArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        # argparse's default echoes invalid values, which may contain private data.
+        self.print_usage(sys.stderr)
+        self.exit(2, "Invalid command arguments; use --help for accepted fields\n")
+
+
 def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(description="Manage MacroMate through Home Assistant")
+    result = _SafeArgumentParser(description="Manage MacroMate through Home Assistant")
     result.add_argument("--trusted-lan-http", action="store_true",
                         help="Allow plaintext HTTP only on an explicitly trusted LAN")
     sub = result.add_subparsers(dest="command", required=True)
+    sub.add_parser("describe", help="Discover all action schemas, permissions and server limits")
+
+    generic = sub.add_parser("call", help="Call any discovered MacroMate action with JSON stdin")
+    generic.add_argument("service")
+    generic.add_argument("--json-file", default="-", metavar="PATH",
+                         help="Read bounded UTF-8 JSON from PATH; '-' (default) means stdin")
 
     listing = sub.add_parser("list", help="List meals and today's recommendation")
     listing.add_argument("--date")
@@ -145,10 +210,12 @@ def parser() -> argparse.ArgumentParser:
     add.add_argument("--name", required=True)
     add.add_argument("--meal-type", required=True, choices=("breakfast", "lunch", "dinner", "snack"))
     add.add_argument("--calories", type=float, required=True)
-    add.add_argument("--protein", type=float, default=0)
-    add.add_argument("--carbs", type=float, default=0)
-    add.add_argument("--fat", type=float, default=0)
-    add.add_argument("--eaten-at")
+    add.add_argument("--protein", type=float)
+    add.add_argument("--carbs", type=float)
+    add.add_argument("--fat", type=float)
+    when = add.add_mutually_exclusive_group()
+    when.add_argument("--eaten-at")
+    when.add_argument("--date", help="Explicit HA-local diary date (YYYY-MM-DD)")
     add.add_argument("--request-id", help="Stable idempotency ID; reuse only for the same logical add")
 
     update = sub.add_parser("update", help="Correct an existing meal")
@@ -164,15 +231,47 @@ def parser() -> argparse.ArgumentParser:
     delete = sub.add_parser("delete", help="Delete one meal by ID")
     delete.add_argument("entry_id")
 
+    copy = sub.add_parser("copy", help="Copy an existing diary snapshot to an explicit date")
+    copy.add_argument("entry_id")
+    copy.add_argument("--date", required=True)
+    copy.add_argument("--meal-type", choices=("breakfast", "lunch", "dinner", "snack"))
+
     clear = sub.add_parser("clear-day", help="Delete all meals on a date")
-    clear.add_argument("--date",required=True)
-    clear.add_argument("--confirm",action="store_true",required=True,help="Confirm deletion of every entry on this explicit date")
-    for mutation in (update, delete, clear):
+    clear.add_argument("--date", required=True)
+    clear.add_argument("--confirm", action="store_true", required=True,
+                       help="Confirm deletion of every entry on this explicit date")
+    for mutation in (update, delete, clear, copy):
         mutation.add_argument("--request-id", help="Stable ID; reuse only for the same logical operation")
     return result
 
 
+def read_payload(path: str = "-") -> dict:
+    """Read at most the request limit plus one byte, without exposing source text."""
+    try:
+        if path == "-":
+            raw = sys.stdin.buffer.read(MAX_REQUEST_BYTES + 1)
+        else:
+            with open(path, "rb") as source:
+                raw = source.read(MAX_REQUEST_BYTES + 1)
+    except (OSError, ValueError):
+        raise ValueError("service payload source could not be read") from None
+    if len(raw) > MAX_REQUEST_BYTES:
+        raise ValueError("service payload exceeds the request byte limit")
+    try:
+        data = json.loads(raw.decode("utf-8"), parse_constant=_reject_constant,
+                          parse_float=_finite_float, object_pairs_hook=_unique_object)
+    except (ValueError, RecursionError):
+        raise ValueError("service payload must be valid finite UTF-8 JSON") from None
+    if not isinstance(data, dict):
+        raise ValueError("service payload must be a JSON object")
+    return data
+
+
 def _payload(args: argparse.Namespace) -> tuple[str, dict]:
+    if args.command == "describe":
+        return "describe", {}
+    if args.command == "call":
+        return args.service, read_payload(args.json_file)
     if args.command == "list":
         return "list_meals", {"date": args.date} if args.date else {}
 
@@ -185,6 +284,8 @@ def _payload(args: argparse.Namespace) -> tuple[str, dict]:
         return "log_meal", data
     if args.command == "delete":
         return "delete_meal", data
+    if args.command == "copy":
+        return "copy_meal", data
     if args.command == "clear-day":
         return "clear_day", data
     return "update_meal", data
@@ -192,13 +293,13 @@ def _payload(args: argparse.Namespace) -> tuple[str, dict]:
 
 def main() -> int:
     args = parser().parse_args()
-    base_url = os.environ.get("HA_URL", "").strip()
-    token = os.environ.get("HA_TOKEN", "").strip()
+    base_url = os.environ.get("HA_URL", "")
+    token = os.environ.get("HA_TOKEN", "")
     if not base_url or not token:
         print("HA_URL and HA_TOKEN must be set", file=sys.stderr)
         return 2
-    service, data = _payload(args)
     try:
+        service, data = _payload(args)
         result = call_service(base_url, token, service, data,
                               trusted_lan_http=args.trusted_lan_http)
     except (RuntimeError, ValueError) as err:

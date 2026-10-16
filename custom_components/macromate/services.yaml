@@ -1,182 +1,3475 @@
-log_meal:
-  name: Log quick meal
-  description: Local total nutrition entry. Admin users or trusted internal automations only.
+legacy_import:
+  name: Import legacy stores
+  description: Atomically import explicitly supplied standalone stores and image bytes as an administrator. Never reads source files or fetches URLs.
   fields:
-    name:
+    source:
+      name: Source
+      description: Exact standalone integration identity.
       required: true
-      selector: {text: {}}
-    meal_type:
+      selector:
+        select:
+          options: [recipe_manager, shopping_list_manager]
+    stores:
+      name: Stores
+      description: Exact Store keys mapped to raw data or supported versioned envelopes.
       required: true
-      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
-    calories:
+      selector:
+        object: {}
+    images:
+      name: Images
+      description: Exact local image references mapped to base64 image bytes. All local references must be supplied; unused assets are rejected.
+      required: false
+      selector:
+        object: {}
+    country:
+      name: Country
+      description: Explicit catalog or custom region code. Required only for shopping imports; forbidden for recipes.
+      required: false
+      selector:
+        text: {}
+    preserve_permissions:
+      name: Preserve permissions
+      description: Explicit administrator choice. False resets imported ownership to the importer and makes records private; true retains verified legacy permissions.
       required: true
-      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: kcal}}
-    protein:
-      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: g}}
-    carbs:
-      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: g}}
-    fat:
-      selector: {number: {min: 0, max: 100000, step: 0.1, unit_of_measurement: g}}
-    date:
-      description: Selected Home Assistant local date; omitted means today.
-      selector: {date: {}}
-    eaten_at:
-      description: Optional ISO timestamp including timezone. Must match date when both are supplied.
-      selector: {text: {}}
-    request_id:
-      description: Stable logical request ID. Reuse only for identical data; history retains 1000 operations.
-      selector: {text: {}}
-list_meals:
-  name: Read diary
-  description: Private entries, meal groups, known totals, missing nutrients and dated goal snapshot. Requires response data.
-  fields:
-    date:
-      selector: {date: {}}
-update_meal:
-  name: Update quick meal
-  description: Food-entry nutrition is immutable; use update_food_entry to change its portion.
-  fields:
-    entry_id:
-      required: true
-      selector: {text: {}}
-    name:
-      selector: {text: {}}
-    meal_type:
-      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
-    calories:
-      selector: {number: {min: 0, max: 100000, step: 0.1}}
-    protein:
-      selector: {number: {min: 0, max: 100000, step: 0.1}}
-    carbs:
-      selector: {number: {min: 0, max: 100000, step: 0.1}}
-    fat:
-      selector: {number: {min: 0, max: 100000, step: 0.1}}
-    eaten_at:
-      selector: {text: {}}
-    request_id:
-      selector: {text: {}}
-delete_meal:
-  name: Delete one entry
-  fields:
-    entry_id:
-      required: true
-      selector: {text: {}}
-    request_id:
-      selector: {text: {}}
-clear_day:
-  name: Clear explicit date
-  description: Bulk deletion requires an explicit date and confirm true. There is no implicit today default.
-  fields:
-    date:
-      required: true
-      selector: {date: {}}
+      selector:
+        boolean: {}
     confirm:
+      name: Confirm
+      description: Must be explicitly true.
       required: true
-      selector: {boolean: {}}
+      selector:
+        boolean: {}
     request_id:
-      selector: {text: {}}
-copy_meal:
-  name: Copy diary entry
-  description: Creates an independent entry on the selected date, preserving the original nutrition snapshot.
-  fields:
-    entry_id:
+      name: Request id
+      description: Required stable retry ID; keep the exact payload after an uncertain write.
       required: true
-      selector: {text: {}}
-    date:
-      required: true
-      selector: {date: {}}
-    meal_type:
-      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
-    request_id:
-      selector: {text: {}}
-search_foods:
-  name: Search foods
-  description: Local search by default. Explicit online search requires configuration consent and sends the query to Open Food Facts.
-  fields:
-    query:
-      selector: {text: {}}
-    filter:
-      selector: {select: {options: [all, favorites, recent, custom]}}
-    online:
-      selector: {boolean: {}}
-get_food:
-  name: Read cached food
-  fields:
-    food_id:
-      required: true
-      selector: {text: {}}
-lookup_barcode:
-  name: Lookup exact GTIN
-  description: Preserve leading zeros. Only valid ASCII GTIN8/12/13/14 strings are accepted; no automatic correction.
+      selector:
+        text: {}
+barcode:
+  name: Barcode
+  description: Look up an exact food barcode, online only after consent.
   fields:
     barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
       required: true
-      selector: {text: {}}
+      selector:
+        text: {}
     online:
-      selector: {boolean: {}}
-save_food:
-  name: Save local reusable food
-  description: Food object requires name, base_unit g or ml and nutrients_per_100. Optional servings and barcodes. Cached OFF products cannot be overwritten as local products.
+      name: Online
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+clear_day:
+  name: Clear day
+  description: Clear only an explicitly confirmed dated diary.
   fields:
-    food:
-      required: true
-      selector: {object: {}}
-    request_id:
-      selector: {text: {}}
-set_favorite:
-  name: Save favorite portion template
-  description: Choose amount OR serving_id with quantity. Omit both to use the existing template or 100 base units.
-  fields:
-    food_id:
-      required: true
-      selector: {text: {}}
-    enabled:
-      required: true
-      selector: {boolean: {}}
-    amount:
-      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
-    serving_id:
-      selector: {text: {}}
-    quantity:
-      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
-    request_id:
-      selector: {text: {}}
-log_food:
-  name: Log food portion
-  description: Choose amount in the food's base unit OR serving_id and quantity. Nutrition is snapshotted, not recalculated from future product edits.
-  fields:
-    food_id:
-      required: true
-      selector: {text: {}}
-    amount:
-      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
-    serving_id:
-      selector: {text: {}}
-    quantity:
-      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
-    meal_type:
-      required: true
-      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
     date:
-      selector: {date: {}}
-    eaten_at:
-      selector: {text: {}}
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    confirm:
+      name: Confirm
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
     request_id:
-      selector: {text: {}}
-update_food_entry:
-  name: Update food entry portion
-  description: Scales the original product snapshot, never today's changed product. Choose base amount OR serving_id with quantity.
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+copy_meal:
+  name: Copy meal
+  description: Copy a recorded snapshot to an explicit date.
   fields:
     entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
       required: true
-      selector: {text: {}}
-    amount:
-      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
-    serving_id:
-      selector: {text: {}}
-    quantity:
-      selector: {number: {min: 0.01, max: 100000, step: 0.1}}
+      selector:
+        text: {}
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
     meal_type:
-      selector: {select: {options: [breakfast, lunch, dinner, snack]}}
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
     request_id:
-      selector: {text: {}}
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+delete_meal:
+  name: Delete meal
+  description: Delete an exact diary entry.
+  fields:
+    entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+describe:
+  name: Describe
+  description: Discover the authoritative command registry and finite transport limits.
+  fields: {}
+diary:
+  name: Diary
+  description: Read a private dated diary.
+  fields:
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+favorite:
+  name: Favorite
+  description: Set an exact food favorite.
+  fields:
+    food_id:
+      name: Food id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    enabled:
+      name: Enabled
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    amount:
+      name: Amount
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    serving_id:
+      name: Serving id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    quantity:
+      name: Quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+food:
+  name: Food
+  description: Read an exact nutrient-tracked food.
+  fields:
+    food_id:
+      name: Food id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+food_delete:
+  name: Food delete
+  description: Delete a local or cached food without rewriting recorded diary snapshots.
+  fields:
+    food_id:
+      name: Food id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+get_food:
+  name: Get food
+  description: Read an exact nutrient-tracked food.
+  fields:
+    food_id:
+      name: Food id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+global_timers_add:
+  name: Global timers add
+  description: Create a global cooking timer; start_time is epoch seconds.
+  fields:
+    label:
+      name: Label
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    duration:
+      name: Duration
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 604800
+    start_time:
+      name: Start time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 253402300799
+    running:
+      name: Running
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    paused_remaining:
+      name: Paused remaining
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    preset_id:
+      name: Preset id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+global_timers_delete:
+  name: Global timers delete
+  description: Stop and delete one global timer.
+  fields:
+    timer_id:
+      name: Timer id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+global_timers_get:
+  name: Global timers get
+  description: Read timers with remaining time derived from the supplied clock.
+  fields:
+    timer_id:
+      name: Timer id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+global_timers_update:
+  name: Global timers update
+  description: Edit, pause, resume or extend a cooking timer.
+  fields:
+    timer_id:
+      name: Timer id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    label:
+      name: Label
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    duration:
+      name: Duration
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 604800
+    start_time:
+      name: Start time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 253402300799
+    running:
+      name: Running
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    paused_remaining:
+      name: Paused remaining
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    preset_id:
+      name: Preset id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+list_meals:
+  name: List meals
+  description: Read a private dated diary.
+  fields:
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+log_food:
+  name: Log food
+  description: Log a declared food portion with an immutable snapshot.
+  fields:
+    food_id:
+      name: Food id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    eaten_at:
+      name: Eaten at
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    amount:
+      name: Amount
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    serving_id:
+      name: Serving id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    quantity:
+      name: Quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+log_meal:
+  name: Log meal
+  description: Create a quick meal retaining missing declarations.
+  fields:
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+    calories:
+      name: Calories
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    protein:
+      name: Protein
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    carbs:
+      name: Carbs
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    fat:
+      name: Fat
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    eaten_at:
+      name: Eaten at
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+lookup_barcode:
+  name: Lookup barcode
+  description: Look up an exact food barcode, online only after consent.
+  fields:
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    online:
+      name: Online
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+meal_plan_add:
+  name: Meal plan add
+  description: Schedule a recipe without logging nutrition.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+          - dessert
+    servings:
+      name: Servings
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0.001
+          max: 10000
+    notes:
+      name: Notes
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+meal_plan_clear:
+  name: Meal plan clear
+  description: Clear only the confirmed seven-day range starting at week_start.
+  fields:
+    week_start:
+      name: Week start
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    confirm:
+      name: Confirm
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+meal_plan_get:
+  name: Meal plan get
+  description: Read planned entries, one exact entry or an exact seven-day week.
+  fields:
+    week_start:
+      name: Week start
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+meal_plan_remove:
+  name: Meal plan remove
+  description: Remove one planned entry.
+  fields:
+    entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+meal_plan_update:
+  name: Meal plan update
+  description: Update an existing planned entry without changing its ID.
+  fields:
+    entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+          - dessert
+    servings:
+      name: Servings
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0.001
+          max: 10000
+    notes:
+      name: Notes
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+plan_to_shopping:
+  name: Plan to shopping
+  description: Add ingredients from only the exact seven-day plan range.
+  fields:
+    week_start:
+      name: Week start
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+platform_backup:
+  name: Platform backup
+  description: Export recipe-compatible data plus the complete staged kitchen.
+  fields: {}
+platform_info:
+  name: Platform info
+  description: Read kitchen schema and recipe-domain counts; transport supplies integration
+    version.
+  fields: {}
+platform_restore:
+  name: Platform restore
+  description: Atomically restore a validated complete private dataset after explicit
+    confirmation.
+  fields:
+    data:
+      name: Data
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    confirm:
+      name: Confirm
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+preferences_get:
+  name: Preferences get
+  description: Read authenticated-user UI preferences.
+  fields: {}
+preferences_update:
+  name: Preferences update
+  description: Patch authenticated-user UI preferences without changing ACL or provider
+    consent.
+  fields:
+    preferences:
+      name: Preferences
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipe_entry_update:
+  name: Recipe entry update
+  description: Scale the recorded recipe snapshot, not the current recipe.
+  fields:
+    entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    servings:
+      name: Servings
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          max: 100000
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipe_keeper_import:
+  name: Recipe keeper import
+  description: Import recipes from inert Recipe Keeper HTML or an archive.
+  fields:
+    html_content:
+      name: Html content
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    base64_data:
+      name: Base64 data
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipe_log:
+  name: Recipe log
+  description: Log explicit recipe portions using an immutable declared-nutrition
+    snapshot.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    servings:
+      name: Servings
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        number:
+          mode: box
+          max: 100000
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+    date:
+      name: Date
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipe_to_shopping:
+  name: Recipe to shopping
+  description: Atomically add selected original ingredient indexes using exact accessible
+    product matches.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    servings:
+      name: Servings
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          max: 100000
+    ingredient_indexes:
+      name: Ingredient indexes
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    ingredient_matches:
+      name: Ingredient matches
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipes_add:
+  name: Recipes add
+  description: Create a recipe without inventing missing nutrition.
+  fields:
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    ingredients:
+      name: Ingredients
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    instructions:
+      name: Instructions
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    photos:
+      name: Photos
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    tags:
+      name: Tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    courses:
+      name: Courses
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    categories:
+      name: Categories
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    collections:
+      name: Collections
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    description:
+      name: Description
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    notes:
+      name: Notes
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    source_url:
+      name: Source url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    cuisine:
+      name: Cuisine
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    category:
+      name: Category
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    servings_text:
+      name: Servings text
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    prep_time:
+      name: Prep time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    cook_time:
+      name: Cook time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    total_time:
+      name: Total time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    servings:
+      name: Servings
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition:
+      name: Nutrition
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    declared_nutrition:
+      name: Declared nutrition
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition_basis:
+      name: Nutrition basis
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - per_serving
+          - per_recipe
+          - unknown
+    nutrition_provenance:
+      name: Nutrition provenance
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    metadata:
+      name: Metadata
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition_raw:
+      name: Nutrition raw
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    provenance:
+      name: Provenance
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    import_metadata:
+      name: Import metadata
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    cuisines:
+      name: Cuisines
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    instruction_groups:
+      name: Instruction groups
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    is_favourite:
+      name: Is favourite
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    rating:
+      name: Rating
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    download_image:
+      name: Download image
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipes_delete:
+  name: Recipes delete
+  description: Delete one recipe and its planned entries.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipes_download_image:
+  name: Recipes download image
+  description: Download and privately normalize a recipe image after consent.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    enabled:
+      name: Enabled
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipes_get:
+  name: Recipes get
+  description: Read one recipe.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+recipes_get_all:
+  name: Recipes get all
+  description: Read and optionally filter recipes.
+  fields:
+    query:
+      name: Query
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    is_favourite:
+      name: Is favourite
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    tags:
+      name: Tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    courses:
+      name: Courses
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    categories:
+      name: Categories
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    collections:
+      name: Collections
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    min_rating:
+      name: Min rating
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 5
+    limit:
+      name: Limit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 500
+    offset:
+      name: Offset
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 1000000
+    sort:
+      name: Sort
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - name
+          - rating
+          - created_at
+          - updated_at
+    order:
+      name: Order
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - asc
+          - desc
+recipes_scrape:
+  name: Recipes scrape
+  description: Preview a remote recipe after explicit remote-import consent.
+  fields:
+    url:
+      name: Url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    enabled:
+      name: Enabled
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+recipes_search:
+  name: Recipes search
+  description: Search recipe text and taxonomy with bounded pagination.
+  fields:
+    query:
+      name: Query
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    is_favourite:
+      name: Is favourite
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    tags:
+      name: Tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    courses:
+      name: Courses
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    categories:
+      name: Categories
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    collections:
+      name: Collections
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    min_rating:
+      name: Min rating
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 5
+    limit:
+      name: Limit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 500
+    offset:
+      name: Offset
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 1000000
+    sort:
+      name: Sort
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - name
+          - rating
+          - created_at
+          - updated_at
+    order:
+      name: Order
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - asc
+          - desc
+recipes_set_favourite:
+  name: Recipes set favourite
+  description: Set a favourite explicitly; repeated values are idempotent.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    is_favourite:
+      name: Is favourite
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipes_toggle_favourite:
+  name: Recipes toggle favourite
+  description: Toggle a favourite, or set an explicit retry-safe value.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    is_favourite:
+      name: Is favourite
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipes_update:
+  name: Recipes update
+  description: Update recipe fields, retaining unchanged metadata.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    ingredients:
+      name: Ingredients
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    instructions:
+      name: Instructions
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    photos:
+      name: Photos
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    tags:
+      name: Tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    courses:
+      name: Courses
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    categories:
+      name: Categories
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    collections:
+      name: Collections
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    description:
+      name: Description
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    notes:
+      name: Notes
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    source_url:
+      name: Source url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    cuisine:
+      name: Cuisine
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    category:
+      name: Category
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    servings_text:
+      name: Servings text
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    prep_time:
+      name: Prep time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    cook_time:
+      name: Cook time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    total_time:
+      name: Total time
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    servings:
+      name: Servings
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition:
+      name: Nutrition
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    declared_nutrition:
+      name: Declared nutrition
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition_basis:
+      name: Nutrition basis
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - per_serving
+          - per_recipe
+          - unknown
+    nutrition_provenance:
+      name: Nutrition provenance
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    metadata:
+      name: Metadata
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition_raw:
+      name: Nutrition raw
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    provenance:
+      name: Provenance
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    import_metadata:
+      name: Import metadata
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    cuisines:
+      name: Cuisines
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    instruction_groups:
+      name: Instruction groups
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    is_favourite:
+      name: Is favourite
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    rating:
+      name: Rating
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+recipes_upload_image:
+  name: Recipes upload image
+  description: Normalize an uploaded recipe photo in parent preprocessing.
+  fields:
+    recipe_id:
+      name: Recipe id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    image_data:
+      name: Image data
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+save_food:
+  name: Save food
+  description: Create or replace a locally declared nutrient-tracked food.
+  fields:
+    food:
+      name: Food
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+search_foods:
+  name: Search foods
+  description: Search local foods; remote searches require explicit consent.
+  fields:
+    query:
+      name: Query
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    filter:
+      name: Filter
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    online:
+      name: Online
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+set_favorite:
+  name: Set favorite
+  description: Set an exact food favorite.
+  fields:
+    food_id:
+      name: Food id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    enabled:
+      name: Enabled
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    amount:
+      name: Amount
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    serving_id:
+      name: Serving id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    quantity:
+      name: Quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_categories_add:
+  name: Shopping categories add
+  description: Create an owned custom shopping category.
+  fields:
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    icon:
+      name: Icon
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    color:
+      name: Color
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_categories_delete:
+  name: Shopping categories delete
+  description: Delete an unused owned custom category and clean permitted list ordering.
+  fields:
+    category_id:
+      name: Category id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_categories_get_all:
+  name: Shopping categories get all
+  description: Read real packaged category defaults and permitted overrides.
+  fields:
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+shopping_categories_reorder:
+  name: Shopping categories reorder
+  description: Persist an exact category permutation for a permitted list.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    category_order:
+      name: Category order
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_categories_update:
+  name: Shopping categories update
+  description: Patch an owned custom category.
+  fields:
+    category_id:
+      name: Category id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    icon:
+      name: Icon
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    color:
+      name: Color
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_export_data:
+  name: Shopping export data
+  description: Export only permitted shopping records plus the current user's overrides
+    and usage.
+  fields:
+    list_ids:
+      name: List ids
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+shopping_get_integration_settings:
+  name: Shopping get integration settings
+  description: Read persisted shopping settings and available regions.
+  fields: {}
+shopping_import_data:
+  name: Shopping import data
+  description: Validate and add shopping backup records atomically; existing IDs require
+    owner access and remain unchanged.
+  fields:
+    data:
+      name: Data
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_add:
+  name: Shopping items add
+  description: Add an item to a permitted list.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    category_id:
+      name: Category id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    product_id:
+      name: Product id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    quantity:
+      name: Quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1.0e-06
+          max: 1000000
+    unit:
+      name: Unit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    note:
+      name: Note
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    price:
+      name: Price
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    currency:
+      name: Currency
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_bulk_check:
+  name: Shopping items bulk check
+  description: Check an explicit set only after authorizing every parent list.
+  fields:
+    item_ids:
+      name: Item ids
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    checked:
+      name: Checked
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_check:
+  name: Shopping items check
+  description: Set checked status and timestamp after parent-list authorization.
+  fields:
+    item_id:
+      name: Item id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    checked:
+      name: Checked
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_clear_checked:
+  name: Shopping items clear checked
+  description: Clear checked items from an explicitly confirmed permitted list.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    confirm:
+      name: Confirm
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_delete:
+  name: Shopping items delete
+  description: Delete one authorized item and clean list order.
+  fields:
+    item_id:
+      name: Item id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_get:
+  name: Shopping items get
+  description: Read all items of a permitted list in stored order.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+shopping_items_get_one:
+  name: Shopping items get one
+  description: Read one exact item after checking its parent list.
+  fields:
+    item_id:
+      name: Item id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+shopping_items_get_total:
+  name: Shopping items get total
+  description: Read unchecked known-price currency totals; missing prices remain unknown.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+shopping_items_increment:
+  name: Shopping items increment
+  description: Apply a bounded quantity delta without inventing a minimum of one.
+  fields:
+    item_id:
+      name: Item id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    amount:
+      name: Amount
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        number:
+          mode: box
+          min: -1000000
+          max: 1000000
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_reorder:
+  name: Shopping items reorder
+  description: Replace item order with an exact permutation of this list's IDs.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    item_order:
+      name: Item order
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_items_update:
+  name: Shopping items update
+  description: Patch an item after checking its parent list.
+  fields:
+    item_id:
+      name: Item id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    category_id:
+      name: Category id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    product_id:
+      name: Product id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    quantity:
+      name: Quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1.0e-06
+          max: 1000000
+    unit:
+      name: Unit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    note:
+      name: Note
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    price:
+      name: Price
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    currency:
+      name: Currency
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_lists_create:
+  name: Shopping lists create
+  description: Create a privately owned list; global lists require an administrator.
+  fields:
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    icon:
+      name: Icon
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    private:
+      name: Private
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_lists_delete:
+  name: Shopping lists delete
+  description: Delete an explicitly confirmed list and its items as owner or administrator.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    confirm:
+      name: Confirm
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_lists_get:
+  name: Shopping lists get
+  description: Read an exact permitted list.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+shopping_lists_get_all:
+  name: Shopping lists get all
+  description: Read permitted lists with the current user's active selection.
+  fields: {}
+shopping_lists_set_active:
+  name: Shopping lists set active
+  description: Persist the current user's active list without changing another user's
+    choice.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_lists_update:
+  name: Shopping lists update
+  description: Update list metadata as owner or administrator. Todo links are metadata
+    only.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    icon:
+      name: Icon
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    category_order:
+      name: Category order
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    ha_todo_entity_id:
+      name: Ha todo entity id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_lists_update_members:
+  name: Shopping lists update members
+  description: Replace list membership as owner or administrator.
+  fields:
+    list_id:
+      name: List id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    allowed_users:
+      name: Allowed users
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_loyalty_add:
+  name: Shopping loyalty add
+  description: Create a private loyalty card; explicitly public cards require an administrator.
+  fields:
+    private:
+      name: Private
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    number:
+      name: Number
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    barcode_type:
+      name: Barcode type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - barcode
+          - qrcode
+    logo:
+      name: Logo
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    notes:
+      name: Notes
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    color:
+      name: Color
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_loyalty_delete:
+  name: Shopping loyalty delete
+  description: Delete an exact loyalty card as owner or administrator.
+  fields:
+    card_id:
+      name: Card id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_loyalty_get:
+  name: Shopping loyalty get
+  description: Read an exact permitted loyalty card.
+  fields:
+    card_id:
+      name: Card id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+shopping_loyalty_get_all:
+  name: Shopping loyalty get all
+  description: Read only loyalty cards permitted to the current actor.
+  fields: {}
+shopping_loyalty_update:
+  name: Shopping loyalty update
+  description: Patch a loyalty card as owner or administrator.
+  fields:
+    card_id:
+      name: Card id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    number:
+      name: Number
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    barcode_type:
+      name: Barcode type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - barcode
+          - qrcode
+    logo:
+      name: Logo
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    notes:
+      name: Notes
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    color:
+      name: Color
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_loyalty_update_members:
+  name: Shopping loyalty update members
+  description: Replace loyalty-card membership as owner or administrator.
+  fields:
+    card_id:
+      name: Card id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    allowed_users:
+      name: Allowed users
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_openfoodfacts_fetch:
+  name: Shopping openfoodfacts fetch
+  description: Fetch transient Open Food Facts data only through explicit parent network
+    consent.
+  fields:
+    allow_remote:
+      name: Allow remote
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    query:
+      name: Query
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    page_size:
+      name: Page size
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 100
+shopping_products_add:
+  name: Shopping products add
+  description: Create an owned custom product with declared metadata only.
+  fields:
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    category_id:
+      name: Category id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    aliases:
+      name: Aliases
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    default_unit:
+      name: Default unit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    default_quantity:
+      name: Default quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1.0e-06
+          max: 1000000
+    price:
+      name: Price
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    currency:
+      name: Currency
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    price_per_unit:
+      name: Price per unit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_source:
+      name: Image source
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    brands:
+      name: Brands
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    tags:
+      name: Tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    collections:
+      name: Collections
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    taxonomy:
+      name: Taxonomy
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition:
+      name: Nutrition
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    allergens:
+      name: Allergens
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    substitution_group:
+      name: Substitution group
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    priority_level:
+      name: Priority level
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 1000
+    image_hint:
+      name: Image hint
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_products_delete:
+  name: Shopping products delete
+  description: Delete an owned product or persist a current-user catalog hiding override.
+  fields:
+    product_id:
+      name: Product id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_products_download_image:
+  name: Shopping products download image
+  description: Normalize remote product media through the parent; never write public
+    files or infer a product assignment.
+  fields:
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    product_name:
+      name: Product name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    allow_remote:
+      name: Allow remote
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    product_id:
+      name: Product id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_products_get:
+  name: Shopping products get
+  description: Read an exact catalog or permitted custom product.
+  fields:
+    product_id:
+      name: Product id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+shopping_products_get_all:
+  name: Shopping products get all
+  description: Read catalog products for a region and permitted custom products.
+  fields:
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+shopping_products_get_by_ids:
+  name: Shopping products get by ids
+  description: Read requested IDs in order; missing IDs are omitted, inaccessible
+    IDs denied.
+  fields:
+    product_ids:
+      name: Product ids
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        object: {}
+shopping_products_recent:
+  name: Shopping products recent
+  description: Read this user's recently used permitted products.
+  fields:
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    limit:
+      name: Limit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 200
+shopping_products_search:
+  name: Shopping products search
+  description: Fuzzy name and alias search with allergen, tag, group and taxonomy
+    filters.
+  fields:
+    query:
+      name: Query
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    limit:
+      name: Limit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 200
+    exclude_allergens:
+      name: Exclude allergens
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    include_tags:
+      name: Include tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    substitution_group:
+      name: Substitution group
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    taxonomy_filters:
+      name: Taxonomy filters
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+shopping_products_search_by_barcode:
+  name: Shopping products search by barcode
+  description: Find a permitted product by exact barcode, preserving leading zeros.
+  fields:
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+shopping_products_substitutes:
+  name: Shopping products substitutes
+  description: Read permitted same-group substitutes with dietary filters.
+  fields:
+    product_id:
+      name: Product id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    limit:
+      name: Limit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 200
+    exclude_allergens:
+      name: Exclude allergens
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    include_tags:
+      name: Include tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    substitution_group:
+      name: Substitution group
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    taxonomy_filters:
+      name: Taxonomy filters
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+shopping_products_suggestions:
+  name: Shopping products suggestions
+  description: Suggest products ranked by this user's frequency, recency and catalog
+    priority.
+  fields:
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    limit:
+      name: Limit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 200
+shopping_products_update:
+  name: Shopping products update
+  description: Patch an owned custom product or persist a current-user catalog override.
+  fields:
+    product_id:
+      name: Product id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    category_id:
+      name: Category id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    aliases:
+      name: Aliases
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    default_unit:
+      name: Default unit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    default_quantity:
+      name: Default quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1.0e-06
+          max: 1000000
+    price:
+      name: Price
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    currency:
+      name: Currency
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    price_per_unit:
+      name: Price per unit
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    barcode:
+      name: Barcode
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_url:
+      name: Image url
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    image_source:
+      name: Image source
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    brands:
+      name: Brands
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    tags:
+      name: Tags
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    collections:
+      name: Collections
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    taxonomy:
+      name: Taxonomy
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    nutrition:
+      name: Nutrition
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    allergens:
+      name: Allergens
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    substitution_group:
+      name: Substitution group
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    priority_level:
+      name: Priority level
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 1000
+    image_hint:
+      name: Image hint
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_regions_create:
+  name: Shopping regions create
+  description: Create a public administrator-managed custom region; no fake fallback
+    catalog.
+  fields:
+    code:
+      name: Code
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    currency_symbol:
+      name: Currency symbol
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    currency:
+      name: Currency
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    language:
+      name: Language
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_regions_delete:
+  name: Shopping regions delete
+  description: Delete an explicitly confirmed custom region and reset its active selection.
+  fields:
+    code:
+      name: Code
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    confirm:
+      name: Confirm
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_regions_get:
+  name: Shopping regions get
+  description: Read an exact permitted custom region.
+  fields:
+    code:
+      name: Code
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+shopping_regions_get_all:
+  name: Shopping regions get all
+  description: Read permitted custom regions.
+  fields: {}
+shopping_regions_update:
+  name: Shopping regions update
+  description: Patch an exact custom region as administrator.
+  fields:
+    code:
+      name: Code
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    currency_symbol:
+      name: Currency symbol
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    currency:
+      name: Currency
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    language:
+      name: Language
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_set_country:
+  name: Shopping set country
+  description: Select a real catalog or custom region without discarding overrides.
+  fields:
+    country:
+      name: Country
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_update_integration_settings:
+  name: Shopping update integration settings
+  description: Persist administrative shopping options without modifying unrelated
+    settings.
+  fields:
+    metric_units_only:
+      name: Metric units only
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    enable_price_tracking:
+      name: Enable price tracking
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    enable_image_search:
+      name: Enable image search
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        boolean: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+shopping_users_get_all:
+  name: Shopping users get all
+  description: Read active non-system HA users through the authenticated parent preprocessor.
+  fields: {}
+tags_get_all:
+  name: Tags get all
+  description: Read sorted unique tags, courses, categories and collections.
+  fields: {}
+timer_presets_add:
+  name: Timer presets add
+  description: Create a reusable timer preset.
+  fields:
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    seconds:
+      name: Seconds
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 604800
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+timer_presets_delete:
+  name: Timer presets delete
+  description: Delete a preset while preserving and detaching active timers.
+  fields:
+    preset_id:
+      name: Preset id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+timer_presets_get:
+  name: Timer presets get
+  description: Read all timer presets or one exact preset.
+  fields:
+    preset_id:
+      name: Preset id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+timer_presets_update:
+  name: Timer presets update
+  description: Edit a timer preset without changing active timer durations.
+  fields:
+    preset_id:
+      name: Preset id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    seconds:
+      name: Seconds
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 604800
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+update_food_entry:
+  name: Update food entry
+  description: Scale a recorded food snapshot.
+  fields:
+    entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+    amount:
+      name: Amount
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    serving_id:
+      name: Serving id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    quantity:
+      name: Quantity
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}
+update_meal:
+  name: Update meal
+  description: Patch a quick meal; null clears optional declarations.
+  fields:
+    entry_id:
+      name: Entry id
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: true
+      selector:
+        text: {}
+    name:
+      name: Name
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    meal_type:
+      name: Meal type
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        select:
+          options:
+          - breakfast
+          - lunch
+          - dinner
+          - snack
+    calories:
+      name: Calories
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 0
+          max: 100000
+    protein:
+      name: Protein
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    carbs:
+      name: Carbs
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    fat:
+      name: Fat
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        object: {}
+    eaten_at:
+      name: Eaten at
+      description: See the authoritative JSON schema returned by macromate.describe.
+      required: false
+      selector:
+        text: {}
+    request_id:
+      name: Request id
+      description: Stable retry ID; keep the exact action and payload after an uncertain
+        write.
+      required: false
+      selector:
+        text: {}

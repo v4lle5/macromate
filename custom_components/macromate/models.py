@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass
 from datetime import date, datetime
 from typing import Any, Iterable
 from zoneinfo import ZoneInfo
+from .platform_support import identifier, number as validate_number, validate_json
 
 NUTRIENTS = ("calories", "protein", "carbs", "fat")
 MEAL_TYPES = ("breakfast", "lunch", "dinner", "snack")
@@ -56,6 +57,9 @@ class MealEntry:
     quantity: float | None = None
     nutrients: dict[str, float] | None = None
     food_snapshot: dict[str, Any] | None = None
+    recipe_id: str | None = None
+    recipe_servings: float | None = None
+    recipe_snapshot: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not self.id.strip():
@@ -86,6 +90,19 @@ class MealEntry:
             })
         if self.food_snapshot is not None:
             object.__setattr__(self, "food_snapshot", deepcopy(self.food_snapshot))
+        if any(value is not None for value in (self.recipe_id, self.recipe_servings, self.recipe_snapshot)):
+            identifier(self.recipe_id, "recipe_id")
+            servings = validate_number(self.recipe_servings, "recipe_servings", maximum=100000)
+            if servings is None or servings <= 0 or not isinstance(self.recipe_snapshot, dict):
+                raise ValueError("recipe entries require positive servings and a recipe snapshot")
+            if self.food_id is not None or self.food_snapshot is not None:
+                raise ValueError("an entry cannot be both a recipe and a food")
+            if self.nutrients is None or "calories" not in self.nutrients:
+                raise ValueError("recipe entries require declared calories")
+            snapshot = validate_json(self.recipe_snapshot, max_bytes=2097152)
+            if snapshot.get("id") != self.recipe_id:
+                raise ValueError("recipe snapshot identity mismatch")
+            object.__setattr__(self, "recipe_snapshot", snapshot)
 
     def to_dict(self) -> dict[str, Any]:
         value = {
@@ -98,7 +115,7 @@ class MealEntry:
             "fat": self.fat,
             "eaten_at": self.eaten_at.isoformat(),
         }
-        for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot"):
+        for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot", "recipe_id", "recipe_servings", "recipe_snapshot"):
             if (extra := getattr(self, key)) is not None:
                 value[key] = deepcopy(extra)
         return value
@@ -120,7 +137,7 @@ class MealEntry:
             carbs=float(value["carbs"]),
             fat=float(value["fat"]),
             eaten_at=datetime.fromisoformat(str(value["eaten_at"])),
-            **{key: value[key] for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot") if key in value},
+            **{key: value[key] for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot", "recipe_id", "recipe_servings", "recipe_snapshot") if key in value},
         )
 
 

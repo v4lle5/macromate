@@ -86,57 +86,2483 @@
     }
   },
   "services": {
-    "log_meal": {
-      "name": "Mahlzeit eintragen",
-      "description": "Speichert einen Schnelleintrag mit gesamten Nährwerten. Für Administratoren und vertrauenswürdige interne Automationen verfügbar."
+    "legacy_import": {
+      "name": "Altbestände importieren",
+      "description": "Atomarer Administratorimport ausdrücklich bereitgestellter Altbestände und Bilder. Keine Server-Dateizugriffe oder URL-Abrufe.",
+      "fields": {
+        "source": {
+          "name": "Quellintegration",
+          "description": "Choose the exact standalone integration format."
+        },
+        "stores": {
+          "name": "Bereitgestellte Altbestände",
+          "description": "Exact legacy Store keys mapped to decoded data or supported HA Store envelopes. No server paths."
+        },
+        "images": {
+          "name": "Bereitgestellte Bilddaten",
+          "description": "Exact referenced legacy local URLs mapped to supplied base64 image data; no source filesystem access or URL fetch."
+        },
+        "country": {
+          "name": "Einkaufsland",
+          "description": "Required only for shopping imports. Preserve the exact country or custom region code."
+        },
+        "preserve_permissions": {
+          "name": "Quellberechtigungen erhalten",
+          "description": "Explizit false setzt importierte Besitzer/Freigaben auf den Importeur/privat; explizit true erhält unterstützte Quell-ACLs. Kataloganpassungen bleiben privat."
+        },
+        "confirm": {
+          "name": "Import bestätigen",
+          "description": "Muss ausdrücklich true sein. Bestehende IDs werden nicht überschrieben."
+        },
+        "request_id": {
+          "name": "Stabile Anfrage-ID",
+          "description": "Erforderliche stabile ID. Bei unklarem Ergebnis identische Daten und ID behalten; keine automatische Wiederholung."
+        }
+      }
     },
-    "list_meals": {
-      "name": "Mahlzeiten auflisten",
-      "description": "Liest private Tagebucheinträge, Mahlzeitengruppen, bekannte Summen, fehlende Nährwerte und das gespeicherte Tagesziel. Benötigt Antwortdaten."
-    },
-    "update_meal": {
-      "name": "Mahlzeit bearbeiten",
-      "description": "Bearbeitet einen Schnelleintrag anhand seiner Eintrags-ID. Für Lebensmittel-Einträge die Aktion zur Portionsänderung verwenden."
-    },
-    "delete_meal": {
-      "name": "Mahlzeit löschen",
-      "description": "Löscht einen einzelnen Tagebucheintrag anhand seiner Eintrags-ID."
+    "barcode": {
+      "name": "Barcode",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Look up an exact food barcode, online only after consent.",
+      "fields": {
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "online": {
+          "name": "Online",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
     "clear_day": {
       "name": "Ausdrückliches Datum leeren",
-      "description": "Löscht alle Einträge eines ausdrücklich gewählten Datums. Erfordert confirm true; heute wird nicht automatisch gewählt."
+      "description": "Löscht alle Einträge eines ausdrücklich gewählten Datums. Erfordert confirm true; heute wird nicht automatisch gewählt.",
+      "fields": {
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
     "copy_meal": {
       "name": "Tagebucheintrag kopieren",
-      "description": "Erstellt einen unabhängigen Eintrag am gewählten Datum und erhält die ursprünglichen Nährwerte."
+      "description": "Erstellt einen unabhängigen Eintrag am gewählten Datum und erhält die ursprünglichen Nährwerte.",
+      "fields": {
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
-    "search_foods": {
-      "name": "Lebensmittel suchen",
-      "description": "Sucht standardmäßig lokal. Ausdrückliche Online-Suchen erfordern die Freigabe in den Optionen und senden den Suchtext an Open Food Facts."
+    "delete_meal": {
+      "name": "Mahlzeit löschen",
+      "description": "Löscht einen einzelnen Tagebucheintrag anhand seiner Eintrags-ID.",
+      "fields": {
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "describe": {
+      "name": "Describe",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Discover the authoritative command registry and finite transport limits.",
+      "fields": {}
+    },
+    "diary": {
+      "name": "Diary",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read a private dated diary.",
+      "fields": {
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "favorite": {
+      "name": "Favorite",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Set an exact food favorite.",
+      "fields": {
+        "food_id": {
+          "name": "Food id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "serving_id": {
+          "name": "Serving id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "quantity": {
+          "name": "Quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "food": {
+      "name": "Food",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read an exact nutrient-tracked food.",
+      "fields": {
+        "food_id": {
+          "name": "Food id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "food_delete": {
+      "name": "Food delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete a local or cached food without rewriting recorded diary snapshots.",
+      "fields": {
+        "food_id": {
+          "name": "Food id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
     "get_food": {
       "name": "Gespeichertes Lebensmittel lesen",
-      "description": "Liest ein lokal gespeichertes Lebensmittel anhand seiner Lebensmittel-ID ohne Online-Abfrage."
+      "description": "Liest ein lokal gespeichertes Lebensmittel anhand seiner Lebensmittel-ID ohne Online-Abfrage.",
+      "fields": {
+        "food_id": {
+          "name": "Food id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
-    "lookup_barcode": {
-      "name": "Exakten Barcode nachschlagen",
-      "description": "Sucht eine exakt gültige GTIN8/12/13/14-Zeichenfolge. Führende Nullen bleiben erhalten; Online-Abfragen erfordern eine ausdrückliche Freigabe."
+    "global_timers_add": {
+      "name": "Global timers add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create a global cooking timer; start_time is epoch seconds.",
+      "fields": {
+        "label": {
+          "name": "Label",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "start_time": {
+          "name": "Start time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "running": {
+          "name": "Running",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "paused_remaining": {
+          "name": "Paused remaining",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "preset_id": {
+          "name": "Preset id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
-    "save_food": {
-      "name": "Eigenes Lebensmittel speichern",
-      "description": "Speichert ein eigenes Lebensmittel mit g/ml-Basiseinheit, Nährwerten pro 100 Einheiten sowie optionalen Portionen und Barcodes."
+    "global_timers_delete": {
+      "name": "Global timers delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Stop and delete one global timer.",
+      "fields": {
+        "timer_id": {
+          "name": "Timer id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
-    "set_favorite": {
-      "name": "Lieblingsportion speichern",
-      "description": "Speichert einen Favoriten mit optionaler Portionsvorlage oder entfernt ihn ohne zusätzliche Portionsangaben."
+    "global_timers_get": {
+      "name": "Global timers get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read timers with remaining time derived from the supplied clock.",
+      "fields": {
+        "timer_id": {
+          "name": "Timer id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "global_timers_update": {
+      "name": "Global timers update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Edit, pause, resume or extend a cooking timer.",
+      "fields": {
+        "timer_id": {
+          "name": "Timer id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "label": {
+          "name": "Label",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "start_time": {
+          "name": "Start time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "running": {
+          "name": "Running",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "paused_remaining": {
+          "name": "Paused remaining",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "preset_id": {
+          "name": "Preset id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "list_meals": {
+      "name": "Mahlzeiten auflisten",
+      "description": "Liest private Tagebucheinträge, Mahlzeitengruppen, bekannte Summen, fehlende Nährwerte und das gespeicherte Tagesziel. Benötigt Antwortdaten.",
+      "fields": {
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
     "log_food": {
       "name": "Lebensmittelportion eintragen",
-      "description": "Trägt eine Basismenge oder benannte Portion mit Anzahl ein. Die Produktnährwerte bleiben als unveränderliche Momentaufnahme erhalten."
+      "description": "Trägt eine Basismenge oder benannte Portion mit Anzahl ein. Die Produktnährwerte bleiben als unveränderliche Momentaufnahme erhalten.",
+      "fields": {
+        "food_id": {
+          "name": "Food id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "eaten_at": {
+          "name": "Eaten at",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "serving_id": {
+          "name": "Serving id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "quantity": {
+          "name": "Quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "log_meal": {
+      "name": "Mahlzeit eintragen",
+      "description": "Speichert einen Schnelleintrag mit gesamten Nährwerten. Für Administratoren und vertrauenswürdige interne Automationen verfügbar.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "calories": {
+          "name": "Calories",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "protein": {
+          "name": "Protein",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "carbs": {
+          "name": "Carbs",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "fat": {
+          "name": "Fat",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "eaten_at": {
+          "name": "Eaten at",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "lookup_barcode": {
+      "name": "Exakten Barcode nachschlagen",
+      "description": "Sucht eine exakt gültige GTIN8/12/13/14-Zeichenfolge. Führende Nullen bleiben erhalten; Online-Abfragen erfordern eine ausdrückliche Freigabe.",
+      "fields": {
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "online": {
+          "name": "Online",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "meal_plan_add": {
+      "name": "Meal plan add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Schedule a recipe without logging nutrition.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings": {
+          "name": "Servings",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "meal_plan_clear": {
+      "name": "Meal plan clear",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Clear only the confirmed seven-day range starting at week_start.",
+      "fields": {
+        "week_start": {
+          "name": "Week start",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "meal_plan_get": {
+      "name": "Meal plan get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read planned entries, one exact entry or an exact seven-day week.",
+      "fields": {
+        "week_start": {
+          "name": "Week start",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "meal_plan_remove": {
+      "name": "Meal plan remove",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Remove one planned entry.",
+      "fields": {
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "meal_plan_update": {
+      "name": "Meal plan update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Update an existing planned entry without changing its ID.",
+      "fields": {
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings": {
+          "name": "Servings",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "plan_to_shopping": {
+      "name": "Plan to shopping",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Add ingredients from only the exact seven-day plan range.",
+      "fields": {
+        "week_start": {
+          "name": "Week start",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "platform_backup": {
+      "name": "Platform backup",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Export recipe-compatible data plus the complete staged kitchen.",
+      "fields": {}
+    },
+    "platform_info": {
+      "name": "Platform info",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read kitchen schema and recipe-domain counts; transport supplies integration version.",
+      "fields": {}
+    },
+    "platform_restore": {
+      "name": "Platform restore",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Atomically restore a validated complete private dataset after explicit confirmation.",
+      "fields": {
+        "data": {
+          "name": "Data",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "preferences_get": {
+      "name": "Preferences get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read authenticated-user UI preferences.",
+      "fields": {}
+    },
+    "preferences_update": {
+      "name": "Preferences update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Patch authenticated-user UI preferences without changing ACL or provider consent.",
+      "fields": {
+        "preferences": {
+          "name": "Preferences",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipe_entry_update": {
+      "name": "Recipe entry update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Scale the recorded recipe snapshot, not the current recipe.",
+      "fields": {
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings": {
+          "name": "Servings",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipe_keeper_import": {
+      "name": "Recipe keeper import",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Import recipes from inert Recipe Keeper HTML or an archive.",
+      "fields": {
+        "html_content": {
+          "name": "Html content",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "base64_data": {
+          "name": "Base64 data",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipe_log": {
+      "name": "Recipe log",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Log explicit recipe portions using an immutable declared-nutrition snapshot.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings": {
+          "name": "Servings",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipe_to_shopping": {
+      "name": "Recipe to shopping",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Atomically add selected original ingredient indexes using exact accessible product matches.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings": {
+          "name": "Servings",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "ingredient_indexes": {
+          "name": "Ingredient indexes",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "ingredient_matches": {
+          "name": "Ingredient matches",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_add": {
+      "name": "Recipes add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create a recipe without inventing missing nutrition.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "ingredients": {
+          "name": "Ingredients",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "instructions": {
+          "name": "Instructions",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "photos": {
+          "name": "Photos",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "tags": {
+          "name": "Tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "courses": {
+          "name": "Courses",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "categories": {
+          "name": "Categories",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "collections": {
+          "name": "Collections",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "description": {
+          "name": "Description",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "source_url": {
+          "name": "Source url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "cuisine": {
+          "name": "Cuisine",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category": {
+          "name": "Category",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings_text": {
+          "name": "Servings text",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "prep_time": {
+          "name": "Prep time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "cook_time": {
+          "name": "Cook time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "total_time": {
+          "name": "Total time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings": {
+          "name": "Servings",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition": {
+          "name": "Nutrition",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "declared_nutrition": {
+          "name": "Declared nutrition",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition_basis": {
+          "name": "Nutrition basis",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition_provenance": {
+          "name": "Nutrition provenance",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "metadata": {
+          "name": "Metadata",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition_raw": {
+          "name": "Nutrition raw",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "provenance": {
+          "name": "Provenance",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "import_metadata": {
+          "name": "Import metadata",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "cuisines": {
+          "name": "Cuisines",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "instruction_groups": {
+          "name": "Instruction groups",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "is_favourite": {
+          "name": "Is favourite",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "rating": {
+          "name": "Rating",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "download_image": {
+          "name": "Download image",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_delete": {
+      "name": "Recipes delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete one recipe and its planned entries.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_download_image": {
+      "name": "Recipes download image",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Download and privately normalize a recipe image after consent.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_get": {
+      "name": "Recipes get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read one recipe.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_get_all": {
+      "name": "Recipes get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read and optionally filter recipes.",
+      "fields": {
+        "query": {
+          "name": "Query",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "is_favourite": {
+          "name": "Is favourite",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "tags": {
+          "name": "Tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "courses": {
+          "name": "Courses",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "categories": {
+          "name": "Categories",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "collections": {
+          "name": "Collections",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "min_rating": {
+          "name": "Min rating",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "offset": {
+          "name": "Offset",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "sort": {
+          "name": "Sort",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "order": {
+          "name": "Order",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_scrape": {
+      "name": "Recipes scrape",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Preview a remote recipe after explicit remote-import consent.",
+      "fields": {
+        "url": {
+          "name": "Url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_search": {
+      "name": "Recipes search",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Search recipe text and taxonomy with bounded pagination.",
+      "fields": {
+        "query": {
+          "name": "Query",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "is_favourite": {
+          "name": "Is favourite",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "tags": {
+          "name": "Tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "courses": {
+          "name": "Courses",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "categories": {
+          "name": "Categories",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "collections": {
+          "name": "Collections",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "min_rating": {
+          "name": "Min rating",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "offset": {
+          "name": "Offset",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "sort": {
+          "name": "Sort",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "order": {
+          "name": "Order",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_set_favourite": {
+      "name": "Recipes set favourite",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Set a favourite explicitly; repeated values are idempotent.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "is_favourite": {
+          "name": "Is favourite",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_toggle_favourite": {
+      "name": "Recipes toggle favourite",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Toggle a favourite, or set an explicit retry-safe value.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "is_favourite": {
+          "name": "Is favourite",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_update": {
+      "name": "Recipes update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Update recipe fields, retaining unchanged metadata.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "ingredients": {
+          "name": "Ingredients",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "instructions": {
+          "name": "Instructions",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "photos": {
+          "name": "Photos",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "tags": {
+          "name": "Tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "courses": {
+          "name": "Courses",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "categories": {
+          "name": "Categories",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "collections": {
+          "name": "Collections",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "description": {
+          "name": "Description",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "source_url": {
+          "name": "Source url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "cuisine": {
+          "name": "Cuisine",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category": {
+          "name": "Category",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings_text": {
+          "name": "Servings text",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "prep_time": {
+          "name": "Prep time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "cook_time": {
+          "name": "Cook time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "total_time": {
+          "name": "Total time",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "servings": {
+          "name": "Servings",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition": {
+          "name": "Nutrition",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "declared_nutrition": {
+          "name": "Declared nutrition",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition_basis": {
+          "name": "Nutrition basis",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition_provenance": {
+          "name": "Nutrition provenance",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "metadata": {
+          "name": "Metadata",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition_raw": {
+          "name": "Nutrition raw",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "provenance": {
+          "name": "Provenance",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "import_metadata": {
+          "name": "Import metadata",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "cuisines": {
+          "name": "Cuisines",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "instruction_groups": {
+          "name": "Instruction groups",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "is_favourite": {
+          "name": "Is favourite",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "rating": {
+          "name": "Rating",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "recipes_upload_image": {
+      "name": "Recipes upload image",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Normalize an uploaded recipe photo in parent preprocessing.",
+      "fields": {
+        "recipe_id": {
+          "name": "Recipe id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_data": {
+          "name": "Image data",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "save_food": {
+      "name": "Eigenes Lebensmittel speichern",
+      "description": "Speichert ein eigenes Lebensmittel mit g/ml-Basiseinheit, Nährwerten pro 100 Einheiten sowie optionalen Portionen und Barcodes.",
+      "fields": {
+        "food": {
+          "name": "Food",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "search_foods": {
+      "name": "Lebensmittel suchen",
+      "description": "Sucht standardmäßig lokal. Ausdrückliche Online-Suchen erfordern die Freigabe in den Optionen und senden den Suchtext an Open Food Facts.",
+      "fields": {
+        "query": {
+          "name": "Query",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "filter": {
+          "name": "Filter",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "online": {
+          "name": "Online",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "set_favorite": {
+      "name": "Lieblingsportion speichern",
+      "description": "Speichert einen Favoriten mit optionaler Portionsvorlage oder entfernt ihn ohne zusätzliche Portionsangaben.",
+      "fields": {
+        "food_id": {
+          "name": "Food id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "serving_id": {
+          "name": "Serving id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "quantity": {
+          "name": "Quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_categories_add": {
+      "name": "Shopping categories add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create an owned custom shopping category.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "icon": {
+          "name": "Icon",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_categories_delete": {
+      "name": "Shopping categories delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete an unused owned custom category and clean permitted list ordering.",
+      "fields": {
+        "category_id": {
+          "name": "Category id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_categories_get_all": {
+      "name": "Shopping categories get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read real packaged category defaults and permitted overrides.",
+      "fields": {
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_categories_reorder": {
+      "name": "Shopping categories reorder",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Persist an exact category permutation for a permitted list.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category_order": {
+          "name": "Category order",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_categories_update": {
+      "name": "Shopping categories update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Patch an owned custom category.",
+      "fields": {
+        "category_id": {
+          "name": "Category id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "icon": {
+          "name": "Icon",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_export_data": {
+      "name": "Shopping export data",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Export only permitted shopping records plus the current user's overrides and usage.",
+      "fields": {
+        "list_ids": {
+          "name": "List ids",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_get_integration_settings": {
+      "name": "Shopping get integration settings",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read persisted shopping settings and available regions.",
+      "fields": {}
+    },
+    "shopping_import_data": {
+      "name": "Shopping import data",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Validate and add shopping backup records atomically; existing IDs require owner access and remain unchanged.",
+      "fields": {
+        "data": {
+          "name": "Data",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_add": {
+      "name": "Shopping items add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Add an item to a permitted list.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category_id": {
+          "name": "Category id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "product_id": {
+          "name": "Product id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "quantity": {
+          "name": "Quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "unit": {
+          "name": "Unit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "note": {
+          "name": "Note",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "price": {
+          "name": "Price",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency": {
+          "name": "Currency",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_bulk_check": {
+      "name": "Shopping items bulk check",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Check an explicit set only after authorizing every parent list.",
+      "fields": {
+        "item_ids": {
+          "name": "Item ids",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "checked": {
+          "name": "Checked",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_check": {
+      "name": "Shopping items check",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Set checked status and timestamp after parent-list authorization.",
+      "fields": {
+        "item_id": {
+          "name": "Item id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "checked": {
+          "name": "Checked",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_clear_checked": {
+      "name": "Shopping items clear checked",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Clear checked items from an explicitly confirmed permitted list.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_delete": {
+      "name": "Shopping items delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete one authorized item and clean list order.",
+      "fields": {
+        "item_id": {
+          "name": "Item id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_get": {
+      "name": "Shopping items get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read all items of a permitted list in stored order.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_get_one": {
+      "name": "Shopping items get one",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read one exact item after checking its parent list.",
+      "fields": {
+        "item_id": {
+          "name": "Item id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_get_total": {
+      "name": "Shopping items get total",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read unchecked known-price currency totals; missing prices remain unknown.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_increment": {
+      "name": "Shopping items increment",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Apply a bounded quantity delta without inventing a minimum of one.",
+      "fields": {
+        "item_id": {
+          "name": "Item id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_reorder": {
+      "name": "Shopping items reorder",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Replace item order with an exact permutation of this list's IDs.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "item_order": {
+          "name": "Item order",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_items_update": {
+      "name": "Shopping items update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Patch an item after checking its parent list.",
+      "fields": {
+        "item_id": {
+          "name": "Item id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category_id": {
+          "name": "Category id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "product_id": {
+          "name": "Product id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "quantity": {
+          "name": "Quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "unit": {
+          "name": "Unit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "note": {
+          "name": "Note",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "price": {
+          "name": "Price",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency": {
+          "name": "Currency",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_lists_create": {
+      "name": "Shopping lists create",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create a privately owned list; global lists require an administrator.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "icon": {
+          "name": "Icon",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "private": {
+          "name": "Private",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_lists_delete": {
+      "name": "Shopping lists delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete an explicitly confirmed list and its items as owner or administrator.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_lists_get": {
+      "name": "Shopping lists get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read an exact permitted list.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_lists_get_all": {
+      "name": "Shopping lists get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read permitted lists with the current user's active selection.",
+      "fields": {}
+    },
+    "shopping_lists_set_active": {
+      "name": "Shopping lists set active",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Persist the current user's active list without changing another user's choice.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_lists_update": {
+      "name": "Shopping lists update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Update list metadata as owner or administrator. Todo links are metadata only.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "icon": {
+          "name": "Icon",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category_order": {
+          "name": "Category order",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "ha_todo_entity_id": {
+          "name": "Ha todo entity id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_lists_update_members": {
+      "name": "Shopping lists update members",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Replace list membership as owner or administrator.",
+      "fields": {
+        "list_id": {
+          "name": "List id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "allowed_users": {
+          "name": "Allowed users",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_loyalty_add": {
+      "name": "Shopping loyalty add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create a private loyalty card; explicitly public cards require an administrator.",
+      "fields": {
+        "private": {
+          "name": "Private",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "number": {
+          "name": "Number",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode_type": {
+          "name": "Barcode type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "logo": {
+          "name": "Logo",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_loyalty_delete": {
+      "name": "Shopping loyalty delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete an exact loyalty card as owner or administrator.",
+      "fields": {
+        "card_id": {
+          "name": "Card id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_loyalty_get": {
+      "name": "Shopping loyalty get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read an exact permitted loyalty card.",
+      "fields": {
+        "card_id": {
+          "name": "Card id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_loyalty_get_all": {
+      "name": "Shopping loyalty get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read only loyalty cards permitted to the current actor.",
+      "fields": {}
+    },
+    "shopping_loyalty_update": {
+      "name": "Shopping loyalty update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Patch a loyalty card as owner or administrator.",
+      "fields": {
+        "card_id": {
+          "name": "Card id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "number": {
+          "name": "Number",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode_type": {
+          "name": "Barcode type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "logo": {
+          "name": "Logo",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "color": {
+          "name": "Color",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_loyalty_update_members": {
+      "name": "Shopping loyalty update members",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Replace loyalty-card membership as owner or administrator.",
+      "fields": {
+        "card_id": {
+          "name": "Card id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "allowed_users": {
+          "name": "Allowed users",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_openfoodfacts_fetch": {
+      "name": "Shopping openfoodfacts fetch",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Fetch transient Open Food Facts data only through explicit parent network consent.",
+      "fields": {
+        "allow_remote": {
+          "name": "Allow remote",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "query": {
+          "name": "Query",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "page_size": {
+          "name": "Page size",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_add": {
+      "name": "Shopping products add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create an owned custom product with declared metadata only.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category_id": {
+          "name": "Category id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "aliases": {
+          "name": "Aliases",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "default_unit": {
+          "name": "Default unit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "default_quantity": {
+          "name": "Default quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "price": {
+          "name": "Price",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency": {
+          "name": "Currency",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "price_per_unit": {
+          "name": "Price per unit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_source": {
+          "name": "Image source",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "brands": {
+          "name": "Brands",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "tags": {
+          "name": "Tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "collections": {
+          "name": "Collections",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "taxonomy": {
+          "name": "Taxonomy",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition": {
+          "name": "Nutrition",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "allergens": {
+          "name": "Allergens",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "substitution_group": {
+          "name": "Substitution group",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "priority_level": {
+          "name": "Priority level",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_hint": {
+          "name": "Image hint",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_delete": {
+      "name": "Shopping products delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete an owned product or persist a current-user catalog hiding override.",
+      "fields": {
+        "product_id": {
+          "name": "Product id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_download_image": {
+      "name": "Shopping products download image",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Normalize remote product media through the parent; never write public files or infer a product assignment.",
+      "fields": {
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "product_name": {
+          "name": "Product name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "allow_remote": {
+          "name": "Allow remote",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "product_id": {
+          "name": "Product id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_get": {
+      "name": "Shopping products get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read an exact catalog or permitted custom product.",
+      "fields": {
+        "product_id": {
+          "name": "Product id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_get_all": {
+      "name": "Shopping products get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read catalog products for a region and permitted custom products.",
+      "fields": {
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_get_by_ids": {
+      "name": "Shopping products get by ids",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read requested IDs in order; missing IDs are omitted, inaccessible IDs denied.",
+      "fields": {
+        "product_ids": {
+          "name": "Product ids",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_recent": {
+      "name": "Shopping products recent",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read this user's recently used permitted products.",
+      "fields": {
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_search": {
+      "name": "Shopping products search",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Fuzzy name and alias search with allergen, tag, group and taxonomy filters.",
+      "fields": {
+        "query": {
+          "name": "Query",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "exclude_allergens": {
+          "name": "Exclude allergens",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "include_tags": {
+          "name": "Include tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "substitution_group": {
+          "name": "Substitution group",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "taxonomy_filters": {
+          "name": "Taxonomy filters",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_search_by_barcode": {
+      "name": "Shopping products search by barcode",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Find a permitted product by exact barcode, preserving leading zeros.",
+      "fields": {
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_substitutes": {
+      "name": "Shopping products substitutes",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read permitted same-group substitutes with dietary filters.",
+      "fields": {
+        "product_id": {
+          "name": "Product id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "exclude_allergens": {
+          "name": "Exclude allergens",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "include_tags": {
+          "name": "Include tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "substitution_group": {
+          "name": "Substitution group",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "taxonomy_filters": {
+          "name": "Taxonomy filters",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_suggestions": {
+      "name": "Shopping products suggestions",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Suggest products ranked by this user's frequency, recency and catalog priority.",
+      "fields": {
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_products_update": {
+      "name": "Shopping products update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Patch an owned custom product or persist a current-user catalog override.",
+      "fields": {
+        "product_id": {
+          "name": "Product id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "category_id": {
+          "name": "Category id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "aliases": {
+          "name": "Aliases",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "default_unit": {
+          "name": "Default unit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "default_quantity": {
+          "name": "Default quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "price": {
+          "name": "Price",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency": {
+          "name": "Currency",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "price_per_unit": {
+          "name": "Price per unit",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "barcode": {
+          "name": "Barcode",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_url": {
+          "name": "Image url",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_source": {
+          "name": "Image source",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "brands": {
+          "name": "Brands",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "tags": {
+          "name": "Tags",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "collections": {
+          "name": "Collections",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "taxonomy": {
+          "name": "Taxonomy",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "nutrition": {
+          "name": "Nutrition",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "allergens": {
+          "name": "Allergens",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "substitution_group": {
+          "name": "Substitution group",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "priority_level": {
+          "name": "Priority level",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "image_hint": {
+          "name": "Image hint",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_regions_create": {
+      "name": "Shopping regions create",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create a public administrator-managed custom region; no fake fallback catalog.",
+      "fields": {
+        "code": {
+          "name": "Code",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency_symbol": {
+          "name": "Currency symbol",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency": {
+          "name": "Currency",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "language": {
+          "name": "Language",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_regions_delete": {
+      "name": "Shopping regions delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete an explicitly confirmed custom region and reset its active selection.",
+      "fields": {
+        "code": {
+          "name": "Code",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_regions_get": {
+      "name": "Shopping regions get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read an exact permitted custom region.",
+      "fields": {
+        "code": {
+          "name": "Code",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_regions_get_all": {
+      "name": "Shopping regions get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read permitted custom regions.",
+      "fields": {}
+    },
+    "shopping_regions_update": {
+      "name": "Shopping regions update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Patch an exact custom region as administrator.",
+      "fields": {
+        "code": {
+          "name": "Code",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency_symbol": {
+          "name": "Currency symbol",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "currency": {
+          "name": "Currency",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "language": {
+          "name": "Language",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_set_country": {
+      "name": "Shopping set country",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Select a real catalog or custom region without discarding overrides.",
+      "fields": {
+        "country": {
+          "name": "Country",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_update_integration_settings": {
+      "name": "Shopping update integration settings",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Persist administrative shopping options without modifying unrelated settings.",
+      "fields": {
+        "metric_units_only": {
+          "name": "Metric units only",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "enable_price_tracking": {
+          "name": "Enable price tracking",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "enable_image_search": {
+          "name": "Enable image search",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "shopping_users_get_all": {
+      "name": "Shopping users get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read active non-system HA users through the authenticated parent preprocessor.",
+      "fields": {}
+    },
+    "tags_get_all": {
+      "name": "Tags get all",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read sorted unique tags, courses, categories and collections.",
+      "fields": {}
+    },
+    "timer_presets_add": {
+      "name": "Timer presets add",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Create a reusable timer preset.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "seconds": {
+          "name": "Seconds",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "timer_presets_delete": {
+      "name": "Timer presets delete",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Delete a preset while preserving and detaching active timers.",
+      "fields": {
+        "preset_id": {
+          "name": "Preset id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "timer_presets_get": {
+      "name": "Timer presets get",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Read all timer presets or one exact preset.",
+      "fields": {
+        "preset_id": {
+          "name": "Preset id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "timer_presets_update": {
+      "name": "Timer presets update",
+      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Edit a timer preset without changing active timer durations.",
+      "fields": {
+        "preset_id": {
+          "name": "Preset id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "seconds": {
+          "name": "Seconds",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     },
     "update_food_entry": {
       "name": "Lebensmittelportion ändern",
-      "description": "Ändert die Portion eines Lebensmittel-Eintrags anhand seiner ursprünglichen Nährwerte, nicht des aktuellen Produktdatensatzes."
+      "description": "Ändert die Portion eines Lebensmittel-Eintrags anhand seiner ursprünglichen Nährwerte, nicht des aktuellen Produktdatensatzes.",
+      "fields": {
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "serving_id": {
+          "name": "Serving id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "quantity": {
+          "name": "Quantity",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
+    },
+    "update_meal": {
+      "name": "Mahlzeit bearbeiten",
+      "description": "Bearbeitet einen Schnelleintrag anhand seiner Eintrags-ID. Für Lebensmittel-Einträge die Aktion zur Portionsänderung verwenden.",
+      "fields": {
+        "entry_id": {
+          "name": "Entry id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "meal_type": {
+          "name": "Meal type",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "calories": {
+          "name": "Calories",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "protein": {
+          "name": "Protein",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "carbs": {
+          "name": "Carbs",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "fat": {
+          "name": "Fat",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "eaten_at": {
+          "name": "Eaten at",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        }
+      }
     }
   },
   "selector": {

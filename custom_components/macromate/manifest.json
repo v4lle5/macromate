@@ -1,14 +1,20 @@
 {
   "domain": "macromate",
   "name": "MacroMate",
-  "after_dependencies": ["http"],
+  "after_dependencies": [
+    "http"
+  ],
   "codeowners": [],
   "config_flow": true,
   "documentation": "https://github.com/v4lle5/macromate",
   "integration_type": "service",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/v4lle5/macromate/issues",
-  "requirements": [],
+  "requirements": [
+    "recipe-scrapers==15.12.0",
+    "beautifulsoup4==4.14.3",
+    "Pillow==12.3.0"
+  ],
   "single_config_entry": true,
   "version": "0.3.0"
 }

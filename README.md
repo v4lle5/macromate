@@ -2,7 +2,7 @@
 
 <p align="center"><img src="brand/macromate-logo.png" alt="MacroMate — Track Eat Progress" width="420"></p>
 
-Local calorie and nutrient tracking inside Home Assistant. MacroMate provides its own food, portion and diary model, automatic nutrition goals, local storage and optional Open Food Facts lookup.
+Local nutrition, recipes, shopping lists, weekly planning and cooking timers inside one Home Assistant integration. MacroMate keeps its food/portion/diary model, automatic nutrition goals, local storage and optional Open Food Facts lookup, with one connected dashboard and authenticated local agent API.
 
 Development build, not a medical tool. Physical mobile cameras and iOS/Safari remain unverified; read the limits below before installing on a live instance.
 
@@ -19,8 +19,12 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 - Quick entries store total nutrients; food entries store immutable label snapshots. Edit, delete and copy entries without later product changes rewriting their nutrition history.
 - Extended nutrients with explicit kcal/g/mg/µg/ml units. Missing values remain unknown; declared zero remains zero.
 - Local private storage, bounded persistent retry history, summary/goal sensors and authenticated actions for automations/agent clients.
+- Recipe library, taxonomy, ratings/favorites, manual editing, consented imports and private normalized images.
+- Weekly planning and explicit recipe/plan → shopping transfers; logging recipe portions to the diary is a separate action with an immutable nutrition snapshot.
+- Shared/private shopping lists, item/product/category CRUD, regional catalogs, prices, loyalty cards and permission-filtered exports.
+- Cooking timers/presets and complete local agent CRUD through the same authenticated, validated command model as the card.
 
-No AI, recipes, fasting, photo-based food recognition, image uploads or analytics.
+No bundled inference model, fasting tracker, photo-based food recognition or analytics. Agents need no cloud model, browser automation or extra MCP server to use the API. See the [local agent guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md). This development branch is not automatically published or installed.
 
 ## Installation
 
@@ -40,13 +44,15 @@ The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tes
 
 ## Dashboard card
 
-The optional local dashboard card shows a calorie-balance ring, macro progress and four meal-group summaries. It uses the existing administrator-authorized diary API without guessed entity IDs or additional credentials. Missing nutrients and goals remain explicitly unknown. Editing stays in the existing MacroMate diary.
+The local dashboard card opens the combined recipe, shopping, planner, timer and nutrition workspace. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
 
-After installing a revision containing the card, register `/macromate-assets/macromate-card.js?v=card1` as a **JavaScript module** under dashboard resources, then add a manual card:
+After installing a revision containing the complete combined frontend, register `/macromate-assets/macromate-card.js?v=unified1` as a **JavaScript module** under dashboard resources, then add a manual card:
 
 ```yaml
 type: custom:macromate-card
 ```
+
+For the original read-only compact overview, explicitly add `mode: summary`. The default combined card is editable according to server-side permissions; do not describe it as read-only.
 
 Updating the integration does not register the resource automatically. Full setup, requirements and troubleshooting: [Dashboard card](docs/DASHBOARD_CARD.md). Copyable YAML: [example](examples/macromate-dashboard.yaml).
 
@@ -80,7 +86,7 @@ Barcodes are preserved as strings, including leading zeros. MacroMate requires A
 
 ## Home Assistant actions
 
-Private actions require an administrator when a user context is present. HA's admin-service helper permits userless internal automations as trusted: do not expose them through untrusted scripts/webhooks. Every custom WebSocket command and the sidebar panel is admin-only.
+Private nutrition, recipes/planning and administrative actions require an administrator when a user context is present. Shopping members can access only permitted records; read-only HA users cannot mutate them. Actors come from native authenticated service/WebSocket contexts, never payload role flags. Userless internal automations are trusted: do not expose them through untrusted scripts/webhooks. The private sidebar remains administrator-only. Discover the current canonical registry with `macromate.describe`; the legacy nutrition services below remain supported aliases.
 
 Read actions require response data:
 
@@ -157,7 +163,7 @@ A stable `request_id` replays the original result only for identical retained op
 
 The panel never automatically retries writes. Unclear transport/storage status keeps the original payload/ID for explicit retry. Pending requests exist only in panel memory: after closing/reloading during an uncertain write, inspect the diary before submitting again. Removing MacroMate through HA deletes its local dataset.
 
-An authorized open panel subscribes to native `macromate_updated` events, coalescing bursts. A one-minute fallback catches missed events and HA-local date changes. Background refresh reads only the diary, waits for open dialogs and active/uncertain writes, preserves explicitly selected historical dates, and cleans up timers/subscriptions on disconnect. No background provider search or automatic write retry is performed.
+Authorized views subscribe to filtered native refresh events and coalesce bursts. Refresh preserves selected dates, draft/focused forms and uncertain writes; safe list metadata can refresh without replacing a dirty recipe editor. The nutrition view retains its bounded fallback for missed events and HA-local date changes. Removal or identity changes release subscriptions and private state. No background provider search or automatic write retry is performed.
 
 ## Agent client
 
@@ -173,7 +179,7 @@ python3 tools/macromate_client.py delete ENTRY_ID --request-id delete-1
 python3 tools/macromate_client.py clear-day --date 2026-10-14 --confirm --request-id clear-1
 ```
 
-The CLI covers diary CRUD; its `call_service` function supports the other food actions. HTTP/protocol errors are sanitized and HA response envelopes unwrapped.
+The legacy conveniences cover diary CRUD; `describe`, generic `call ACTION` and Python `call_service` cover every advertised domain. Bounded Python helpers in `tools/macromate_transfer.py` handle large private backup/restore transfers and administrator-confirmed [standalone legacy Store/image migrations](docs/LEGACY_MIGRATION.md) separately. HTTP/protocol errors are sanitized and HA response envelopes unwrapped. Full recipe/planner/shopping/diary CRUD, exact readbacks, destructive confirmation and retry rules are documented in [AGENT_API.md](docs/AGENT_API.md).
 
 ## Privacy boundary and verification limits
 
@@ -199,10 +205,10 @@ python -m unittest discover -s tests/ha -v
 python -m compileall -q custom_components tests tools
 ```
 
-Browser/decoder commands and exact scratch dependency pins: `frontend/README.md`. Evidence and limits: `tests/frontend/evidence/README.md`. HACS installs the mirrored `custom_components/macromate/frontend` copy; after deliberate frontend changes mirror it there too. `test_panel_packaging.py` rejects stale/missing packaged assets.
+Browser/decoder commands and dependency pins: `frontend/README.md`; combined build/workflows: `frontend/unified-src/README.md`. HACS installs the mirrored `custom_components/macromate/frontend` copy. Builds must be reproducible across clean dependency and checkout directories. After a deliberate rebuild, mirror the complete frontend and remove only verified obsolete generated chunks. The bidirectional `test_unified_packaging.py` and Node artifact gate reject missing, stale, extra or mismatched assets before native acceptance.
 
 Browser contract tests now replay captured form submissions through the actual HA coordinator. Set `HA_PYTHON` to a Python 3.14.2 interpreter with `homeassistant==2026.10.1` installed before running the Node suite; the CI frontend job installs that pinned runtime rather than skipping those assertions.
 
 ## License
 
-MacroMate's original code is available under the [MIT License](LICENSE). Bundled third-party components retain their own license notices in `frontend/vendor/`. Open Food Facts data retains its separate data licenses and attribution; the MIT license does not replace them.
+MacroMate's original code is available under the [MIT License](LICENSE). Adapted Recipe-Manager, shopping-list-manager and Recipe-Manager-Card code retains the original MIT notices, including `Copyright (c) 2026 thekiwismarthome`. Bundled runtime notices are in `frontend/unified/THIRD-PARTY-NOTICES.txt` and `frontend/vendor/`. Open Food Facts data retains its separate data licenses and attribution; the MIT license does not replace them.

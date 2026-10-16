@@ -145,7 +145,7 @@ class ClientSecurityTests(unittest.TestCase):
             self.assertEqual(result.stderr, "")
             self.assertEqual(json.loads(records[0]["body"]),
                              {"name": "Müsli", "meal_type": "breakfast", "calories": 500,
-                              "protein": 0, "carbs": 0, "fat": 0, "request_id": "r"})
+                              "request_id": "r"})
 
     def test_cli_rejects_insecure_or_invalid_url_without_traceback(self):
         with server() as (url, records):

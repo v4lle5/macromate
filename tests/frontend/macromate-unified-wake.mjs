@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+const document=new EventTarget();document.visibilityState='visible';globalThis.document=document;
+let resolvePermission,releases=0;const sentinel=new EventTarget();sentinel.release=async()=>{releases++;sentinel.dispatchEvent(new Event('release'));};
+Object.defineProperty(globalThis,'navigator',{configurable:true,value:{wakeLock:{request:()=>new Promise(resolve=>resolvePermission=resolve)}}});
+const wake=await import('../../frontend/unified-src/services/wake-lock.js');
+const acquiring=wake.acquire('old-card');await wake.release('old-card');resolvePermission(sentinel);await acquiring;
+assert.equal(releases,1,'Late wake permission is released after the card no longer has a reason');assert.equal(wake.isActive(),false);
+let requests=0;const shared=new EventTarget();shared.release=async()=>{shared.dispatchEvent(new Event('release'));};navigator.wakeLock.request=async()=>{requests++;await new Promise(r=>setTimeout(r,5));return shared;};
+await Promise.all([wake.acquire('one'),wake.acquire('two')]);assert.equal(requests,1,'Concurrent reasons share one in-flight permission request');await wake.release('one');assert.equal(wake.isActive(),true);await wake.release('two');assert.equal(wake.isActive(),false);
+console.log('PASS: delayed disposal and concurrent wake reasons release one shared sentinel (synthetic API, not physical hardware)');

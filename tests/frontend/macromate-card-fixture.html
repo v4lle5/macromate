@@ -33,7 +33,7 @@
   }});
   window.emit=()=>window.subscriptions.filter(s=>s.active).forEach(s=>s.callback({event_type:'macromate_updated'}));
   window.mount=(config={type:'custom:macromate-card'},hass=window.makeHass())=>{
-    const card=document.createElement('macromate-card');card.setConfig(config);card.hass=hass;
+    const card=document.createElement('macromate-card');card.setConfig({...config,mode:'summary'});card.hass=hass;
     document.querySelector('#mount').append(card);window.card=card;return card;
   };
   try { await import('/macromate-assets/macromate-card.js'); } catch(error) { window.moduleError=error.message; }
