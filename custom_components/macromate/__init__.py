@@ -152,7 +152,12 @@ async def _async_card_resource(hass) -> None:
     from homeassistant.components import frontend
 
     modules = hass.data.get(frontend.DATA_EXTRA_MODULE_URL)
-    url = "/macromate-assets/macromate-card.js?v=dashboard2"
+    import json
+
+    delivery = await hass.async_add_executor_job(
+        lambda: json.loads((Path(__file__).parent / "frontend" / "delivery-manifest.json").read_text())
+    )
+    url = delivery["entry"]
     if modules is not None and url not in modules.urls:
         frontend.add_extra_js_url(hass, url)
 

@@ -40,7 +40,7 @@ Private nutrition, recipes and planning require an administrator. Internal shopp
 
 Adding a plan does not silently log calories. Recipe → diary logging is a separate confirmed portion operation; saved nutrition snapshots survive later source edits/deletion. Unknown nutrients stay unknown, not zero. Incomplete totals do not imply exact progress, and over-goal intake is distinct from calories remaining.
 
-The combined interface includes dedicated workflows and **All actions**, whose schema forms cover advanced fields as explicit JSON. Placeholder Cookbook/Sync/Help navigation that was inert upstream stays disabled; it is not a functioning sync service. Recipes/shopping/card share the integration's state, rather than running independent embedded integrations.
+The interface uses dedicated recipe editing, portion logging, weekly planning, timer/preset and settings/import/export workflows. The generic action editor has been removed. The authenticated API and agent clients remain available independently; API coverage is not evidence of a graphical editor for every optional field. Inert upstream Cookbook/Sync/Help placeholders remain disabled.
 
 Refresh events coalesce. Safe list metadata can refresh while a recipe editor is dirty; protected recipes/dates/drafts/focus are retained. Uncertain mutations retain their exact request and UUID for explicit retry only. Identity changes/removal clear private UI state and release subscriptions, cameras and object URLs. Private recipe photos use authenticated local media routes; barcode camera frames are decoded locally, not uploaded for recognition.
 
@@ -55,7 +55,8 @@ Native Lovelace acceptance covers the actual served HA dashboard, visual card pi
 ## Troubleshooting
 
 - **Custom element missing / 404:** verify the complete installed frontend, configured integration, HA restart and automatic module loading. No resource URL belongs in the view URL field. A version number alone does not prove the files are present.
-- **Old UI:** restart HA after the integration update, then refresh the dashboard/browser cache. The full app is the MacroMate dashboard card, with no legacy sidebar diary. A partial chunk update is not a valid installation.
+- **Old UI:** updates now register `/macromate-assets/releases/<sha256>/loader.js` automatically. Every runtime dependency (including lazy modules, CSS and images) comes from that same content-addressed directory. A small build revision appears above the app. Existing manual `/macromate-assets/macromate-card.js` module resources, including old query strings, remain supported; the integration never rewrites dashboard resource records. If an older card class is already defined in this page, an explicit `registration_conflict` banner requests a page reload instead of silently retaining it or mixing modules. Restart HA after Python updates, then reload the page. Only if the conflict persists, inspect the actual loaded script URL and any duplicate manual resources; do not delete dashboards or integration data.
+- **Read failure versus uncertain write:** failed reads show a safe operation/error category and do not imply a saved mutation. Only an actually pending mutation offers explicit same-request retry. The revision/status includes no provider response, credentials or submitted data.
 - **Permission denied:** use an identity authorized for the exact domain/object; do not bypass server restrictions.
 - **Unknown goals:** complete integration profile/options. Missing goals are not an instruction to consume zero calories.
 - **Uncertain write:** inspect the exact target before an operator-approved identical-ID retry. Never create a replacement UUID merely to hide uncertainty.

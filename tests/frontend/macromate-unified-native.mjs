@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {createInterface} from 'node:readline';
 import {readFile,writeFile} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
 const deps=process.env.PLAYWRIGHT_DIR||resolve(process.env.FRONTEND_DEPS||'', 'node_modules');
 const require=createRequire(resolve(deps,'package.json'));
@@ -31,22 +32,49 @@ try{
  const store=async label=>control({op:'store',label});
  const agent=async(action,payload={},actor=0)=>control({op:'cli',action,payload,actor});
  const native=async(action,payload={})=>page.evaluate(({action,payload})=>window.nativeSend({type:'macromate/command',action,payload}),{action,payload});
- const command=async(action,payload={})=>{
-  if(!await page.locator('mm-unified-app mm-commands').count())await view('All actions');
-  const form=page.locator('mm-unified-app mm-commands');
-  await form.getByLabel('Action',{exact:true}).selectOption(action);
-  await form.evaluate(async(c,action)=>{await c.updateComplete;if(c.selected!==action)throw Error('Action selection changed');},action);
-  for(const [key,value]of Object.entries(payload)){
-   const label=key.replaceAll('_',' '),field=form.locator(`[aria-label="${label}"]`);
-   if(value===null)await form.getByRole('button',{name:'Clear '+label,exact:true}).click();
-   else if(typeof value==='boolean')await field.setChecked(value);
-   else if(await field.evaluate(n=>n.tagName)==='SELECT')await field.selectOption(String(value));
-   else await field.fill(typeof value==='object'?JSON.stringify(value):String(value));
-  }
-  await form.getByRole('button',{name:/^(Save|Read)$/,exact:true}).click();
-  await form.evaluate(async c=>{const until=Date.now()+15000;while(Date.now()<until&&(c.busy||c.result===null&&!c.error))await new Promise(r=>setTimeout(r,30));if(c.error)throw Error(c.error);if(c.result===null)throw Error('No native result from '+c.selected);});
-  return JSON.parse(await form.locator('pre').innerText());
- };
+ // API coverage stays explicit; mutations here are not attributed to removed UI forms.
+ const command=async(action,payload={})=>page.evaluate(({action,payload})=>card.api.call(action,payload),{action,payload});
+ await test('native-published-frontend-upgrade-same-browser',async()=>{
+  const upgrade=await browser.newPage({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  let old=true;const loaded=[];
+  await upgrade.route('**/macromate-assets/**',async route=>{
+   if(!old)return route.continue();
+   const path=new URL(route.request().url()).pathname.replace('/macromate-assets/','frontend/');
+   const result=spawnSync('git',['show','e7cb3f1:'+path],{maxBuffer:8*1024*1024});
+   if(result.status!==0)return route.abort();loaded.push(path);
+   await route.fulfill({status:200,contentType:path.endsWith('.js')?'text/javascript':path.endsWith('.css')?'text/css':'application/octet-stream',body:result.stdout});
+  });
+  await upgrade.goto(cfg.url+'/native-card/');await upgrade.waitForFunction(()=>window.ready);
+  await upgrade.evaluate(options=>window.connectBackend(options),cfg.accounts[0]);
+  await upgrade.waitForFunction(()=>card.application&&!card.application._loading);
+  const stale=await upgrade.evaluate(()=>({error:card.application._error,shopping:wire.filter(m=>m.action?.startsWith('shopping_')).map(m=>m.action),pending:card.api.pending}));
+  assert.equal(stale.error,null,'Historical shopping read failure is swallowed, not the Start error root cause');assert.ok(stale.shopping.length);assert.equal(stale.pending,null);
+  await upgrade.evaluate(async()=>{window.dropNextAction='recipes_get_all';await card.application._init();});
+  const forcedStart=await upgrade.evaluate(()=>card.application._error);
+  assert.equal(forcedStart,'The operation could not be completed.');
+  await upgrade.evaluate(()=>{card.application._error=null;});
+  // Deliberately lose only a native READ reply: historical UI incorrectly says write status uncertain.
+  await upgrade.evaluate(()=>{window.dropNextAction='diary';card.application._view='nutrition';});
+  await upgrade.waitForFunction(()=>card.application.shadowRoot.querySelector('mm-nutrition')?.message?.textContent);
+  const oldRead=await upgrade.evaluate(()=>card.application.shadowRoot.querySelector('mm-nutrition').message.textContent);
+  assert.equal(await upgrade.evaluate(()=>card.api.pending),null);
+  old=false;
+  const delivery=JSON.parse(await readFile(resolve('frontend/delivery-manifest.json')));
+  await upgrade.evaluate(async url=>{await import(url);},delivery.entry);
+  assert.ok((await upgrade.locator('#macromate-delivery-status').innerText()).includes('registration_conflict'));
+  await upgrade.evaluate(()=>window.closeBackend());await upgrade.reload();await upgrade.waitForFunction(()=>window.ready);
+  await upgrade.evaluate(options=>window.connectBackend(options),cfg.accounts[0]);
+  await upgrade.waitForFunction(()=>card.application&&!card.application._loading);
+  assert.equal(await upgrade.evaluate(()=>card.application._error),null);
+  assert.equal(await upgrade.evaluate(()=>wire.some(m=>m.action?.startsWith('shopping_'))),false);
+  assert.equal(await upgrade.getByRole('button',{name:'All actions',exact:true}).count(),0);
+  await upgrade.evaluate(()=>{window.dropNextAction='diary';card.application._view='nutrition';});
+  await upgrade.waitForFunction(()=>card.application.shadowRoot.querySelector('mm-nutrition')?.message?.textContent);
+  const currentRead=await upgrade.evaluate(()=>card.application.shadowRoot.querySelector('mm-nutrition').message.textContent);
+  assert.ok(!/Schreibstatus|write.*uncertain/i.test(currentRead));assert.equal(await upgrade.evaluate(()=>card.api.pending),null);
+  await upgrade.evaluate(()=>window.closeBackend());await upgrade.close();
+  return {published:'e7cb3f1',transport:'native HA WS',assetDelivery:'pinned old assets delivered by Playwright route; module cache retained until reload',stale,forcedStart,oldRead,currentRead,revision:delivery.revision,loaded:loaded.length};
+ });
  await test('native-discovery-and-subscription',async()=>{
   await page.waitForFunction(()=>window.wire.some(m=>m.type==='macromate/subscribe'));
   const wire=await page.evaluate(()=>window.wire);
@@ -112,7 +140,9 @@ try{
   await dialog.locator('input[name=calories]').fill('125');await dialog.getByRole('button',{name:'Save',exact:true}).click();
   await page.waitForFunction(()=>!card.application.shadowRoot.querySelector('mm-nutrition').dialog?.open);
   entry=(await store('ui-diary-edited')).entries.find(e=>e.id===quickId);assert.equal(entry.calories,125);
+  await page.waitForFunction(()=>{const pane=card.application.shadowRoot.querySelector('mm-nutrition');return !pane.diaryBusy&&!pane.refreshTimer&&!pane.refreshQueued;});
   await pane.getByRole('button',{name:'Native quick diary copy',exact:true}).click();
+  if(!await dialog.isVisible())await pane.getByRole('button',{name:'Native quick diary copy',exact:true}).click(); // Re-open only; never repeat the mutation submit.
   await dialog.getByRole('button',{name:'Copy',exact:true}).click();
   await page.waitForFunction(()=>!card.application.shadowRoot.querySelector('mm-nutrition').dialog?.open);
   const copies=(await store('ui-diary-copied')).entries.filter(e=>e.name==='Native quick diary');assert.equal(copies.length,2);
@@ -374,8 +404,8 @@ try{
    await dashboard.screenshot({path:resolve(cfg.output,`native-lovelace-panel-${width}.png`)});
   }
   assert.ok(!dashboardActions.some(a=>a.startsWith('shopping_')||['recipe_to_shopping','plan_to_shopping'].includes(a)),'Installed dashboard never invokes the retired shopping subsystem');
-  await dashboard.locator('macromate-card').getByRole('button',{name:'All actions',exact:true}).click();
-  assert.equal(await dashboard.locator('mm-commands option').evaluateAll(nodes=>nodes.some(n=>n.value.startsWith('shopping_')||['recipe_to_shopping','plan_to_shopping'].includes(n.value))),false);
+  assert.equal(await dashboard.locator('macromate-card').getByRole('button',{name:'All actions',exact:true}).count(),0);
+  assert.equal(await dashboard.locator('mm-commands').count(),0);
   await dashboard.locator('macromate-card').evaluate(c=>{window.retired={api:c.api,app:c.application};});
   await dashboard.getByRole('tab',{name:'Other',exact:true}).click();
   await dashboard.locator('macromate-card').waitFor({state:'detached'});
@@ -414,7 +444,7 @@ try{
    assert.equal(Object.hasOwn(payload,'weight_kg'),false,'Manual weight remains blank in the real HA form');
    const saved=await control({op:'profile_submit',flow_id:profile.flow_id,payload});
    assert.equal(saved.weekly_pace_kg,.5);assert.equal(saved.birthday,'1992-07-23');assert.equal(saved.weight_kg,80);
-   assert.equal(saved.modules.filter(url=>url.includes('/macromate-card.js')).length,1,'Options reload must not duplicate module registration');
+   assert.equal(saved.modules.filter(url=>url.startsWith('/macromate-assets/releases/')&&url.endsWith('/loader.js')).length,1,'Options reload must not duplicate module registration');
    profileResults.push({input:pace,...saved});
    await dashboard.evaluate(()=>profileForm.remove());
   }

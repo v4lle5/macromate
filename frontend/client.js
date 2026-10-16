@@ -1,7 +1,7 @@
 // Transport only: authentication stays entirely in Home Assistant's hass object.
-const DEFINITIVE = new Set(['invalid_request','not_found','not_ready','unauthorized','provider_unavailable']);
+const DEFINITIVE = new Set(['invalid_request','invalid_payload','forbidden','conflict','context_changed','not_found','not_ready','unauthorized','provider_unavailable']);
 export function publicError(error) {
-  return ({unauthorized:'Nur Home-Assistant-Administratoren dürfen MacroMate verwenden.',invalid_request:'Bitte Eingaben prüfen.',not_found:'Eintrag oder Lebensmittel nicht gefunden.',not_ready:'MacroMate ist noch nicht bereit.',provider_unavailable:'Online-Anbieter nicht verfügbar. Konfigurationsfreigabe und Verbindung prüfen.'})[error?.code] || 'Verbindung unterbrochen. Schreibstatus eventuell ungeklärt.';
+  return ({read_failed:'Lesen fehlgeschlagen. Verbindung prüfen und erneut laden.',uncertain:'Verbindung unterbrochen. Schreibstatus eventuell ungeklärt.',unauthorized:'Nur Home-Assistant-Administratoren dürfen MacroMate verwenden.',invalid_request:'Bitte Eingaben prüfen.',not_found:'Eintrag oder Lebensmittel nicht gefunden.',not_ready:'MacroMate ist noch nicht bereit.',provider_unavailable:'Online-Anbieter nicht verfügbar. Konfigurationsfreigabe und Verbindung prüfen.'})[error?.code] || 'Verbindung unterbrochen. Bitte erneut laden.';
 }
 export class CommandClient {
   constructor(hass) { this.hass=hass; this.pending=null; this.busy=false; }
@@ -19,7 +19,7 @@ export class CommandClient {
     if(!this.pending) return;
     this.busy=true;
     try { const {action,payload}=this.pending; const result=await this.read(action,payload); this.pending=null; return result; }
-    catch(error) { if(DEFINITIVE.has(error?.code)) this.pending=null; throw error; }
+    catch(error) { if(DEFINITIVE.has(error?.code)) {this.pending=null;throw error;} throw Object.assign(new Error('Write status uncertain.'),{code:'uncertain'}); }
     finally { this.busy=false; }
   }
 }

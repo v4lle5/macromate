@@ -16,7 +16,7 @@ import './components/rm-add-recipe-dialog.js';
 import './components/rm-meal-planner.js';
 import './components/rm-settings-view.js';
 import './components/nutrition.js';
-import './components/commands.js';
+
 
 // ---------------------------------------------------------------------------
 // Settings helpers
@@ -925,7 +925,7 @@ export class UnifiedApp extends LitElement {
   }
 
   _renderSidebar() {
-    if(!this.hass?.user?.is_admin)return html`<nav class="rm-sidebar"><div class="sb-nav">${[['commands',this._settings.language==='de'?'Alle Aktionen':'All actions'],['settings',msg('Settings')]].map(([view,label])=>html`<button class="sb-item ${this._view===view?'active':''}" @click=${()=>{this._view=view;}}>${label}</button>`)}</div></nav>`;
+    if(!this.hass?.user?.is_admin)return html`<nav class="rm-sidebar"><div class="sb-nav"><button class="sb-item active" @click=${()=>{this._view='settings';}}>${msg('Settings')}</button></div></nav>`;
     const v = this._view;
     const collapsed = this._sidebarCollapsed;
 
@@ -982,7 +982,7 @@ export class UnifiedApp extends LitElement {
         <div class="sb-nav">
           ${navItem('mdi:home', msg('Home'), 'grid')}
           ${navItem('mdi:heart-pulse', this._settings.language === 'de' ? 'Ernährung' : 'Nutrition', 'nutrition')}
-          ${navItem('mdi:form-select', this._settings.language === 'de' ? 'Alle Aktionen' : 'All actions', 'commands')}
+
           ${this._settings.showPlanner
         ? navItem('mdi:calendar-week', msg('Meal Planner'), 'planner', false, () => { this._plannerFromRecipe = null; this._navDirection = 'forward'; this._view = 'planner'; this._selectedRecipe = null; })
         : ''}
@@ -1099,7 +1099,7 @@ export class UnifiedApp extends LitElement {
 
     // ── Full-screen views (replace everything, use directional slide) ──────
     if (this._view === 'nutrition') return html`<mm-nutrition .hass=${this.hass}></mm-nutrition>`;
-    if (this._view === 'commands') return html`<mm-commands .api=${this.transport}></mm-commands>`;
+
     if (this._view === 'settings') return html`
       <rm-settings-view
         .hass=${this.hass}
@@ -1431,7 +1431,7 @@ export class UnifiedApp extends LitElement {
   }
 
   _renderBottomNav() {
-    if(!this.hass?.user?.is_admin)return html`<nav class="rm-bottom-nav">${[['commands',this._settings.language==='de'?'Alle Aktionen':'All actions'],['settings',msg('Settings')]].map(([view,label])=>html`<button class="rm-bn-btn ${this._view===view?'active':''}" @click=${()=>{this._view=view;}}>${label}</button>`)}</nav>`;
+    if(!this.hass?.user?.is_admin)return html`<nav class="rm-bottom-nav"><button class="rm-bn-btn active" @click=${()=>{this._view='settings';}}>${msg('Settings')}</button></nav>`;
     const v = this._view;
     const btn = (icon, label, view, clickFn) => html`
       <button class="rm-bn-btn ${v === view ? 'active' : ''}"

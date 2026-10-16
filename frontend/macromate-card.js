@@ -1,28 +1,23 @@
-import {MacroMateSummary} from './unified-src/summary.js';
-import {MacroMateAPI} from './unified-src/services/adapter.js';
-import {clearUI} from './unified-src/services/context-cache.js';
-import './unified/app.js';
-
-// The installed identity stays stable. Summary mode preserves the compact card.
-export class MacroMateCard extends MacroMateSummary {
- constructor(){super();this.mode='app';this.application=null;this.api=null;}
- setConfig(config){if(!config||typeof config!=='object'||Array.isArray(config)||config.title!==undefined&&typeof config.title!=='string'||config.mode!==undefined&&!['summary','app'].includes(config.mode))throw new Error('Invalid MacroMate card configuration.');const changed=this.mode!==(config.mode||this.mode);this.mode=config.mode||this.mode;this.config={...config};if(changed)this.cleanup();if(this.isConnected)this.render();}
- set hass(hass){if(this.mode==='summary'){super.hass=hass;return;}const previous=this.context;const context={connection:hass?.connection,userId:hass?.user?.id,admin:hass?.user?.is_admin===true};const changed=this.context?.connection!==context.connection||this.context?.userId!==context.userId||this.context?.admin!==context.admin;this._hass=hass;this.context=context;if(changed){if(previous&&(previous.userId!==context.userId||previous.admin!==context.admin))clearUI(previous.userId);this.cleanup();}if(this.isConnected)this.render();}
- get hass(){return this._hass;}
- connectedCallback(){if(this.mode==='summary')super.connectedCallback();else this.render();}
- disconnectedCallback(){this.cleanup();super.disconnectedCallback();}
- cleanup(){this.api?.dispose();this.api=null;this.application=null;this.shadowRoot.replaceChildren();super.invalidate();}
- render(){if(this.mode==='summary'){super.render();return;}if(!this.isConnected)return;if(!this._hass?.user?.id||!this._hass.connection){this.shadowRoot.textContent='Connecting to Home Assistant…';return;}if(this.application)return;
- this.api=new MacroMateAPI(this._hass);const api=this.api;const stylesheet=document.createElement('style');stylesheet.textContent=':host{display:block;min-width:0;min-height:0;height:100%}.workspace{display:flex;flex-direction:column;height:100%;min-height:0}mm-unified-app{flex:none;height:100%;min-height:0}.status:empty{display:none}.status{flex-shrink:0;padding:12px;background:#fff4dc;color:#443700;font:14px system-ui}.status button{min-width:44px;min-height:44px;padding:8px;margin-left:12px}';
- const status=document.createElement('div');status.className='status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');const app=document.createElement('mm-unified-app');this.application=app;app.transport=api;app.hass=api.facade();app.setConfig(this.config);
- const state=()=>{if(this.api!==api||!api.current())return;status.replaceChildren();if(api.pending){const text=document.createElement('span');text.textContent=api.busy?((api.locale||this._hass.language)==='de'?'Wird gespeichert…':'Saving…'):((api.locale||this._hass.language)==='de'?'Speicherstatus unklar. Keine neue Anfrage erstellen.':'Write status uncertain. Do not create another request.');status.append(text);if(!api.busy&&api.lastFailure){const diagnostic=document.createElement('small');diagnostic.textContent=` (${api.lastFailure.action}: ${api.lastFailure.code})`;status.append(diagnostic);}if(!api.busy){const retry=document.createElement('button');retry.textContent=(api.locale||this._hass.language)==='de'?'Gleiche Anfrage erneut senden':'Retry same request';retry.addEventListener('click',async()=>{try{const request=api.pending;const result=await api.retry();if(this.api!==api||!api.current())return;const pane=app.shadowRoot.querySelector('mm-nutrition');if(pane?.client?.pending?.payload?.request_id===request.payload.request_id){pane.client.pending=null;pane.dialog?.close();pane.message.textContent='Saved.';await pane.loadDiary(pane.date);}if(request.action==='recipes_add')app._view='grid';await app._init();}catch{}state();});status.append(retry);}}app._updateHeight();};api.addEventListener('state',state);
- const workspace=document.createElement('div');workspace.className='workspace';workspace.append(status,app);this.shadowRoot.replaceChildren(stylesheet,workspace);api.call('describe').then(()=>{if(this.api===api&&api.current())app.requestUpdate();}).catch(()=>{});
- }
- getCardSize(){return this.mode==='summary'?super.getCardSize():16;}
- getGridOptions(){return this.mode==='summary'?super.getGridOptions():{columns:12,min_columns:6};}
- static async getConfigElement(){await import('./macromate-card-editor.js');return document.createElement('macromate-card-editor');}
- static getStubConfig(){return {type:'custom:macromate-card'};}
+// Generated from tests/frontend/macromate-loader.js. Manual resource URLs remain supported.
+const revision='7cace7f34685ceba42327aa5efcc0fa11c10c09391e631dcd939cfc5befb93ef';
+const key=Symbol.for('macromate.delivery');
+function diagnostic(code){
+ const detail={code,revision};window.dispatchEvent(new CustomEvent('macromate-delivery-error',{detail}));
+ const id='macromate-delivery-status';let node=document.getElementById(id);
+ if(!node){node=document.createElement('aside');node.id=id;node.setAttribute('role','alert');node.style.cssText='position:fixed;bottom:0;left:0;right:0;padding:16px;background:#fff4dc;color:#443700;z-index:2147483647;font:14px system-ui';document.body.append(node);}
+ node.textContent=`MacroMate ${revision.slice(0,12)} · ${code}. ${code==='registration_conflict'?'An older MacroMate frontend is already active.':'The complete MacroMate frontend could not be loaded.'} Reload this page to finish the update. If this remains, check the dashboard resource URL. No dashboard records were modified by this loader.`;
 }
-if(!customElements.get('macromate-card'))customElements.define('macromate-card',MacroMateCard);
-window.customCards=window.customCards||[];
-if(!window.customCards.some(c=>c.type==='macromate-card'))window.customCards.push({type:'macromate-card',name:'MacroMate',description:'Recipes, planning, timers and nutrition in one application',preview:true});
+const previous=window[key];
+if(previous&&previous.revision!==revision){diagnostic('registration_conflict');}
+else if(!previous){
+ const existing=customElements.get('macromate-card');
+ // Loading a second graph cannot replace browser custom-element definitions.
+ // Refuse before executing ANY dependency of a conflicting build.
+ if(existing&&existing.buildRevision!==revision){diagnostic('registration_conflict');}
+ else {
+  const state=window[key]={revision};
+  state.ready=existing?Promise.resolve():import('./releases/7cace7f34685ceba42327aa5efcc0fa11c10c09391e631dcd939cfc5befb93ef/card-runtime.js').then(module=>{module.MacroMateCard.buildRevision=revision;});
+  state.ready.catch(()=>diagnostic('asset_load_failed'));
+  await state.ready;
+ }
+}else await previous.ready;

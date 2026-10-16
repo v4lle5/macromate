@@ -110,8 +110,8 @@
     },
     {
       "path": "frontend/unified/app.js",
-      "bytes": 391137,
-      "sha256": "1150443c73e6d280b841d60adebe0d580d44e0c4fc570768cc7d73ded2bac1d1"
+      "bytes": 386145,
+      "sha256": "b01730cb15345632b6cbd2e18cf2c0ef5d3bcb5214f7cfa5152ebe941fbd9e54"
     },
     {
       "path": "frontend/unified/chunks/de-L3JMCSON.js",

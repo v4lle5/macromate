@@ -29,22 +29,17 @@ The original full notice is in `RECIPE-MANAGER-CARD-LICENSE.txt` and in the buil
 `../unified/THIRD-PARTY-NOTICES.txt`. Disabled Cookbook, Sync and Help navigation
 placeholders remain disabled; they are not implemented upstream workflows.
 
-The shopping workspace is native to MacroMate: lists/items, catalog search,
-custom products, categories, price/currency totals, loyalty cards with local
-Code128/QR rendering, regions, membership/access, and schema-driven import,
-export and administrative operations. No separate shopping-card element or
-external recipe/shopping integration is required. **All actions** exposes
-forms from `describe` for the full canonical API, including less-common CRUD
-and metadata fields. Object/array inputs are explicit JSON; nullable fields
-have explicit Clear controls. Some advanced workflows therefore use schema
-forms rather than a dedicated graphical editor.
+Internal shopping and the generic action editor are retired. Historical data
+is retained. Dedicated recipe editing/logging, planning, timers/presets,
+nutrition and settings/import/export workflows remain. The authenticated
+agent API is independent of UI navigation; optional API fields without a
+dedicated control are not claimed as graphical workflows.
 
 The nutrition pane reuses the existing diary, food, custom-food, entry, barcode
 and camera modules, with the original calorie ring and macro display. It uses
 the same centralized transport. English/German labels are supplied for the
 reused forms; upstream recipe locales are English, German, Spanish, French,
-Portuguese, Dutch and Italian. New advanced schema field names remain the
-canonical API's English identifiers.
+Portuguese, Dutch and Italian.
 
 `services/adapter.js` maps the original recipe/shopping action names to the
 single `macromate/command` API. Mutation requests retain one UUID and immutable
@@ -184,8 +179,8 @@ all advanced sub-workflows. `workflow-evidence.json` records actual values,
 viewport/breakpoint and contrast measurements, authenticated media pixel
 sizes, archive/audio security rejections and context-reset results.
 `recipe-workflow-readback.json` and captured command/Store files provide exact
-domain readbacks rather than screenshots alone. The schema-form evidence covers
-every field of the current 81 pure-domain descriptors without automatic writes.
+domain readbacks rather than screenshots alone. Generic schema-form evidence
+was retired with that UI; explicit API tests are labelled separately.
 
 Native HA dashboard/editor acceptance, server ACL/media/network/import and
 accepted backup-download/content checks, atomic recipe/plan → shopping Store

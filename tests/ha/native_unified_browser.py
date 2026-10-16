@@ -173,7 +173,8 @@ async def main():
         assert not ha_frontend.async_panel_exists(hass, 'macromate'), 'Retired standalone MacroMate sidebar must not be registered'
         report['standalone_sidebar_absent'] = True
         modules = hass.data[ha_frontend.DATA_EXTRA_MODULE_URL].urls
-        assert any(url.split('?')[0] == '/macromate-assets/macromate-card.js' for url in modules), (
+        delivery = json.loads((REPO / 'custom_components/macromate/frontend/delivery-manifest.json').read_text())
+        assert delivery['entry'] in modules, (
             'MacroMate must load its complete dashboard card automatically, without manual resources')
         report['automatic_card_modules'] = sorted(modules)
         coord = entry.runtime_data

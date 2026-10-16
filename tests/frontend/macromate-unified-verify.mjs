@@ -9,6 +9,7 @@ if(!evidence)throw Error('Set task-private EVIDENCE_DIR.');
 await mkdir(evidence,{recursive:true});
 const scripts=['build','adapter','amounts','shopping','wake','browser','domain-browser','nutrition-browser','workflows','refresh-browser','manifests'];
 const jobs=scripts.map(name=>['tests/frontend/macromate-unified-'+name+'.mjs']);
+jobs.push(['tests/frontend/macromate-upgrade-browser.mjs']);
 jobs.push(['--test','--test-skip-pattern=installable card assets','tests/frontend/macromate-card.test.mjs','tests/frontend/macromate-barcode.test.mjs','tests/frontend/macromate-client.test.mjs','tests/frontend/macromate-browser.test.mjs']);
 const rows=[];
 for(const [index,args]of jobs.entries()){

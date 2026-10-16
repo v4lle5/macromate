@@ -17,7 +17,6 @@
     "domain-browser-captured.json",
     "coordinator-nutrition-captured.json",
     "coordinator-store-evidence.json",
-    "schema-form-evidence.json",
     "verification.json",
     "recipe-workflow-readback.json",
     "refresh-regression-evidence.json"
@@ -846,7 +845,7 @@
         "checks": [
           {
             "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-            "assertion": "recipes_delete through schema forms",
+            "assertion": "recipes_delete API coverage; generic editor retired",
             "tier": "chromium-pure-domains"
           }
         ]
@@ -1083,7 +1082,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
@@ -1116,7 +1115,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
@@ -1149,7 +1148,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
@@ -1182,7 +1181,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
@@ -1215,7 +1214,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
@@ -2040,7 +2039,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "standaloneRows": [
         "shopping_select",
@@ -2079,7 +2078,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "standaloneRows": [
         "shopping_review"
@@ -2117,7 +2116,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "standaloneRows": [
         "shopping_embed"
@@ -2155,7 +2154,7 @@
       },
       "implementation": [
         "frontend/unified-src/recipe-manager-card.js",
-        "frontend/unified-src/components/commands.js"
+        "frontend/unified-src/services/adapter.js"
       ],
       "standaloneRows": [
         "shopping_local"

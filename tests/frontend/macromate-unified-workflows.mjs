@@ -14,7 +14,7 @@ const test=async(id,run)=>{try{const actual=await run();rows.push({id,status:'pa
 try {
  const page=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'reduce'});const errors=[],external=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!/^(http:\/\/127\.0\.0\.1:|blob:|data:)/.test(r.url()))external.push(r.url());});
- await page.goto(`http://127.0.0.1:${server.address().port}/tests/frontend/macromate-unified-fixture.html`);await page.waitForFunction(()=>card.application?._recipes?.length>0);
+ await page.goto(`http://127.0.0.1:${server.address().port}/tests/frontend/macromate-unified-fixture.html`);await page.waitForFunction(()=>window.card?.application?._recipes?.length>0);
  const view=async(name)=>{await page.evaluate(name=>{card.application._error=null;card.application._view=name;},name);await page.waitForTimeout(120);};
  const open=async()=>{await view('grid');await page.getByText('Garden Bowl',{exact:true}).first().click();await page.locator('rm-recipe-detail').waitFor();};
  await open();const detail=page.locator('rm-recipe-detail');

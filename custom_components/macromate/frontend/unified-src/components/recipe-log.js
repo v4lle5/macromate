@@ -1,5 +1,5 @@
 import {LitElement,html} from 'lit';
-import {workspaceStyles} from './commands.js';
+import {workspaceStyles} from './workspace-styles.js';
 export class RecipeLog extends LitElement {
  static properties={api:{attribute:false},recipe:{attribute:false},servings:{type:Number},open:{state:true},error:{state:true},result:{state:true}};
  static styles=workspaceStyles;

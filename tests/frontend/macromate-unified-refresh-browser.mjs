@@ -80,12 +80,8 @@ try{
  });
  await page.waitForFunction(()=>card.api.actions.recipes_add&&window.refreshCallbacks.size>0&&!card.application._loading);
  await page.evaluate(()=>{window.acceptedTrace=[];card.api.addEventListener('accepted',()=>window.acceptedTrace.push({pending:!!card.api.pending,busy:card.api.busy,current:card.api.current()}));});
- await page.getByRole('button',{name:'All actions',exact:true}).click();
- const form=page.locator('mm-unified-app mm-commands');
- await form.getByLabel('Action',{exact:true}).selectOption('recipes_add');
- await form.getByLabel('name',{exact:true}).fill('Event before response');
- await page.evaluate(()=>window.holdResponse=true);
- await form.getByRole('button',{name:'Save',exact:true}).click();
+ // Explicit API mutation; dedicated recipe editor and planner draft tests follow.
+ await page.evaluate(()=>{window.holdResponse=true;window.writeResult=card.api.call('recipes_add',{name:'Event before response'});});
  await page.waitForFunction(()=>window.responseHeld);
  const store=(await domain({action:'STORE_READ'})).result;
  const created=Object.values(store.data.kitchen.recipes).find(list=>list.name==='Event before response');
@@ -94,17 +90,15 @@ try{
  assert.ok(trace.some(row=>row.pending&&row.busy&&row.durable),'Real durable event callback arrives with mutation pending');
  assert.equal(await page.evaluate(()=>card.application._recipes.some(list=>list.name==='Event before response')),false,'Refresh reads remain deferred while response is pending');
  const readsBefore=captured.filter(m=>m.action==='recipes_get_all').length;
- await form.getByLabel('name',{exact:true}).fill('Unsubmitted follow-up draft');
- await form.getByLabel('name',{exact:true}).focus();
+ await page.evaluate(()=>{card.application._searchQuery='Unsubmitted follow-up draft';});
  await page.evaluate(()=>{window.holdResponse=false;window.releaseResponse();});
  await page.waitForFunction(()=>!card.api.pending&&!card.api.busy);
  await page.waitForFunction(()=>card.application._recipes.some(list=>list.name==='Event before response'),{},{timeout:3000});
  assert.equal(captured.filter(m=>m.action==='recipes_get_all').length-readsBefore,1,'One post-acceptance recipe read, not an event/response read storm');
  evidence.acceptedTrace=await page.evaluate(()=>window.acceptedTrace);
  assert.deepEqual(evidence.acceptedTrace,[{pending:false,busy:false,current:true}],'Accepted notification occurs exactly once after both pending and busy clear');
- assert.equal(await form.getByLabel('name',{exact:true}).inputValue(),'Unsubmitted follow-up draft');
- assert.equal(await form.getByLabel('name',{exact:true}).evaluate(n=>n.getRootNode().activeElement===n),true,'Readback preserves the open schema form focus');
- assert.equal(await form.getByLabel('Action',{exact:true}).inputValue(),'recipes_add');
+ assert.equal(await page.evaluate(()=>card.application._searchQuery),'Unsubmitted follow-up draft');
+ await page.evaluate(()=>{card.application._searchQuery='';});
  await page.getByRole('button',{name:'Home',exact:true}).click();
  await page.getByText('Refresh soup',{exact:true}).first().click();
  const detail=page.locator('rm-recipe-detail');
@@ -143,12 +137,10 @@ try{
  assert.deepEqual(await planner.evaluate(p=>({week:p._weekStart,target:p._pickerTarget,query:p._pickerSearch,servings:p._pickerServings})),{week:'2026-09-07',target:{date:'2026-09-09',mealType:'lunch'},query:'typed planner query',servings:1.5});
  evidence.checks.push('safe refresh preserves planner date, open picker, query and servings');
  // Ambiguous acceptance is still held until one explicit same-request retry.
- await page.getByRole('button',{name:'All actions',exact:true}).click();
- await form.getByLabel('Action',{exact:true}).selectOption('recipes_add');
- await form.getByLabel('name',{exact:true}).fill('Lost accepted response');
+ await page.getByRole('button',{name:'Home',exact:true}).click();
  await page.evaluate(()=>window.loseResponse=true);
  const uncertainReads=captured.filter(m=>m.action==='recipes_get_all').length;
- await form.getByRole('button',{name:'Save',exact:true}).click();
+ await page.evaluate(()=>{window.writeResult=card.api.call('recipes_add',{name:'Lost accepted response'}).catch(()=>null);});
  const retry=page.locator('macromate-card .status').getByRole('button',{name:'Retry same request',exact:true});
  await retry.waitFor();
  const pending=await page.evaluate(()=>structuredClone(card.api.pending));
@@ -186,7 +178,7 @@ try{
  evidence.checks.push('in-place account invalidation rejects late read adoption and removal releases subscriptions');
  assert.deepEqual(errors,[]);
  evidence.trace=trace;evidence.recipe_id=created.id;evidence.postAcceptanceRecipeReads=1;
- console.log('PASS: durable event-before-response race refreshes recipe library with one deferred read and preserves schema form/focus');
+ console.log('PASS: durable event-before-response race refreshes recipe library with one deferred read; dedicated recipe/planner drafts and explicit retry remain safe');
 }finally{
  evidence.commands=captured;
  await writeFile(resolve(process.env.EVIDENCE_DIR,'refresh-regression-evidence.json'),JSON.stringify(evidence,null,2)+'\n');

@@ -6116,7 +6116,7 @@
       "executable_evidence": [
         {
           "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-          "assertion": "recipes_delete through schema forms",
+          "assertion": "recipes_delete API coverage; generic editor retired",
           "tier": "chromium-pure-domains"
         }
       ],

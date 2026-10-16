@@ -39,7 +39,11 @@ class CardResourceTests(unittest.IsolatedAsyncioTestCase):
             await _async_card_resource(self.hass)
             self.assertIs(modules.urls, current_urls, 'Repeated entry setup must not publish duplicate events')
             self.assertEqual(collection.async_items(), before)
-        self.assertEqual(events, [('added', '/macromate-assets/macromate-card.js?v=dashboard2')])
+        import json
+        from pathlib import Path
+
+        expected = json.loads((Path(__file__).parents[1] / 'frontend' / 'delivery-manifest.json').read_text())['entry']
+        self.assertEqual(events, [('added', expected)])
         self.assertEqual(len(modules.urls), 2)
 
     async def test_headless_runtime_is_not_forced_to_load_a_frontend(self):
