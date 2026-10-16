@@ -250,6 +250,11 @@ class MealTrackerCoordinator(PlatformCommands):
                 if executor
                 else self._decode_state(staged)
             )
+            # MealLog exposes chronological order, whereas mutations may append
+            # backdated entries or move an existing entry's time. Persist that
+            # same canonical order before adopting the decoded model, so Store,
+            # backups and committed state remain identical even before noon.
+            staged["entries"] = [item.to_dict() for item in decoded[0].entries]
 
             async def commit() -> None:
                 # Check here, not before creating the task: scheduling it introduces

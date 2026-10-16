@@ -155,7 +155,26 @@ async def main():
         def store(label):
             raw = json.loads((config / '.storage/macromate.meals').read_text())
             assert raw['version'] == 1 and raw['data']['schema'] == 3
-            assert raw['data'] == coord._state(), 'Independent native Store must equal committed model'
+            expected = coord._state()
+            if raw['data'] != expected:
+                def first_difference(actual, committed, path='$'):
+                    if isinstance(actual, dict) and isinstance(committed, dict):
+                        for key in dict.fromkeys((*actual, *committed)):
+                            child = f'{path}.{key}'
+                            if key not in actual or key not in committed:
+                                return f'{child}: store key={key in actual}, model key={key in committed}'
+                            if actual[key] != committed[key]:
+                                return first_difference(actual[key], committed[key], child)
+                    elif isinstance(actual, list) and isinstance(committed, list):
+                        if len(actual) != len(committed):
+                            return f'{path}: store length={len(actual)}, model length={len(committed)}'
+                        for index, (left, right) in enumerate(zip(actual, committed)):
+                            if left != right:
+                                return first_difference(left, right, f'{path}[{index}]')
+                    return f'{path}: store={actual!r}, model={committed!r}'
+
+                raise AssertionError('Independent native Store must equal committed model '
+                                     f'({label}): {first_difference(raw["data"], expected)}')
             snapshots.append({'label': label, 'store': raw})
             return raw['data']
 

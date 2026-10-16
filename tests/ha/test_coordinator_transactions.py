@@ -58,6 +58,26 @@ class CoordinatorTransactions(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len({item.id for item in results}), 1)
         self.assertEqual(len(self.coord.log.entries), 1)
 
+    async def test_backdated_create_persists_exact_committed_order_and_replay(self):
+        later = await self.coord.async_create(**{
+            **self.values, "eaten_at": datetime(2026, 10, 16, 10, tzinfo=timezone.utc),
+        })
+        earlier_values = {
+            **self.values, "eaten_at": datetime(2026, 10, 16, 6, tzinfo=timezone.utc),
+            "request_id": "earlier-create",
+        }
+        earlier = await self.coord.async_create(**earlier_values)
+        assert self.store.value is not None
+        self.assertEqual(self.store.value, self.coord._state())
+        self.assertEqual([row["id"] for row in self.store.value["entries"]],
+                         [earlier.id, later.id])
+        restarted = MealTrackerCoordinator(self.hass, self.coord.settings)
+        restarted._store = self.store
+        await restarted.async_load()
+        self.assertEqual(restarted._state(), self.store.value)
+        self.assertEqual((await restarted.async_create(**earlier_values)).id, earlier.id)
+        self.assertEqual(restarted._state(), self.store.value)
+
     async def test_clock_default_is_not_part_of_logical_retry_payload(self):
         values = {**self.values, "eaten_at":None}
         first = await self.coord.async_create(**values)
