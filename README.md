@@ -2,7 +2,7 @@
 
 <p align="center"><img src="brand/macromate-logo.png" alt="MacroMate — Track Eat Progress" width="420"></p>
 
-Local nutrition, recipes, shopping lists, weekly planning and cooking timers inside one Home Assistant integration. MacroMate keeps its food/portion/diary model, automatic nutrition goals, local storage and optional Open Food Facts lookup, with one connected dashboard and authenticated local agent API.
+Local nutrition, recipes, weekly planning and cooking timers inside one Home Assistant integration. MacroMate keeps its food/portion/diary model, automatic nutrition goals, local storage and optional Open Food Facts lookup, with one connected dashboard and authenticated local agent API.
 
 Development build, not a medical tool. Physical mobile cameras and iOS/Safari remain unverified; read the limits below before installing on a live instance.
 
@@ -20,8 +20,8 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 - Extended nutrients with explicit kcal/g/mg/µg/ml units. Missing values remain unknown; declared zero remains zero.
 - Local private storage, bounded persistent retry history, summary/goal sensors and authenticated actions for automations/agent clients.
 - Recipe library, taxonomy, ratings/favorites, manual editing, consented imports and private normalized images.
-- Weekly planning and explicit recipe/plan → shopping transfers; logging recipe portions to the diary is a separate action with an immutable nutrition snapshot.
-- Shared/private shopping lists, item/product/category CRUD, regional catalogs, prices, loyalty cards and permission-filtered exports.
+- Weekly planning; logging recipe portions to the diary is a separate action with an immutable nutrition snapshot.
+- Internal shopping UI and recipe/plan shopping transfers have been removed. Use Bring! separately; MacroMate does not connect to it. Existing shopping data is retained, not deleted or migrated.
 - Cooking timers/presets and complete local agent CRUD through the same authenticated, validated command model as the card.
 
 No bundled inference model, fasting tracker, photo-based food recognition or analytics. Agents need no cloud model, browser automation or extra MCP server to use the API. See the [local agent guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md). This development branch is not automatically published or installed.
@@ -44,7 +44,7 @@ The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tes
 
 ## Dashboard card
 
-The local dashboard card opens the combined recipe, shopping, planner, timer and nutrition workspace. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
+The local dashboard card opens the combined recipe, planner, timer and nutrition workspace. The optional **Glass Wave** theme is available in Settings → Appearance → Colour theme; existing themes and saved choices stay unchanged. It uses translucent warm cards without blur, with paper-colored dialogs and touch-sized controls. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
 
 The integration loads the card module automatically, just like Recipe Manager. No manual resource URL or YAML is needed for a normal storage dashboard:
 
@@ -52,7 +52,7 @@ The integration loads the card module automatically, just like Recipe Manager. N
 2. Set its **Layout** to **Panel (single card)** (German: **Panel (einzelne Karte)**).
 3. **Add card → By card → MacroMate → Save**, as the only card in that view. Leave **Full application** selected in its visual editor.
 
-The view URL is a simple view name, **not a JavaScript URL**. This is the complete dashboard app, not the separate legacy diary-only sidebar item (which remains unchanged). Recipes, Meal Planner, Shopping List, Timers and Nutrition stay together in one responsive, full-width card.
+The view URL is a simple view name, **not a JavaScript URL**. This is the complete dashboard app, not the separate legacy diary-only sidebar item (which remains unchanged). Recipes, Meal Planner, Timers and Nutrition stay together in one responsive, full-width card.
 
 The visual editor also offers the original read-only **Compact summary**. Existing `type: custom:macromate-card` / `mode: summary` configurations remain supported. The default combined card is editable according to server-side permissions.
 

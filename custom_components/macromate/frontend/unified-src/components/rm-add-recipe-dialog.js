@@ -696,7 +696,7 @@ class RmAddRecipeDialog extends LitElement {
     }
 
     .dialog-panel {
-      background: var(--rm-bg-surface, #1c1c1e);
+      background: var(--rm-dialog-bg, var(--rm-bg-surface, #1c1c1e));
       border-radius: var(--rm-radius, 12px) var(--rm-radius, 12px) 0 0;
       width: 100%;
       max-width: 620px;

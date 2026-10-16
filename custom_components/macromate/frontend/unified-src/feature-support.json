@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Frontend handoff, not native HA or production acceptance. Each original feature row is retained, including intentionally replaced external/browser-only shopping paths.",
+  "scope": "Historical feature inventory with explicit retirement statuses. Internal shopping UI and transfer bridges were removed by user request; stored data and backend compatibility are not deleted by this frontend change.",
   "counts": {
     "standalone-card": 43,
     "bundled-recipe-ui": 25
@@ -30,7 +30,7 @@
       "scope": "Real Chromium, HA coordinator and durable Store; synthetic event delivery bridge, not full native transport acceptance",
       "checks": [
         "Event published after durable acceptance reaches callback while pending",
-        "Post-acceptance notification and coalesced list reads refresh dedicated recipe selector",
+        "Post-acceptance notification and coalesced recipe reads refresh the recipe library",
         "Schema draft/focus, dirty recipe editor and planner date/picker survive refresh",
         "Deferred recipe reads resume after context closes, including closure during a read",
         "Uncertain write keeps stable UUID/payload until explicit same-request retry",
@@ -1082,23 +1082,22 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/rm-recipe-detail.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
-      "adaptation": "Retained in the unified MacroMate application through the shared adapter.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "recipe-shopping-original-indexes-fail-closed",
-            "tier": "chromium-synthetic"
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "native-ha-dashboard-and-authenticated-transport",
-        "independent-review",
-        "atomic-cross-domain-store-readback"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -1116,23 +1115,22 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/rm-recipe-detail.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
-      "adaptation": "ingredient_matches maps ORIGINAL ingredient_index to the exact selected product_id. Backend derives trusted name/category; recipe quantities/units remain authoritative. Unsupported matching descriptors block writes, not silently discard matches.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "recipe-shopping-original-indexes-fail-closed",
-            "tier": "chromium-synthetic"
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "native-ha-dashboard-and-authenticated-transport",
-        "independent-review",
-        "atomic-cross-domain-store-readback"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -1150,23 +1148,22 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/services/api.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
-      "adaptation": "Unsafe name-only deduplication is deliberately replaced. Legacy callers create separate items; atomic recipe_to_shopping owns compatible merging. No note-only quantity loss, cross-unit inference or automatic write retry.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
             "command": "node tests/frontend/macromate-unified-shopping.mjs",
-            "assertion": "actual domain quantity preservation, incompatible units, chosen snapshots",
-            "tier": "node-pure-shopping-domain"
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "native-ha-dashboard-and-authenticated-transport",
-        "independent-review",
-        "atomic-cross-domain-store-readback"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -1184,22 +1181,22 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/shopping.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
-      "adaptation": "Replaced with the native shared MacroMate shopping workspace. No external shopping-list-manager-card dependency.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-            "assertion": "native shopping list/item/category/loyalty/product/region CRUD and exact readbacks",
-            "tier": "chromium-pure-domains"
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "native-ha-dashboard-and-authenticated-transport",
-        "independent-review"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -1217,22 +1214,22 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/shopping.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
-      "adaptation": "Browser-only fallback deliberately replaced by shared API-backed lists; no unscoped private shopping content is stored in localStorage.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-            "assertion": "native shared shopping replacement, check/uncheck, confirmed clear/delete",
-            "tier": "chromium-pure-domains"
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "native-ha-dashboard-and-authenticated-transport",
-        "independent-review"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -1764,7 +1761,7 @@
     {
       "inventory": "bundled-recipe-ui",
       "id": "ui.cooking_checks",
-      "title": "Ingredient section grouping / Cook-step completion / Recipe ingredient shopping selection",
+      "title": "Ingredient section grouping / Cook-step completion",
       "upstream": {
         "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
         "source": [
@@ -1785,7 +1782,7 @@
         "steps",
         "shopping_select"
       ],
-      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "adaptation": "Ingredient grouping and cooking completion remain. Shopping selection was removed by user request.",
       "verification": {
         "status": "partial-local-evidence",
         "checks": [
@@ -2042,33 +2039,26 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/rm-recipe-detail.js",
-        "frontend/unified-src/services/api.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
       "standaloneRows": [
         "shopping_select",
         "shopping_merge"
       ],
-      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "recipe-shopping-original-indexes-fail-closed",
-            "tier": "chromium-synthetic"
-          },
-          {
             "command": "node tests/frontend/macromate-unified-shopping.mjs",
-            "assertion": "actual domain quantity preservation, incompatible units, chosen snapshots",
-            "tier": "node-pure-shopping-domain"
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "atomic-cross-domain-store-readback",
-        "independent-review",
-        "native-ha-dashboard-and-authenticated-transport"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -2088,26 +2078,25 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/rm-recipe-detail.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
       "standaloneRows": [
         "shopping_review"
       ],
-      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "recipe-shopping-original-indexes-fail-closed",
-            "tier": "chromium-synthetic"
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "atomic-cross-domain-store-readback",
-        "independent-review",
-        "native-ha-dashboard-and-authenticated-transport"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -2127,25 +2116,25 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/shopping.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
       "standaloneRows": [
         "shopping_embed"
       ],
-      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-            "assertion": "native shopping list/item/category/loyalty/product/region CRUD and exact readbacks",
-            "tier": "chromium-pure-domains"
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "independent-review",
-        "native-ha-dashboard-and-authenticated-transport"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {
@@ -2165,25 +2154,25 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/shopping.js"
+        "frontend/unified-src/recipe-manager-card.js",
+        "frontend/unified-src/components/commands.js"
       ],
       "standaloneRows": [
         "shopping_local"
       ],
-      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "adaptation": "Removed by user request. Bring! is used separately; no new connection and no data deletion/migration.",
       "verification": {
-        "status": "partial-local-evidence",
+        "status": "retired-by-user-request",
         "checks": [
           {
-            "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-            "assertion": "native shared shopping replacement, check/uncheck, confirmed clear/delete",
-            "tier": "chromium-pure-domains"
+            "command": "node tests/frontend/macromate-unified-shopping.mjs",
+            "assertion": "Removed component, navigation, transfer methods and command forms; native dashboard asserts no shopping requests",
+            "tier": "source-contract-and-native-dashboard"
           }
         ]
       },
       "remainingGates": [
-        "independent-review",
-        "native-ha-dashboard-and-authenticated-transport"
+        "backend-retirement-coordinated-separately-with-data-retention"
       ]
     },
     {

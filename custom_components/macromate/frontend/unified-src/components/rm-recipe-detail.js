@@ -92,20 +92,12 @@ class RmRecipeDetail extends LitElement {
   static properties = {
     recipe:              { type: Object },
     api:                 { type: Object },
-    shoppingLists:       { type: Array },
-    slmAvailable:        { type: Boolean },
     settings:            { type: Object },
     wide:                { type: Boolean },
     _editing:            { type: Boolean },
     _editData:           { type: Object },
     _servingMult:        { type: Number },
     _activeTab:          { type: String },  // 'ingredients'|'directions'|'notes'|'nutrition'|'photos'
-    _showShoppingPicker: { type: Boolean },
-    _selectedListId:     { type: String },
-    _checkedIngredients: { type: Object },  // Set of indices
-    _shoppingAdding:     { type: Boolean },
-    _shoppingResult:     { type: String },
-    _shoppingReview:     { type: Array },
     _confirmDelete:      { type: Boolean },
     _downloading:        { type: Boolean },
     _photoUrlInput:      { type: String },
@@ -135,20 +127,12 @@ class RmRecipeDetail extends LitElement {
     super();
     this.recipe = null;
     this.api = null;
-    this.shoppingLists = [];
-    this.slmAvailable = false;
     this.settings = {};
     this.wide = false;
     this._editing = false;
     this._editData = {};
     this._servingMult = 1;
     this._activeTab = 'ingredients';
-    this._showShoppingPicker = false;
-    this._selectedListId = '';
-    this._checkedIngredients = null;
-    this._shoppingAdding = false;
-    this._shoppingResult = null;
-    this._shoppingReview = null;
     this._confirmDelete = false;
     this._downloading = false;
     this._photoUrlInput = '';
@@ -219,10 +203,6 @@ class RmRecipeDetail extends LitElement {
       if (differentRecipe) {
         this._editing = false;
         this._confirmDelete = false;
-        this._shoppingResult = null;
-        this._shoppingReview = null;
-        this._showShoppingPicker = false;
-        this._checkedIngredients = null;
         this._photoUrlInput = '';
         this._metricMode = this.settings?.unitSystem === 'metric';
         this._completedSteps = new Set();
@@ -239,9 +219,6 @@ class RmRecipeDetail extends LitElement {
     }
     if (changedProps.has('recipe') && !this.recipe) {
       this._releaseWakeLock();
-    }
-    if (changedProps.has('shoppingLists') && this.shoppingLists.length && !this._selectedListId) {
-      this._selectedListId = this.shoppingLists[0]?.id ?? '';
     }
   }
 
@@ -576,126 +553,6 @@ class RmRecipeDetail extends LitElement {
       bubbles: true,
       composed: true,
     }));
-  }
-
-  _openShoppingPicker() {
-    // Default: NO items checked — user selects what they need
-    this._checkedIngredients = new Set();
-    this._showShoppingPicker = true;
-  }
-
-  _toggleIngredient(index) {
-    const newSet = new Set(this._checkedIngredients);
-    if (newSet.has(index)) {
-      newSet.delete(index);
-    } else {
-      newSet.add(index);
-    }
-    this._checkedIngredients = newSet;
-  }
-
-  _selectAllIngredients() {
-    const count = this.recipe?.ingredients?.length ?? 0;
-    this._checkedIngredients = new Set([...Array(count).keys()]);
-  }
-
-  _clearAllIngredients() {
-    this._checkedIngredients = new Set();
-  }
-
-  async _handleAddToShopping() {
-    const checked = this._checkedIngredients;
-    if (!checked?.size) return;
-
-    const ingredients = (this.recipe.ingredients || [])
-      .map((ing, ingredientIndex) => ({...ing, ingredientIndex}))
-      .filter(ing => checked.has(ing.ingredientIndex) && !ing.is_heading && !ing.name?.startsWith('#'))
-      .map(ing => ({ ...ing, amount: this._scaleAmount(ing.amount) }));
-
-    // No SLM or no list selected → dispatch directly (no product matching)
-    if (!this.slmAvailable || !this._selectedListId) {
-      await this._dispatchShoppingAdd(ingredients.map(ing => ({ ing, selectedId: null, products: [] })));
-      return;
-    }
-
-    // Search SLM product catalog for each ingredient to build review
-    this._shoppingAdding = true;
-    const reviewItems = await Promise.all(ingredients.map(async (ing) => {
-      try {
-        const res = await this.api.searchSlmProducts(ing.name, 4);
-        const products = res?.products ?? [];
-        const exact = products.find(p => p.name.toLowerCase() === ing.name.toLowerCase());
-        return { ing, products, selectedId: exact?.id ?? null };
-      } catch {
-        return { ing, products: [], selectedId: null };
-      }
-    }));
-    this._shoppingAdding = false;
-    this._shoppingReview = reviewItems;
-  }
-
-  _selectReviewMatch(idx, productId) {
-    this._shoppingReview = this._shoppingReview.map((item, i) =>
-      i === idx ? { ...item, selectedId: productId } : item
-    );
-  }
-
-  async _confirmShoppingReview() {
-    await this._dispatchShoppingAdd(this._shoppingReview);
-  }
-
-  async _dispatchShoppingAdd(review = []) {
-    if (!this._selectedListId) return;
-    this._shoppingAdding=true; this._shoppingResult=null;
-    try {
-      const ingredient_indexes = review.map(item => item.ing.ingredientIndex);
-      const ingredient_matches = review.filter(item => item.selectedId !== null).map(item => ({ingredient_index:item.ing.ingredientIndex,product_id:item.selectedId}));
-      await this.api.recipeToShopping(this.recipe.id,this._selectedListId,(this.recipe.servings||1)*this._servingMult,ingredient_indexes,ingredient_matches);
-      this._shoppingResult='success';this._shoppingReview=null;this._showShoppingPicker=false;
-    } catch { this._shoppingResult='error'; } finally { this._shoppingAdding=false; }
-  }
-
-  _renderShoppingReview() {
-    const review = this._shoppingReview;
-    if (!review) return html``;
-    return html`
-      <div class="shopping-review-panel">
-        <div class="review-title">${msg('Match Items to Products')}</div>
-        ${this._shoppingResult === 'error' ? html`<p role="alert">${this.api.transport.locale?.startsWith('de') ? 'Keine Bestätigung erhalten. Prüfe die Verbindung und die Unterstützung für die genaue Produktauswahl. Wiederhole unklare Schreibvorgänge nur mit derselben Anfrage.' : 'No transfer confirmation received. Check the connection and exact catalog-selection support. Retry uncertain writes only with the same request.'}</p>` : ''}
-        <div class="review-list">
-          ${review.map((item, idx) => html`
-            <div class="review-row">
-              <div class="review-ing">
-                ${item.ing.amount ? html`<span class="review-qty">${item.ing.amount}${item.ing.unit ? ` ${item.ing.unit}` : ''}</span>` : ''}
-                <span class="review-ing-name">${item.ing.name}</span>
-              </div>
-              <div class="review-chips">
-                ${item.products.slice(0, 3).map(p => html`
-                  <button class="review-chip ${item.selectedId === p.id ? 'selected' : ''}"
-                    @click=${() => this._selectReviewMatch(idx, p.id)}>
-                    ${item.selectedId === p.id ? html`<ha-icon icon="mdi:check"></ha-icon>` : ''}${p.name}
-                  </button>
-                `)}
-                <button class="review-chip manual ${item.selectedId === null ? 'selected' : ''}"
-                  @click=${() => this._selectReviewMatch(idx, null)}>
-                  ${item.selectedId === null ? html`<ha-icon icon="mdi:check"></ha-icon>` : ''}${msg('Add manually')}
-                </button>
-              </div>
-            </div>
-          `)}
-        </div>
-        <div class="picker-btns review-btns">
-          <button class="action-btn" @click=${() => { this._shoppingReview = null; }}>${msg('Back')}</button>
-          <button class="action-btn primary"
-            ?disabled=${this._shoppingAdding}
-            @click=${this._confirmShoppingReview}>
-            ${this._shoppingAdding
-              ? html`<ha-circular-progress active size="tiny"></ha-circular-progress>`
-              : msg(str`Confirm & Add ${review.length}`)}
-          </button>
-        </div>
-      </div>
-    `;
   }
 
   _handleQuickRate(n) {
@@ -1035,9 +892,6 @@ class RmRecipeDetail extends LitElement {
 
   _renderWide(r) {
     const groups = this._groupIngredients(r.ingredients);
-    const picking = this._showShoppingPicker;
-    const checkedSet = this._checkedIngredients;
-    const checkedCount = checkedSet?.size ?? 0;
 
     return html`
       <div class="detail-container wide">
@@ -1074,49 +928,10 @@ class RmRecipeDetail extends LitElement {
 
           <!-- col 1: ingredients column -->
           <div class="wide-ing-col">
-            <!-- ingredients controls: scaler left, cart right — above ingredients only -->
+            <!-- Ingredient serving controls -->
             <div class="wide-ing-controls">
               ${this._renderScaler()}
-              ${this._shoppingResult === 'success' ? html`
-                <span class="ing-shop-success"><ha-icon icon="mdi:check-circle-outline"></ha-icon></span>
-              ` : html`
-                <button class="ing-shop-btn ${picking ? 'active' : ''}"
-                  @click=${picking ? () => { this._showShoppingPicker = false; } : this._openShoppingPicker}
-                  title="${picking ? msg('Cancel') : msg('Add to shopping list')}">
-                  <ha-icon icon="${picking ? 'mdi:close' : 'mdi:cart-plus'}"></ha-icon>
-                </button>
-              `}
             </div>
-
-            <!-- shopping picker / review (shown inline when picking) -->
-            ${picking ? (this._shoppingReview ? html`
-              <div class="wide-section-card">${this._renderShoppingReview()}</div>
-            ` : html`
-              <div class="wide-section-card shopping-picker-panel">
-                <div class="picker-select-row">
-                  <button class="picker-sel-btn" @click=${this._selectAllIngredients}>${msg('Select All')}</button>
-                  <button class="picker-sel-btn" @click=${this._clearAllIngredients}>${msg('Clear All')}</button>
-                  ${this.slmAvailable && this.shoppingLists.length ? html`
-                    <select class="list-select" .value=${this._selectedListId}
-                      @change=${e => { this._selectedListId = e.target.value; }}>
-                      ${this.shoppingLists.map(l => html`
-                        <option value="${l.id}" ?selected=${l.id === this._selectedListId}>${l.name}</option>
-                      `)}
-                    </select>
-                  ` : ''}
-                </div>
-                <div class="picker-btns">
-                  <button class="action-btn" @click=${() => { this._showShoppingPicker = false; }}>${msg('Cancel')}</button>
-                  <button class="action-btn primary"
-                    ?disabled=${this._shoppingAdding || !checkedCount}
-                    @click=${this._handleAddToShopping}>
-                    ${this._shoppingAdding
-                      ? html`<ha-circular-progress active size="tiny"></ha-circular-progress>`
-                      : (checkedCount ? msg(str`Add (${checkedCount})`) : msg('Add'))}
-                  </button>
-                </div>
-              </div>
-            `) : ''}
 
             ${groups.map(g => html`
               <div class="wide-section-card">
@@ -1124,17 +939,10 @@ class RmRecipeDetail extends LitElement {
                 ${g.items.length ? html`
                   <ul class="ingredient-list">
                     ${g.items.map((ing) => {
-                      const globalIdx = (r.ingredients || []).indexOf(ing);
                       const { amount, unit } = this._getDisplayAmount(ing);
                       return html`
-                        <li class="ingredient-item ${picking ? 'selectable' : ''}"
-                          @click=${picking ? () => this._toggleIngredient(globalIdx) : undefined}>
-                          ${picking ? html`
-                            <span class="ing-check ${checkedSet?.has(globalIdx) ? 'checked' : ''}">
-                              ${checkedSet?.has(globalIdx) ? html`<ha-icon icon="mdi:check"></ha-icon>` : ''}
-                            </span>
-                          ` : ''}
-                          <span class="ing-amount">${amount} ${unit}</span>
+                        <li class="ingredient-item">
+                        <span class="ing-amount">${amount} ${unit}</span>
                           <span class="ing-name">${ing.name}${ing.notes ? html` <em class="ing-notes">(${ing.notes})</em>` : ''}</span>
                         </li>
                       `;
@@ -1306,9 +1114,6 @@ class RmRecipeDetail extends LitElement {
   }
 
   _renderIngredients(r) {
-    const picking = this._showShoppingPicker;
-    const checkedSet = this._checkedIngredients;
-    const checkedCount = checkedSet?.size ?? 0;
     const hasImperial = (r.ingredients || []).some(ing =>
       ing.unit && IMPERIAL_TO_METRIC[ing.unit.toLowerCase().trim()]
     );
@@ -1333,14 +1138,8 @@ class RmRecipeDetail extends LitElement {
             }
             const { amount, unit } = this._getDisplayAmount(ing);
             return html`
-              <li class="ingredient-item ${picking ? 'selectable' : ''}"
-                @click=${picking ? () => this._toggleIngredient(i) : undefined}>
-                ${picking ? html`
-                  <span class="ing-check ${checkedSet?.has(i) ? 'checked' : ''}">
-                    ${checkedSet?.has(i) ? html`<ha-icon icon="mdi:check"></ha-icon>` : ''}
-                  </span>
-                ` : ''}
-                <span class="ing-amount">${amount} ${unit}</span>
+              <li class="ingredient-item">
+              <span class="ing-amount">${amount} ${unit}</span>
                 <span class="ing-name">${ing.name}${ing.notes ? html` <em class="ing-notes">(${ing.notes})</em>` : ''}</span>
               </li>
             `;
@@ -1348,48 +1147,6 @@ class RmRecipeDetail extends LitElement {
         </ul>
       ` : html`<p class="empty-tab">${msg('No ingredients listed.')}</p>`}
 
-      <!-- Shopping section (always shown) -->
-      <div class="shopping-section">
-        ${this._shoppingResult === 'success' ? html`
-          <div class="shopping-success">
-            <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-            ${msg('Added to shopping list!')}
-          </div>
-        ` : picking && this._shoppingReview ? this._renderShoppingReview()
-        : picking ? html`
-          <div class="shopping-picker-panel">
-            <div class="picker-select-row">
-              <button class="picker-sel-btn" @click=${this._selectAllIngredients}>${msg('Select All')}</button>
-              <button class="picker-sel-btn" @click=${this._clearAllIngredients}>${msg('Clear All')}</button>
-              ${this.slmAvailable && this.shoppingLists.length ? html`
-                <select class="list-select" .value=${this._selectedListId}
-                  @change=${e => { this._selectedListId = e.target.value; }}>
-                  ${this.shoppingLists.map(l => html`
-                    <option value="${l.id}" ?selected=${l.id === this._selectedListId}>${l.name}</option>
-                  `)}
-                </select>
-              ` : this.slmAvailable ? html`
-                <span class="shopping-note">${msg('No lists found in Shopping List Manager')}</span>
-              ` : ''}
-            </div>
-            <div class="picker-btns">
-              <button class="action-btn" @click=${() => { this._showShoppingPicker = false; }}>${msg('Cancel')}</button>
-              <button class="action-btn primary"
-                ?disabled=${this._shoppingAdding || !checkedCount}
-                @click=${this._handleAddToShopping}>
-                ${this._shoppingAdding
-                  ? html`<ha-circular-progress active size="tiny"></ha-circular-progress>`
-                  : (checkedCount ? msg(str`Add (${checkedCount})`) : msg('Add'))}
-              </button>
-            </div>
-          </div>
-        ` : html`
-          <button class="action-btn primary shopping-btn" @click=${this._openShoppingPicker}>
-            <ha-icon icon="mdi:cart-plus"></ha-icon>
-            ${msg('Add to Shopping List')}
-          </button>
-        `}
-      </div>
     `;
   }
 
@@ -2671,7 +2428,7 @@ class RmRecipeDetail extends LitElement {
       z-index: 10;
     }
     .edit-panel {
-      background: var(--rm-bg-surface, #1c1c1e);
+      background: var(--rm-dialog-bg, var(--rm-bg-surface, #1c1c1e));
       border-radius: var(--rm-radius, 12px) var(--rm-radius, 12px) 0 0;
       width: 100%;
       max-height: 82vh;

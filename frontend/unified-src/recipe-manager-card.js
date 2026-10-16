@@ -15,7 +15,6 @@ import './components/rm-recipe-detail.js';
 import './components/rm-add-recipe-dialog.js';
 import './components/rm-meal-planner.js';
 import './components/rm-settings-view.js';
-import './components/shopping.js';
 import './components/nutrition.js';
 import './components/commands.js';
 
@@ -24,14 +23,13 @@ import './components/commands.js';
 // ---------------------------------------------------------------------------
 
 const SETTINGS_KEY = 'rm_settings';
-const LOCAL_SHOPPING_KEY = 'rm_shopping';
 const RECENT_RECIPES_KEY = 'rm_recent_recipes';
 const TIMERS_KEY = 'rm_timers';
 const TIMER_PRESETS_KEY = 'rm_timer_presets';
 const VIEW_STATE_KEY = 'rm_view_state';
 // Views worth restoring after a reload — excludes transient/in-progress ones
 // like 'add' (mid-import dialog) or 'timers' (a temporary overlay).
-const RESTORABLE_VIEWS = ['grid', 'detail', 'settings', 'planner', 'shopping'];
+const RESTORABLE_VIEWS = ['grid', 'detail', 'settings', 'planner'];
 
 function loadViewState() { return null; }
 function saveViewState() {}
@@ -56,7 +54,7 @@ const DEFAULT_SETTINGS = {
 };
 
 // ---------------------------------------------------------------------------
-// Themes — colours match Shopping List Manager exactly
+// Application themes
 // ---------------------------------------------------------------------------
 
 const THEME_VARS = {
@@ -111,6 +109,15 @@ const THEME_VARS = {
       '--rm-text-secondary': '#c070a0', '--rm-text-muted': '#603050',
       '--rm-accent': '#f48fb1', '--rm-accent-soft': 'rgba(244,143,177,0.15)',
       '--rm-border': 'rgba(248,208,222,0.08)', '--rm-shadow': '0 2px 8px rgba(0,0,0,0.4)',
+    },
+  },
+  'glass-wave': {
+    light: {
+      '--rm-bg-main': 'transparent', '--rm-bg-surface': 'rgba(253, 248, 239, 0.72)',
+      '--rm-bg-elevated': 'rgba(253, 248, 239, 0.72)', '--rm-text': '#263B47',
+      '--rm-text-secondary': '#53666E', '--rm-text-muted': '#53666E',
+      '--rm-accent': '#416F8F', '--rm-accent-soft': 'rgba(65, 111, 143, 0.12)',
+      '--rm-border': 'rgba(255, 255, 255, 0.8)', '--rm-shadow': '0 3px 12px rgba(38, 59, 71, 0.08)',
     },
   },
   ocean: {
@@ -236,9 +243,6 @@ export class UnifiedApp extends LitElement {
     _error: { type: String },
     _searchQuery: { type: String },
     _activeTag: { type: String },
-    _shoppingLists: { type: Array },
-    _slmAvailable: { type: Boolean },
-    _localShoppingItems: { type: Array },
     _settings: { type: Object },
     _wide: { type: Boolean },
     _sidebarCollapsed: { type: Boolean },
@@ -278,9 +282,6 @@ export class UnifiedApp extends LitElement {
     this._error = null;
     this._searchQuery = '';
     this._activeTag = null;
-    this._shoppingLists = [];
-    this._slmAvailable = false;
-    this._localShoppingItems = [];
     this._settings = loadSettings();
     this._languageAutoDetectPending = !hasExplicitLanguage();
     setActiveLocale(this._settings.language);
@@ -427,6 +428,7 @@ export class UnifiedApp extends LitElement {
 
   _applyTheme() {
     const s = this._settings;
+    this.toggleAttribute('glass-wave',s.theme==='glass-wave');
     const themeVars = THEME_VARS[s.theme] ?? THEME_VARS.soft;
     const alwaysDark = !themeVars.light;
     const alwaysLight = !themeVars.dark;
@@ -449,9 +451,9 @@ export class UnifiedApp extends LitElement {
   async _init() {
     this._loading = true;this._error=null;
     if(!this._cacheBootstrapped&&this.hass.user.is_admin){const cache=loadUI(this.transport);this._pendingViewRestore=cache;this._recentRecipeIds=cache.recentIds||[];this._timers=cache.timers||[];this._cacheBootstrapped=true;}
-    if (!this.hass.user.is_admin) { this._view='shopping'; await this._loadShoppingLists(); this._loading=false; return; }
+    if (!this.hass.user.is_admin) { this._view='settings'; this._loading=false; return; }
     try {
-      await Promise.all([this._loadRecipes(), this._loadTags(), this._loadShoppingLists(), this._loadGlobalTimers()]);
+      await Promise.all([this._loadRecipes(), this._loadTags(), this._loadGlobalTimers()]);
       this._restoreViewState();
       const p=await this.transport.call('preferences_get');
       if(p.preferences?.recipe_settings){this._settings={...this._settings,...p.preferences.recipe_settings};await setActiveLocale(this._settings.language);this.transport.locale=this._settings.language;this.hass=this.transport.facade();}
@@ -493,18 +495,6 @@ export class UnifiedApp extends LitElement {
     };
   }
 
-  _loadLocalShopping() {
-    try {
-      const raw = localStorage.getItem(LOCAL_SHOPPING_KEY);
-      this._localShoppingItems = raw ? JSON.parse(raw) : [];
-    } catch { this._localShoppingItems = []; }
-  }
-
-  _saveLocalShopping() {
-    try { localStorage.setItem(LOCAL_SHOPPING_KEY, JSON.stringify(this._localShoppingItems)); }
-    catch { /* ignore */ }
-  }
-
   async _loadRecipes() {
     const r = await this._api.getAllRecipes();
     this._recipes = r?.recipes ?? [];
@@ -513,16 +503,6 @@ export class UnifiedApp extends LitElement {
   async _loadTags() {
     const r = await this._api.getTags();
     this._tags = r?.tags ?? [];
-  }
-
-  async _loadShoppingLists() {
-    try {
-      this._shoppingLists = (await this._api.getShoppingLists())?.lists ?? [];
-      this._slmAvailable = true;
-    } catch {
-      this._shoppingLists = [];
-      this._slmAvailable = false;
-    }
   }
 
   async _subscribe() {
@@ -557,16 +537,13 @@ export class UnifiedApp extends LitElement {
     const recipeContextOpen = () => !!this.shadowRoot.querySelector('rm-add-recipe-dialog, rm-recipe-detail');
     const deferRecipes = recipeContextOpen();
     try {
-      const [shopping, recipes, tags, timers] = await Promise.all([
-        this._api.getShoppingLists(),
+      const [recipes, tags, timers] = await Promise.all([
         deferRecipes ? null : this._api.getAllRecipes(),
         deferRecipes ? null : this._api.getTags(),
         deferRecipes ? null : this._api.getGlobalTimers(),
       ]);
       if (!this.isConnected || generation !== this._refreshGeneration || this.transport !== transport || !transport.current()) return;
       if (transport.pending) { this._refreshRequested = true; return; }
-      this._shoppingLists = shopping?.lists ?? [];
-      this._slmAvailable = true;
       this._recipeRefreshDeferred = deferRecipes || recipeContextOpen();
       if (deferRecipes && !recipeContextOpen()) this._refreshRequested = true;
       if (!this._recipeRefreshDeferred) {
@@ -621,7 +598,7 @@ export class UnifiedApp extends LitElement {
       this.requestUpdate();
       for(const element of this.shadowRoot.querySelectorAll('*'))element.requestUpdate?.();
     }
-    try { await this.transport.call('preferences_update', {preferences:{recipe_settings:this._settings}});this._error=null; } catch(error) { this._error=error.message; }
+    try { await this.transport.call('preferences_update', {preferences:{recipe_settings:this._settings}});this._error=null; } catch(error) { this._error=this._settings.language==='de'?(error.code==='uncertain'?'Speicherstatus unklar. Gleiche Anfrage nur ausdrücklich erneut senden.':error.code==='pending'?'Zuerst die unklare Anfrage klären.':'Einstellungen konnten nicht gespeichert werden. Felder und Berechtigungen prüfen.'):error.message; }
   }
 
   // -- Screen wake lock -------------------------------------------------------
@@ -915,31 +892,6 @@ export class UnifiedApp extends LitElement {
     await this._loadRecipes(); await this._loadTags();
   }
 
-  async _handleAddToShopping(e) {
-    const { ingredients, listId, recipeName } = e.detail;
-    if (this._slmAvailable && listId) {
-      try {
-        const res = await this._api.addIngredientsToShoppingList(listId, ingredients, recipeName);
-        if (res.filter(r => !r.success).length) console.warn('Some ingredients failed to add to SLM');
-      } catch (err) { console.error('Shopping list error:', err); }
-    } else {
-      const newItems = ingredients.map(ing => ({
-        id: Math.random().toString(36).slice(2, 10),
-        name: ing.name,
-        amount: ing.amount || null,
-        unit: ing.unit || null,
-        checked: false,
-      }));
-      this._localShoppingItems = [...this._localShoppingItems, ...newItems];
-      this._saveLocalShopping();
-    }
-  }
-
-  _handleShoppingLocalUpdate(e) {
-    this._localShoppingItems = e.detail.items;
-    this._saveLocalShopping();
-  }
-
   // -- Render ---------------------------------------------------------------
 
   _renderStars(rating) {
@@ -973,7 +925,7 @@ export class UnifiedApp extends LitElement {
   }
 
   _renderSidebar() {
-    if(!this.hass?.user?.is_admin)return html`<nav class="rm-sidebar"><div class="sb-nav">${[['shopping',msg('Shopping List')],['commands',this._settings.language==='de'?'Alle Aktionen':'All actions'],['settings',msg('Settings')]].map(([view,label])=>html`<button class="sb-item ${this._view===view?'active':''}" @click=${()=>{this._view=view;}}>${label}</button>`)}</div></nav>`;
+    if(!this.hass?.user?.is_admin)return html`<nav class="rm-sidebar"><div class="sb-nav">${[['commands',this._settings.language==='de'?'Alle Aktionen':'All actions'],['settings',msg('Settings')]].map(([view,label])=>html`<button class="sb-item ${this._view===view?'active':''}" @click=${()=>{this._view=view;}}>${label}</button>`)}</div></nav>`;
     const v = this._view;
     const collapsed = this._sidebarCollapsed;
 
@@ -1029,7 +981,6 @@ export class UnifiedApp extends LitElement {
 
         <div class="sb-nav">
           ${navItem('mdi:home', msg('Home'), 'grid')}
-          ${navItem('mdi:cart-outline', msg('Shopping List'), 'shopping')}
           ${navItem('mdi:heart-pulse', this._settings.language === 'de' ? 'Ernährung' : 'Nutrition', 'nutrition')}
           ${navItem('mdi:form-select', this._settings.language === 'de' ? 'Alle Aktionen' : 'All actions', 'commands')}
           ${this._settings.showPlanner
@@ -1076,7 +1027,6 @@ export class UnifiedApp extends LitElement {
           : inTimers ? msg('Timers')
             : inDetail ? ''
               : this._view === 'planner' ? msg('Meal Planner')
-                : this._view === 'shopping' ? msg('Shopping List')
                   : this._view === 'nutrition' ? (this._settings.language === 'de' ? 'Ernährung' : 'Nutrition') : msg('Recipes');
 
     return html`
@@ -1173,22 +1123,10 @@ export class UnifiedApp extends LitElement {
         .api=${this._api}
         .recipes=${this._recipes}
         .fromRecipe=${this._plannerFromRecipe}
-        .shoppingLists=${this._shoppingLists}
         .settings=${s}
         @rm-open-recipe=${this._handleOpenRecipe}
         @rm-back-to-recipe=${this._handleBackToRecipe}
       ></rm-meal-planner>
-    `;
-    if (this._view === 'shopping') return html`
-      <mm-shopping
-        .hass=${this.hass}
-        .slmAvailable=${this._slmAvailable}
-        .shoppingLists=${this._shoppingLists}
-        .api=${this._api}
-        .transport=${this.transport}
-        .settings=${this._settings}
-        @rm-shopping-local-update=${this._handleShoppingLocalUpdate}
-      ></mm-shopping>
     `;
 
     // ── Loading / error ────────────────────────────────────────────────────
@@ -1236,8 +1174,6 @@ export class UnifiedApp extends LitElement {
               .api=${this._api}
               .settings=${s}
               .wide=${this._wide}
-              .shoppingLists=${this._shoppingLists}
-              .slmAvailable=${this._slmAvailable}
               .allTags=${this._tags || []}
               .allCourses=${[...new Set(this._recipes.flatMap(r => r.courses || []))].sort()}
               .allCategories=${[...new Set(this._recipes.flatMap(r => r.categories || []))].sort()}
@@ -1247,7 +1183,6 @@ export class UnifiedApp extends LitElement {
               @rm-delete-recipe=${this._handleDeleteRecipe}
               @rm-update-recipe=${this._handleUpdateRecipe}
               @rm-recipe-saved=${async()=>{await this._loadRecipes();this._selectedRecipe=this._recipes.find(r=>r.id===this._selectedRecipe?.id)||null;}}
-              @rm-add-to-shopping=${this._handleAddToShopping}
               @rm-start-timer=${this._handleStartTimer}
               @rm-show-planner=${this._handleShowPlanner}
               @rm-chip-nav=${this._handleChipNav}
@@ -1496,7 +1431,7 @@ export class UnifiedApp extends LitElement {
   }
 
   _renderBottomNav() {
-    if(!this.hass?.user?.is_admin)return html`<nav class="rm-bottom-nav">${[['shopping',msg('Shopping List')],['commands',this._settings.language==='de'?'Alle Aktionen':'All actions'],['settings',msg('Settings')]].map(([view,label])=>html`<button class="rm-bn-btn ${this._view===view?'active':''}" @click=${()=>{this._view=view;}}>${label}</button>`)}</nav>`;
+    if(!this.hass?.user?.is_admin)return html`<nav class="rm-bottom-nav">${[['commands',this._settings.language==='de'?'Alle Aktionen':'All actions'],['settings',msg('Settings')]].map(([view,label])=>html`<button class="rm-bn-btn ${this._view===view?'active':''}" @click=${()=>{this._view=view;}}>${label}</button>`)}</nav>`;
     const v = this._view;
     const btn = (icon, label, view, clickFn) => html`
       <button class="rm-bn-btn ${v === view ? 'active' : ''}"
@@ -1509,7 +1444,6 @@ export class UnifiedApp extends LitElement {
     return html`
       <nav class="rm-bottom-nav">
         ${btn('mdi:home', msg('Home'), 'grid', () => { this._navDirection = 'back'; this._view = 'grid'; this._selectedRecipe = null; })}
-        ${btn('mdi:cart-outline', msg('Shopping'), 'shopping')}
         ${btn('mdi:heart-pulse', this._settings.language === 'de' ? 'Ernährung' : 'Nutrition', 'nutrition')}
         <button class="rm-bn-btn rm-bn-add"
           @click=${() => { this._navDirection = 'forward'; this._view = 'add'; }}
@@ -1596,6 +1530,22 @@ export class UnifiedApp extends LitElement {
       --rm-grid-columns:   repeat(3, minmax(0, 1fr));
       font-size: var(--rm-font-size-base);
     }
+
+    :host([glass-wave]) {
+      color-scheme: light;
+      --rm-dialog-bg: #F9EFDA;
+      --rm-success: #576C65;
+      --rm-primary: #416F8F;
+      --rm-accent-text: #fff;
+      --rm-danger: #B46F52;
+      --rm-touch-target: 44px;
+      --rm-warning: #C19A3F;
+      --rm-error: #B46F52;
+      --rm-radius: 18px;
+      --rm-radius-sm: 12px;
+    }
+    :host([glass-wave]) ha-card.rm-card { border: 1px solid var(--rm-border); border-radius: 18px; box-shadow: var(--rm-shadow); }
+    :host([glass-wave]) button, :host([glass-wave]) select { min-height: 44px; }
 
     ha-card {
       height: 100%;

@@ -109,7 +109,7 @@ class RmSettingsView extends LitElement {
 
   _renderAppearance(s) {
     const alwaysDark  = s.theme === 'midnight' || s.theme === 'ember' || s.theme === 'neon';
-    const alwaysLight = s.theme === 'arctic'   || s.theme === 'meadow' || s.theme === 'ocean';
+    const alwaysLight = s.theme === 'arctic'   || s.theme === 'meadow' || s.theme === 'ocean' || s.theme === 'glass-wave';
     const noToggle    = alwaysDark || alwaysLight;
     return html`
       <!-- ── Language & Units ── -->
@@ -148,6 +148,7 @@ class RmSettingsView extends LitElement {
               <option value="blossom"  ?selected=${s.theme === 'blossom' }>${msg('🌸 Blossom')}</option>
             </optgroup>
             <optgroup label="${msg('Light Themes')}">
+              <option value="glass-wave" ?selected=${s.theme === 'glass-wave'}>Glass Wave</option>
               <option value="arctic"   ?selected=${s.theme === 'arctic'  }>${msg('🧊 Arctic')}</option>
               <option value="meadow"   ?selected=${s.theme === 'meadow'  }>${msg('🌿 Meadow')}</option>
               <option value="ocean"    ?selected=${s.theme === 'ocean'   }>${msg('🌊 Ocean Blue')}</option>
@@ -589,7 +590,9 @@ class RmSettingsView extends LitElement {
     }
     .seg-btn ha-icon { --mdc-icon-size: 16px; }
     .seg-btn:last-child { border-right: none; }
-    .seg-btn.active { background: var(--rm-accent); color: #111; }
+    .seg-btn.active { background: var(--rm-accent); color: var(--rm-accent-text,#111); }
+    .theme-select, .seg-btn, .toggle { min-height: var(--rm-touch-target,auto); }
+    @media(max-width:480px) { .setting-row { flex-wrap:wrap; } .btn-group { max-width:100%; flex-wrap:wrap; } }
     .seg-btn:hover:not(.active) { background: var(--rm-border); color: var(--rm-text); }
 
     .toggle { display: flex; align-items: center; cursor: pointer; flex-shrink: 0; }

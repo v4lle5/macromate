@@ -99,80 +99,6 @@ try{
   assert.deepEqual((await agent('diary',{date:'2026-10-14'})).entries.find(e=>e.entry_id===id),{...storedFields,entry_id:id});
   return {entry_id:entry.id,calories:390,unknown_carbs_preserved:true};
  });
- await test('schema-list-item-crud-native-readback',async()=>{
-  const list=(await command('shopping_lists_create',{name:'Native UI groceries',private:true})).list;listId=list.id;
-  await command('shopping_lists_update',{list_id:listId,name:'Native updated groceries'});
-  assert.equal((await command('shopping_lists_get',{list_id:listId})).list.name,'Native updated groceries');
-  itemId=(await command('shopping_items_add',{list_id:listId,name:'Native apples',quantity:2,price:1.5,currency:'EUR'})).item.id;
-  await command('shopping_items_update',{item_id:itemId,quantity:3,price:null});
-  const item=(await command('shopping_items_get_one',{item_id:itemId})).item;
-  assert.equal(item.quantity,3);assert.equal(item.price,null);
-  const {media_refs,...persistedItem}=item;
-  assert.deepEqual(media_refs,{image_url:null,photos:[]},'Adapter-only media projection is explicit');
-  const nativeItem=(await native('shopping_items_get_one',{item_id:itemId})).item;
-  assert.deepEqual(nativeItem,persistedItem);
-  assert.deepEqual((await store('ui-item-edited')).kitchen.shopping_items[itemId],nativeItem);
-  await command('shopping_items_check',{item_id:itemId,checked:true});
-  assert.equal((await store('ui-item-checked')).kitchen.shopping_items[itemId].checked,true);
-  await command('shopping_items_check',{item_id:itemId,checked:false});
-  return {list_id:listId,item_id:itemId,quantity:3,price:null,check_uncheck:true};
- });
- await test('schema-plan-crud-and-atomic-plan-shopping',async()=>{
-  assert.ok(recipeId&&listId);
-  planId=(await command('meal_plan_add',{recipe_id:recipeId,date:'2026-10-14',meal_type:'lunch',servings:1})).entry.id;
-  await command('meal_plan_update',{entry_id:planId,servings:2,date:'2026-10-15'});
-  const plan=(await command('meal_plan_get',{entry_id:planId})).entry;
-  assert.equal(plan.servings,2);assert.equal(plan.date,'2026-10-15');
-  const {recipe_name,recipe_image,...persistedPlan}=plan;
-  assert.equal(recipe_name,'Native browser soup');assert.equal(recipe_image,null);
-  assert.deepEqual((await store('ui-plan-edited')).kitchen.meal_plan[planId],persistedPlan);
-  const before=(await store('ui-before-plan-shopping')).entries;
-  const added=await command('plan_to_shopping',{week_start:'2026-10-12',list_id:listId});
-  assert.deepEqual(added.plan_entry_ids,[planId]);
-  const state=await store('ui-plan-shopping');assert.deepEqual(state.entries,before);
-  assert.equal(state.kitchen.shopping_items[added.item_ids[0]].quantity,40);
-  return {entry_id:planId,transfer:added,diary_unchanged:true};
- });
- await test('new-list-immediately-available-in-recipe-picker',async()=>{
-  assert.ok(recipeId&&listId);
-  await view('Home');await page.getByText('Native browser soup',{exact:true}).first().click();
-  const detail=page.locator('rm-recipe-detail');
-  await detail.getByRole('button',{name:'Add to shopping list',exact:true}).click();
-  await detail.locator('.list-select').waitFor();
-  const available=await detail.locator('.list-select option').evaluateAll(nodes=>nodes.map(n=>({id:n.value,name:n.textContent})));
-  await writeFile(resolve(cfg.output,'recipe-picker-available-lists.json'),JSON.stringify({expected_list_id:listId,available},null,2));
-  assert.ok(available.some(row=>row.id===listId),'Accepted schema-created list is missing from recipe picker: '+JSON.stringify({expected:listId,available}));
-  return {expected:listId,available};
- });
- await test('dedicated-recipe-shopping-review-exact-index-catalog',async()=>{
-  assert.ok(recipeId);
-  // Use the original synthetic list so stale-new-list failure does not hide
-  // independent proof of the real review/atomic transfer. No backend overrides.
-  await view('Home');await page.getByText('Native browser soup',{exact:true}).first().click();
-  const detail=page.locator('rm-recipe-detail');
-  await detail.getByRole('button',{name:'Add to shopping list',exact:true}).click();
-  await detail.getByRole('button',{name:'Select All',exact:true}).click();
-  await detail.locator('.list-select').selectOption(cfg.shared_list_id);
-  await detail.locator('.picker-btns button.primary').click();
-  await detail.locator('.shopping-review-panel').waitFor();
-  const matching=detail.locator('.review-chip:not(.manual)').first();
-  assert.ok(await matching.count(),'Real product search offers a catalog match');await matching.click();
-  const selection=await detail.evaluate(d=>{const row=d._shoppingReview[0];return {id:row.selectedId,product:row.products.find(p=>p.id===row.selectedId)};});
-  const chosen=selection.id;
-  assert.equal(selection.product.source,'catalog');
-  assert.ok(chosen.startsWith(selection.product.region+':'),'Preserve exact region-qualified returned catalog ID');
-  const before=(await store('ui-before-recipe-shopping')).entries;
-  await detail.locator('.review-btns button.primary').click();
-  await page.waitForFunction(()=>card.application.shadowRoot.querySelector('rm-recipe-detail')?._shoppingResult==='success');
-  const sent=await page.evaluate(()=>window.wire.findLast(m=>m.action==='recipe_to_shopping'));
-  assert.deepEqual(sent.payload.ingredient_indexes,[1]);
-  assert.deepEqual(sent.payload.ingredient_matches,[{ingredient_index:1,product_id:chosen}]);
-  const read=(await agent('shopping_items_get',{list_id:cfg.shared_list_id})).items.find(i=>i.product_id===chosen);
-  assert.ok(read);assert.equal(read.quantity,40);assert.equal(read.unit,'g');
-  const state=await store('ui-exact-recipe-shopping');assert.deepEqual(state.kitchen.shopping_items[read.id],read);
-  assert.deepEqual(state.entries,before);
-  return {request:sent,item:read,diary_unchanged:true};
- });
  await test('native-diary-quick-create-edit-copy-and-omission',async()=>{
   await view('Nutrition');const pane=page.locator('mm-nutrition');
   await pane.getByRole('button',{name:'Quick entry',exact:true}).click();
@@ -259,22 +185,18 @@ try{
   return metrics;
  });
  await test('ui-delete-exact-targets-and-recipe-snapshot',async()=>{
-  assert.ok(recipeId&&planId&&itemId&&listId&&recipeDiaryId);
+  assert.ok(recipeId&&recipeDiaryId);
   await command('recipe_entry_update',{entry_id:recipeDiaryId,servings:2});
   assert.equal((await store('ui-recipe-diary-scale')).entries.find(e=>e.id===recipeDiaryId).calories,520);
-  await command('meal_plan_remove',{entry_id:planId});
-  assert.equal((await store('ui-plan-deleted')).kitchen.meal_plan[planId],undefined);
   await command('recipes_delete',{recipe_id:recipeId});
   let state=await store('ui-recipe-deleted');assert.equal(state.kitchen.recipes[recipeId],undefined);
   assert.equal(state.entries.find(e=>e.id===recipeDiaryId).recipe_snapshot.id,recipeId);
-  await command('shopping_items_delete',{item_id:itemId});assert.equal((await store('ui-item-deleted')).kitchen.shopping_items[itemId],undefined);
-  await command('shopping_lists_delete',{list_id:listId,confirm:true});state=await store('ui-list-deleted');assert.equal(state.kitchen.shopping_lists[listId],undefined);
   await view('Nutrition');const pane=page.locator('mm-nutrition');
   await pane.getByRole('button',{name:'Native uncertain diary delete',exact:true}).click();
   await pane.getByRole('dialog').getByRole('button',{name:'Confirm deletion',exact:true}).click();
   await page.waitForFunction(()=>!card.application.shadowRoot.querySelector('mm-nutrition').dialog?.open);
   assert.ok(!(await store('ui-diary-deleted')).entries.some(e=>e.name==='Native uncertain diary'));
-  return {recipe_deleted:recipeId,plan_deleted:planId,item_deleted:itemId,list_deleted:listId,snapshot_retained:recipeDiaryId};
+  return {recipe_deleted:recipeId,snapshot_retained:recipeDiaryId};
  });
  await test('native-weight-sensor-fallback-visible-not-live',async()=>{
   await view('Nutrition');
@@ -285,28 +207,12 @@ try{
   await page.locator('mm-nutrition .weight-fallback').waitFor({state:'detached'});
   return {fallback_kg:80,labelled_not_live:true};
  });
- await test('native-member-shared-list-and-private-denial-context-clear',async()=>{
+ await test('native-member-private-denial-context-clear',async()=>{
   await connect(1);
   await page.waitForFunction(()=>!document.querySelector('macromate-card').shadowRoot.textContent.includes('Native quick diary'));
   assert.equal(await page.locator('mm-nutrition').count(),0);assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0);
   assert.equal(await page.getByText('Synthetic private photo',{exact:true}).count(),0);
-  const list=await native('shopping_lists_get',{list_id:cfg.shared_list_id});assert.equal(list.list.id,cfg.shared_list_id);
-  await assert.rejects(()=>native('diary',{}));await assert.rejects(()=>native('recipes_get_all',{}));
-  const added=await native('shopping_items_add',{list_id:cfg.shared_list_id,name:'Native browser member pear',request_id:'browser-member-add'});
-  assert.equal((await store('member-item')).kitchen.shopping_items[added.item.id].name,'Native browser member pear');
-  const old=await page.evaluate(()=>window.received.filter(m=>m.type==='event').length);
-  await agent('shopping_items_update',{item_id:added.item.id,name:'Native shared live pear',request_id:'owner-shared-edit'});
-  await page.waitForFunction(old=>window.received.filter(m=>m.type==='event').length>old,old);
-  const events=await page.evaluate(old=>window.received.filter(m=>m.type==='event').slice(old),old);assert.ok(events.every(m=>JSON.stringify(m.event)==='{"event":"refresh"}'));
-  const privateBefore=await page.evaluate(()=>window.received.filter(m=>m.type==='event').length);
-  await agent('recipes_add',{name:'Synthetic invisible private event',request_id:'private-event-owner'});
-  await page.waitForTimeout(500);
-  assert.equal(await page.evaluate(()=>window.received.filter(m=>m.type==='event').length),privateBefore,'Private owner write sends no member event');
-  await assert.rejects(()=>native('shopping_lists_update_members',{list_id:cfg.shared_list_id,allowed_users:[],request_id:'forged-member-owner'}));
-  await agent('shopping_lists_update_members',{list_id:cfg.shared_list_id,allowed_users:[],request_id:'owner-membership-revoke'});
-  await assert.rejects(()=>native('shopping_items_add',{list_id:cfg.shared_list_id,name:'Native browser member pear',request_id:'browser-member-add'}));
-  await assert.rejects(()=>native('shopping_lists_get',{list_id:cfg.shared_list_id}));
-  return {member_item_id:added.item.id,private_dom_cleared:true,private_backend_denied:true,generic_events:events,private_event_count:0,revoked_access_and_replay_denied:true};
+  return {private_dom_cleared:true,shopping_ui_removed:true,private_backend_denied:true};
  });
  await test('native-reader-denials',async()=>{
   await connect(2);await assert.rejects(()=>native('diary',{}));await assert.rejects(()=>native('recipes_get_all',{}));
@@ -315,7 +221,7 @@ try{
  });
  await test('native-lovelace-panel-view-auto-module-layout-and-cleanup',async()=>{
   const dashboard=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'reduce'});
-  const dashboardErrors=[],dashboardExternal=[];
+  const dashboardErrors=[],dashboardExternal=[],dashboardActions=[],scrollMetrics=[];
   dashboard.on('request',r=>{if(!/^(blob:|data:)/.test(r.url())&&new URL(r.url()).origin!==cfg.url)dashboardExternal.push(r.url());});
   await dashboard.route('**/*',async route=>{
    const request=route.request(),url=request.url();
@@ -326,7 +232,7 @@ try{
    return route.continue();
   });
   dashboard.on('pageerror',e=>dashboardErrors.push({message:e.message,stack:e.stack}));
-  dashboard.on('websocket',socket=>{const sent=new Map();socket.on('framesent',({payload})=>{try{const m=JSON.parse(payload);if(m.id)sent.set(m.id,m.type);}catch{}});socket.on('framereceived',({payload})=>{try{const m=JSON.parse(payload);if(m.success===false)dashboardErrors.push({type:sent.get(m.id),error:m.error});}catch{}});});
+  dashboard.on('websocket',socket=>{const sent=new Map();socket.on('framesent',({payload})=>{try{const m=JSON.parse(payload);if(m.id)sent.set(m.id,m.type);if(m.action)dashboardActions.push(m.action);}catch{}});socket.on('framereceived',({payload})=>{try{const m=JSON.parse(payload);if(m.success===false)dashboardErrors.push({type:sent.get(m.id),error:m.error});}catch{}});});
   await dashboard.addInitScript(({url,token})=>localStorage.setItem('hassTokens',JSON.stringify({
    access_token:token,token_type:'Bearer',expires_in:1800,expires:Date.now()+1800000,
    hassUrl:url,clientId:url+'/',refresh_token:'unused-synthetic-test-refresh'
@@ -337,12 +243,70 @@ try{
    await writeFile(resolve(cfg.output,'native-dashboard-errors.json'),JSON.stringify({errors:dashboardErrors,text:await dashboard.locator('body').innerText()},null,2));
    throw error;
   }
-  for(const name of ['Meal Planner','Shopping List','Timers','Nutrition','Home']){
+  assert.equal(await dashboard.locator('macromate-card').getByRole('button',{name:'Shopping List',exact:true}).count(),0,'Internal shopping UI has been removed, not replaced with Bring');
+  await dashboard.locator('macromate-card').getByRole('button',{name:'Settings',exact:true}).click();
+  const settingsPane=dashboard.locator('rm-settings-view');
+  await settingsPane.locator('select').first().selectOption('de');
+  await dashboard.waitForTimeout(700);
+  const settingsDiagnostic=await dashboard.locator('macromate-card').evaluate(c=>({pending:c.api.pending,error:c.application._error,settings:c.application._settings}));
+  await writeFile(resolve(cfg.output,'settings-diagnostic.json'),JSON.stringify({state:settingsDiagnostic,errors:dashboardErrors},null,2));
+  assert.equal(settingsDiagnostic.pending,null,'Native settings save must be acknowledged: '+JSON.stringify(settingsDiagnostic));
+  assert.equal(await settingsPane.locator('option[value=neon]').textContent(),'🍇 Lila & Cyan');
+  assert.equal(await settingsPane.locator('.section-label').first().textContent(),'Sprache & Einheiten');
+  await settingsPane.getByRole('button',{name:'Metrisch',exact:true}).click();
+  await dashboard.waitForTimeout(500);
+  await settingsPane.locator('select').nth(1).selectOption('neon');
+  await dashboard.waitForTimeout(500);
+  const preferences=(await agent('preferences_get')).preferences.recipe_settings;
+  assert.equal(preferences.language,'de');assert.equal(preferences.theme,'neon');assert.equal(preferences.unitSystem,'metric');
+  assert.deepEqual((await store('native-settings-saved')).kitchen.preferences[cfg.accounts[0].user.id].ui.recipe_settings,preferences);
+  assert.equal(await dashboard.locator('macromate-card').evaluate(c=>c.api.pending),null);
+  const beforeRefusal=await store('before-invalid-settings');
+  const refusedSettings=await dashboard.locator('macromate-card').evaluate(async c=>{try{await c.api.call('preferences_update',{preferences:'invalid-synthetic-shape'});}catch(e){return {code:e.code,pending:c.api.pending,diagnostic:c.api.lastFailure};}throw Error('Invalid settings accepted');});
+  assert.equal(refusedSettings.code,'invalid_request');assert.equal(refusedSettings.pending,null);
+  assert.deepEqual(await store('after-invalid-settings'),beforeRefusal,'Definitive native refusal performs no mutation');
+  await dashboard.locator('macromate-card').evaluate(c=>{
+   const original=c.api.hass.callWS.bind(c.api.hass);window.settingsWire=[];window.settingsLose=true;
+   c.api.hass.callWS=async message=>{if(message.action==='preferences_update')window.settingsWire.push(structuredClone(message));const result=await original(message);if(message.action==='preferences_update'&&window.settingsLose){window.settingsLose=false;throw Error('Synthetic loss after actual native commit');}return result;};
+  });
+  await settingsPane.locator('select').nth(1).selectOption('ocean');
+  const banner=dashboard.locator('macromate-card .status');
+  await banner.getByText('Speicherstatus unklar. Keine neue Anfrage erstellen.',{exact:true}).waitFor();
+  assert.equal(await dashboard.locator('mm-unified-app').evaluate(c=>c._error),'Speicherstatus unklar. Gleiche Anfrage nur ausdrücklich erneut senden.');
+  await dashboard.waitForTimeout(150); // The card measures its new top after two animation frames.
+  const uncertainBounds=await dashboard.locator('mm-unified-app').boundingBox();const layoutDiagnostic=await dashboard.locator('mm-unified-app').evaluate(el=>{const out=[];for(let n=el;n;n=n.parentElement||n.getRootNode().host){const s=getComputedStyle(n),r=n.getBoundingClientRect();out.push({tag:n.tagName,classes:n.className,top:r.top,height:r.height,inline:n.getAttribute('style'),heightStyle:s.height,minHeight:s.minHeight,maxHeight:s.maxHeight,flex:s.flex,display:s.display,box:s.boxSizing,padding:s.padding,border:s.borderWidth});}return out;});await writeFile(resolve(cfg.output,'pending-layout.json'),JSON.stringify(layoutDiagnostic,null,2));assert.ok(uncertainBounds.y+uncertainBounds.height<=900,'Pending-write banner must share, not extend, the panel viewport: '+JSON.stringify(uncertainBounds));
+  assert.equal((await agent('preferences_get')).preferences.recipe_settings.theme,'ocean','Lost response really committed through native WS');
+  await dashboard.waitForTimeout(300);
+  assert.equal(await dashboard.evaluate(()=>settingsWire.length),1,'No automatic retries');
+  await banner.getByRole('button',{name:'Gleiche Anfrage erneut senden',exact:true}).click();
+  await dashboard.locator('macromate-card').evaluate(async c=>{const end=Date.now()+10000;while(c.api.pending&&Date.now()<end)await new Promise(r=>setTimeout(r,20));if(c.api.pending)throw Error('Replay did not clear pending');});
+  const settingsWire=await dashboard.evaluate(()=>window.settingsWire);assert.equal(settingsWire.length,2);assert.deepEqual(settingsWire[0],settingsWire[1]);
+  assert.equal((await store('native-settings-explicit-replay')).kitchen.preferences[cfg.accounts[0].user.id].ui.recipe_settings.theme,'ocean');
+  assert.equal(await settingsPane.locator('option[value=glass-wave]').count(),1,'Glass Wave is an opt-in choice alongside the existing themes');
+  assert.equal(await settingsPane.locator('option[value=glass-wave]').textContent(),'Glass Wave');
+  await settingsPane.locator('select').nth(1).selectOption('glass-wave');
+  await dashboard.waitForTimeout(400);
+  assert.equal((await agent('preferences_get')).preferences.recipe_settings.theme,'glass-wave');
+  const glassState=await store('glass-wave-native');
+  assert.equal(glassState.kitchen.preferences[cfg.accounts[0].user.id].ui.recipe_settings.theme,'glass-wave');
+  const glassRequest=await dashboard.evaluate(()=>settingsWire.findLast(m=>m.payload.preferences?.recipe_settings?.theme==='glass-wave'));
+  await agent('preferences_update',glassRequest.payload);
+  assert.deepEqual(await store('glass-wave-explicit-http-replay'),glassState,'Exact UUID replay across native WS and HTTP leaves Store unchanged');
+  const glass=await dashboard.locator('mm-unified-app').evaluate(el=>{const s=getComputedStyle(el);return {accent:s.getPropertyValue('--rm-accent').trim(),text:s.getPropertyValue('--rm-text').trim(),main:s.getPropertyValue('--rm-bg-main').trim(),surface:s.getPropertyValue('--rm-bg-surface').trim()};});
+  const glassControl=await settingsPane.locator('.seg-btn.active').first().evaluate(el=>({color:getComputedStyle(el).color,height:el.getBoundingClientRect().height}));
+  assert.equal(glassControl.color,'rgb(255, 255, 255)');assert.ok(glassControl.height>=44,'Glass Wave segmented controls need touch-sized targets');
+  assert.deepEqual(glass,{accent:'#416F8F',text:'#263B47',main:'transparent',surface:'rgba(253, 248, 239, 0.72)'});
+  for(const width of [1280,390]){await dashboard.setViewportSize({width,height:900});await dashboard.screenshot({path:resolve(cfg.output,`glass-wave-settings-${width}.png`)});}
+  await dashboard.setViewportSize({width:1280,height:900});
+  await settingsPane.locator('select').first().selectOption('en');
+  await dashboard.waitForTimeout(700);
+  for(const name of ['Meal Planner','Timers','Nutrition','Home']){
    const button=dashboard.locator('macromate-card').getByRole('button',{name,exact:true});
    await button.click();
   }
   await dashboard.screenshot({path:resolve(cfg.output,'native-lovelace-panel-desktop.png')});
-  for(const [width,height] of [[390,844],[844,390]]){
+  for(let i=0;i<16;i++)await agent('log_meal',{name:`Panel scroll meal ${i}`,calories:10,meal_type:'snack',request_id:`panel-scroll-${i}`});
+  for(const [width,height] of [[1280,900],[390,844],[844,390]]){
    await dashboard.setViewportSize({width,height});await dashboard.waitForTimeout(400);
    const bounds=await dashboard.locator('macromate-card mm-unified-app').evaluate(el=>{
     const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:r.height,viewport:innerHeight};
@@ -351,12 +315,56 @@ try{
    assert.ok(bounds.width<=width,'No horizontal clipping');
    await dashboard.locator('macromate-card').getByRole('button',{name:'Nutrition',exact:true}).click();
    await dashboard.locator('mm-nutrition [data-testid="diary"]').waitFor();
-   const scrolled=await dashboard.locator('mm-unified-app .rm-body').evaluate(el=>{el.scrollTop=el.scrollHeight;return el.scrollTop>0;});
-   assert.equal(scrolled,true,'Long nutrition content must scroll inside the dashboard app');
+   await dashboard.locator('mm-nutrition').getByText('Panel scroll meal 15',{exact:true}).waitFor();
+   const paneBounds=await dashboard.locator('mm-nutrition').boundingBox();
+   await dashboard.screenshot({path:resolve(cfg.output,`glass-wave-nutrition-top-${width}.png`)});
+   const metric={width,height,pane:paneBounds};scrollMetrics.push(metric);
+   await dashboard.mouse.move(paneBounds.x+paneBounds.width/2,Math.min(height-40,paneBounds.y+150));
+   const bottom=dashboard.locator('mm-nutrition .entry').last().getByRole('button',{name:/ edit$/});
+   for(let i=0;i<50;i++){const r=await bottom.boundingBox();if(r.y>=paneBounds.y&&r.y+r.height<=Math.min(height,paneBounds.y+paneBounds.height)-20)break;await dashboard.mouse.wheel(0,160);await dashboard.waitForTimeout(35);}
+   await dashboard.waitForTimeout(200);
+   const bottomBounds=await bottom.boundingBox();metric.wheelDiaryControl=bottomBounds;
+   assert.ok(bottomBounds.y>=paneBounds.y&&bottomBounds.y+bottomBounds.height<=paneBounds.y+paneBounds.height,`Wheel must expose bottom diary controls, not just change a hidden scrollTop: ${JSON.stringify(bottomBounds)}`);
+   await bottom.click({position:{x:10,y:10},timeout:2000});
+   await dashboard.locator('mm-nutrition').getByRole('dialog').waitFor();
+   await dashboard.locator('mm-nutrition').getByRole('button',{name:'Cancel',exact:true}).click();
+   if(width<1000){
+    await dashboard.mouse.move(paneBounds.x+paneBounds.width/2,Math.min(height-40,paneBounds.y+150));
+    for(let i=0;i<10;i++)await dashboard.mouse.wheel(0,-800);
+    await dashboard.waitForTimeout(300);
+    assert.ok((await bottom.boundingBox()).y>height,'Touch test starts with last control below viewport');
+    const touch=await dashboard.context().newCDPSession(dashboard);
+    await touch.send('Emulation.setTouchEmulationEnabled',{enabled:true});
+    const x=Math.min(width-25,paneBounds.x+paneBounds.width/2),y=height-100;
+    for(let i=0;i<60;i++){
+     const r=await bottom.boundingBox();if(r.y>=paneBounds.y&&r.y+r.height<=Math.min(height,paneBounds.y+paneBounds.height)-20)break;
+     await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+     for(let step=1;step<=6;step++){await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-step*18}]});await dashboard.waitForTimeout(15);}
+     await dashboard.waitForTimeout(180);
+     await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+     await dashboard.waitForTimeout(40);
+    }
+    await dashboard.waitForTimeout(400);
+    const touched=await bottom.boundingBox();metric.touchDiaryControl=touched;assert.ok(touched.y>=paneBounds.y&&touched.y+touched.height<=paneBounds.y+paneBounds.height,'Touch swipe must expose last diary control');
+    await touch.detach();
+   }
+   await dashboard.screenshot({path:resolve(cfg.output,`native-nutrition-bottom-${width}.png`)});
+   await bottom.click({position:{x:10,y:10},timeout:2000});
+   await dashboard.locator('mm-nutrition').getByRole('dialog').waitFor();
+   await dashboard.locator('mm-nutrition').getByRole('button',{name:'Cancel',exact:true}).click();
+   for(let i=0;i<8;i++)await dashboard.mouse.wheel(0,700);
+   await dashboard.waitForTimeout(200);
+   const barcode=await dashboard.locator('mm-nutrition').getByRole('button',{name:'Search barcode',exact:true}).boundingBox();
+   metric.finalBarcodeControl=barcode;
+   assert.ok(barcode.y>=paneBounds.y&&barcode.y+barcode.height<=height,'The entire nutrition pane reaches its final barcode controls');
+   await dashboard.screenshot({path:resolve(cfg.output,`native-nutrition-end-${width}.png`)});
    await dashboard.locator('macromate-card').getByRole('button',{name:'Timers',exact:true}).click();
    await dashboard.locator('macromate-card').getByRole('button',{name:'Home',exact:true}).click();
    await dashboard.screenshot({path:resolve(cfg.output,`native-lovelace-panel-${width}.png`)});
   }
+  assert.ok(!dashboardActions.some(a=>a.startsWith('shopping_')||['recipe_to_shopping','plan_to_shopping'].includes(a)),'Installed dashboard never invokes the retired shopping subsystem');
+  await dashboard.locator('macromate-card').getByRole('button',{name:'All actions',exact:true}).click();
+  assert.equal(await dashboard.locator('mm-commands option').evaluateAll(nodes=>nodes.some(n=>n.value.startsWith('shopping_')||['recipe_to_shopping','plan_to_shopping'].includes(n.value))),false);
   await dashboard.locator('macromate-card').evaluate(c=>{window.retired={api:c.api,app:c.application};});
   await dashboard.getByRole('tab',{name:'Other',exact:true}).click();
   await dashboard.locator('macromate-card').waitFor({state:'detached'});
@@ -403,7 +411,7 @@ try{
   assert.ok(dashboardErrors.every(d=>!d.stack?.includes('/macromate-assets/')),'No MacroMate exception in native Lovelace');
   assert.ok(dashboardExternal.every(url=>/^https:\/\/demo\.home-assistant\.io\/stub_config\/(t-shirt-promo|floorplan|kitchen)\.png$/.test(url)),'Only native HA picker demo images may attempt an external request; every attempt is blocked');
   await dashboard.close();
-  return {native_lovelace:true,automatic_module:true,view_type:'panel',mobile_and_landscape:true,visual_picker_saved:true,native_ha_form:profileResults,shell_diagnostics:dashboardErrors,blocked_native_picker_demo_images:dashboardExternal};
+  return {native_lovelace:true,automatic_module:true,view_type:'panel',mobile_and_landscape:true,scroll_metrics:scrollMetrics,settings:{native_language_units_theme_saved:true,definitive_refusal_unchanged_store:true,deliberately_lost_committed_response:true,same_uuid_explicit_replay:true,glass_wave_http_ws_store_replay:true,spontaneous_user_warning_reproduced:false},shopping_ui_removed:true,visual_picker_saved:true,native_ha_form:profileResults,shell_diagnostics:dashboardErrors,blocked_native_picker_demo_images:dashboardExternal};
  });
  await test('no-unhandled-errors-external-network',async()=>{assert.deepEqual(errors,[]);assert.deepEqual(external,[]);return {errors,external,console_errors:consoleErrors};});
 } catch(error){failures.push({name:'browser-setup',error:error.message,stack:error.stack});}

@@ -9,7 +9,6 @@ const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
 class RmMealPlanner extends LitElement {
   static properties = {
     api: { type: Object },
-    shoppingLists:{type:Array},_shoppingListId:{state:true},_shoppingStatus:{state:true},
     recipes: { type: Array },
     settings: { type: Object },
     fromRecipe: { type: Object },    // recipe to return to (set when navigated from recipe detail)
@@ -24,7 +23,7 @@ class RmMealPlanner extends LitElement {
 
   constructor() {
     super();
-    this.api = null;this.shoppingLists=[];this._shoppingListId='';this._shoppingStatus='';
+    this.api = null;
     this.recipes = [];
     this.settings = {};
     this.fromRecipe = null;
@@ -100,7 +99,6 @@ class RmMealPlanner extends LitElement {
     }
   }
 
-  async _sendWeekToShopping(){if(!this._shoppingListId||this.api.transport.pending)return;try{await this.api.transport.call('plan_to_shopping',{week_start:this._weekStart,list_id:this._shoppingListId});this._shoppingStatus=(this.api.transport.locale||this.api.transport.hass.language)==='de'?'Wochenzutaten zur ausgewählten Liste hinzugefügt.':'Week ingredients added to the selected list.';}catch(error){this._shoppingStatus=error.message;}}
   _getEntriesForSlot(date, mealType) {
     return this._plan.filter(e => e.date === date && e.meal_type === mealType);
   }
@@ -169,7 +167,6 @@ class RmMealPlanner extends LitElement {
 
     return html`
       <div class="planner-container">
-        <div class="week-nav"><label>${(this.api?.transport?.locale||this.api?.transport?.hass.language)==='de'?'Einkaufsliste für diese Woche':'Shopping list for this week'}<select aria-label="Planner shopping list" .value=${this._shoppingListId} @change=${e=>{this._shoppingListId=e.target.value;}}><option value="">Choose…</option>${(this.shoppingLists||[]).map(list=>html`<option value=${list.id}>${list.name}</option>`)}</select></label><button class="week-today-btn" ?disabled=${!this._shoppingListId||!!this.api?.transport?.pending} @click=${this._sendWeekToShopping}>${(this.api?.transport?.locale||this.api?.transport?.hass.language)==='de'?'Plan zur Einkaufsliste':'Plan to shopping'}</button></div>${this._shoppingStatus?html`<p role="status">${this._shoppingStatus}</p>`:''}
         ${this.fromRecipe ? html`
           <div class="back-to-recipe">
             <button class="back-recipe-btn" @click=${() => this.dispatchEvent(new CustomEvent('rm-back-to-recipe', { bubbles: true, composed: true }))}>
@@ -559,7 +556,7 @@ class RmMealPlanner extends LitElement {
       z-index: 20;
     }
     .picker-panel {
-      background: var(--rm-bg-surface, #1c1c1e);
+      background: var(--rm-dialog-bg, var(--rm-bg-surface, #1c1c1e));
       border-radius: var(--rm-radius, 12px) var(--rm-radius, 12px) 0 0;
       width: 100%;
       max-height: 80%;

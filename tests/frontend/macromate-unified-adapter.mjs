@@ -7,7 +7,7 @@ assert.equal(canonicalAction('recipe_manager/recipes/get_all'),'recipes_get_all'
 assert.equal(canonicalAction('recipe_manager/import/recipe_keeper'),'recipe_keeper_import');
 assert.equal(canonicalAction('shopping_list_manager/items/check'),'shopping_items_check');
 let sent=[],fail=true;
-const hass={user:{id:'admin',is_admin:true},connection:{},callWS:async m=>{sent.push(structuredClone(m));if(m.action==='recipes_add'&&fail)throw new Error('private diagnostic');return {recipes:[],recipe:{id:'r'}};}};
+const hass={user:{id:'admin',is_admin:true},connection:{},callWS:async m=>{sent.push(structuredClone(m));if(m.action==='recipes_add'&&fail)throw new Error('private diagnostic');if(m.action==='preferences_get')return {preferences:{}};return {recipes:[],recipe:{id:'r'}};}};
 const api=new MacroMateAPI(hass);
 await api.call('recipe_manager/recipes/get_all');
 await assert.rejects(api.call('recipe_manager/recipes/add',{name:'Soup'}),e=>e.code==='uncertain'&&!e.message.includes('private'));
@@ -33,4 +33,16 @@ const benign=new MacroMateAPI(hass);await benign.call('recipes_add',{name:'blob:
 const references=await imageWrite.normalize({id:'r-media',image_url:'https://remote.invalid/reference.jpg',photos:['https://remote.invalid/photo.jpg']});assert.equal(references.image_url,null);assert.equal(references.media_refs.image_url,'https://remote.invalid/reference.jpg');
 let mediaFetches=0;const concurrent=new MacroMateAPI({...hass,fetchWithAuth:async()=>{mediaFetches++;await new Promise(r=>setTimeout(r,5));return {ok:true,blob:async()=>new Blob(['image'],{type:'image/webp'})};}});const urls=await Promise.all([concurrent.media('same'),concurrent.media('same')]);assert.equal(mediaFetches,1);assert.equal(urls[0],urls[1]);concurrent.dispose();
 let deliver;const unhandled=[];const onUnhandled=e=>unhandled.push(e.message);process.on('unhandledRejection',onUnhandled);const subscriptions=new MacroMateAPI({...hass,connection:{subscribeMessage:async callback=>{deliver=callback;return ()=>{};}}});await subscriptions.subscribe(async()=>{throw new Error('synthetic private callback error');});deliver();await new Promise(r=>setTimeout(r,15));process.off('unhandledRejection',onUnhandled);assert.deepEqual(unhandled,[],'Subscription refresh rejection is handled without leaking raw callback errors');subscriptions.dispose();
+const failureAPI=new MacroMateAPI({...hass,callWS:async()=>{throw {code:'storage_unavailable',message:'secret provider body'};}});
+await assert.rejects(failureAPI.call('preferences_update',{preferences:{recipe_settings:{theme:'soft'}}}),e=>e.code==='uncertain');
+assert.deepEqual(failureAPI.lastFailure,{action:'preferences_update',code:'storage_unavailable',outcome:'uncertain'});
+assert.ok(!JSON.stringify(failureAPI.lastFailure).includes('secret'));
+const refused=new MacroMateAPI({...hass,callWS:async()=>{throw {code:'invalid_request',message:'secret'};}});
+await assert.rejects(refused.call('preferences_update',{preferences:{}}),e=>e.code==='invalid_request');
+assert.equal(refused.pending,null);assert.equal(refused.lastFailure.outcome,'rejected');
+for(const response of [null,{}, {preferences:null},{preferences:[]}]){
+ const malformed=new MacroMateAPI({...hass,callWS:async()=>response});
+ await assert.rejects(malformed.call('preferences_update',{preferences:{theme:'soft'}}),e=>e.code==='uncertain','A malformed success response cannot establish settings acceptance');
+ assert.ok(malformed.pending.payload.request_id);
+}
 console.log('PASS: canonical transport, stable uncertain retry, disposal, scoped member permissions, read-only nutrition, stale reads, private media lifecycle');

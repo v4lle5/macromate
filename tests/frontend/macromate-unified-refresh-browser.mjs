@@ -23,7 +23,7 @@ async def main():
   def published():
    raw=json.loads((pathlib.Path(directory)/'.storage/macromate.meals').read_text())
    assert raw['data']==coordinator._state(),'Event must follow durable acceptance'
-   events.append({'event':'refresh','durable':True,'list_ids':list(raw['data']['kitchen']['shopping_lists'])})
+   events.append({'event':'refresh','durable':True,'recipe_ids':list(raw['data']['kitchen']['recipes'])})
   release=coordinator.async_add_listener(published)
   while True:
    line=await asyncio.to_thread(sys.stdin.readline)
@@ -72,56 +72,54 @@ try{
   card.hass={...hass,user:{id:'refresh-admin',is_admin:true},connection:{subscribeMessage:async callback=>{window.refreshCallbacks.add(callback);return()=>window.refreshCallbacks.delete(callback);}},callWS:async message=>{
    const response=await fetch('/refresh-command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(message)});const output=await response.json();if(output.error)throw output.error;
    for(const event of output.events||[])window.emitRefresh(event);
-   if(window.holdListRead&&message.action==='shopping_lists_get_all'){window.listReadHeld=true;await new Promise(done=>window.releaseListRead=done);window.listReadHeld=false;}
-   if(window.holdResponse&&message.action==='shopping_lists_create'){window.responseHeld=true;await new Promise(done=>window.releaseResponse=done);window.responseHeld=false;}
-   if(window.loseResponse&&message.action==='shopping_lists_create'){window.loseResponse=false;throw Error('Genuine durable response deliberately lost');}
+   if(window.holdListRead&&message.action==='recipes_get_all'){window.listReadHeld=true;await new Promise(done=>window.releaseListRead=done);window.listReadHeld=false;}
+   if(window.holdResponse&&message.action==='recipes_add'){window.responseHeld=true;await new Promise(done=>window.releaseResponse=done);window.responseHeld=false;}
+   if(window.loseResponse&&message.action==='recipes_add'){window.loseResponse=false;throw Error('Genuine durable response deliberately lost');}
    return output.result;
   }};
  });
- await page.waitForFunction(()=>card.api.actions.shopping_lists_create&&window.refreshCallbacks.size>0&&!card.application._loading);
+ await page.waitForFunction(()=>card.api.actions.recipes_add&&window.refreshCallbacks.size>0&&!card.application._loading);
  await page.evaluate(()=>{window.acceptedTrace=[];card.api.addEventListener('accepted',()=>window.acceptedTrace.push({pending:!!card.api.pending,busy:card.api.busy,current:card.api.current()}));});
  await page.getByRole('button',{name:'All actions',exact:true}).click();
  const form=page.locator('mm-unified-app mm-commands');
- await form.getByLabel('Action',{exact:true}).selectOption('shopping_lists_create');
+ await form.getByLabel('Action',{exact:true}).selectOption('recipes_add');
  await form.getByLabel('name',{exact:true}).fill('Event before response');
- await form.getByLabel('private',{exact:true}).check();
  await page.evaluate(()=>window.holdResponse=true);
  await form.getByRole('button',{name:'Save',exact:true}).click();
  await page.waitForFunction(()=>window.responseHeld);
  const store=(await domain({action:'STORE_READ'})).result;
- const created=Object.values(store.data.kitchen.shopping_lists).find(list=>list.name==='Event before response');
- assert.ok(created,'Created list exists in independent atomic Store before response');
+ const created=Object.values(store.data.kitchen.recipes).find(list=>list.name==='Event before response');
+ assert.ok(created,'Created recipe exists in independent atomic Store before response');
  const trace=await page.evaluate(()=>window.refreshTrace);
  assert.ok(trace.some(row=>row.pending&&row.busy&&row.durable),'Real durable event callback arrives with mutation pending');
- assert.equal(await page.evaluate(()=>card.application._shoppingLists.some(list=>list.name==='Event before response')),false,'Refresh reads remain deferred while response is pending');
- const readsBefore=captured.filter(m=>m.action==='shopping_lists_get_all').length;
+ assert.equal(await page.evaluate(()=>card.application._recipes.some(list=>list.name==='Event before response')),false,'Refresh reads remain deferred while response is pending');
+ const readsBefore=captured.filter(m=>m.action==='recipes_get_all').length;
  await form.getByLabel('name',{exact:true}).fill('Unsubmitted follow-up draft');
  await form.getByLabel('name',{exact:true}).focus();
  await page.evaluate(()=>{window.holdResponse=false;window.releaseResponse();});
  await page.waitForFunction(()=>!card.api.pending&&!card.api.busy);
- await page.waitForFunction(()=>card.application._shoppingLists.some(list=>list.name==='Event before response'),{},{timeout:3000});
- assert.equal(captured.filter(m=>m.action==='shopping_lists_get_all').length-readsBefore,1,'One post-acceptance list read, not an event/response read storm');
+ await page.waitForFunction(()=>card.application._recipes.some(list=>list.name==='Event before response'),{},{timeout:3000});
+ assert.equal(captured.filter(m=>m.action==='recipes_get_all').length-readsBefore,1,'One post-acceptance recipe read, not an event/response read storm');
  evidence.acceptedTrace=await page.evaluate(()=>window.acceptedTrace);
  assert.deepEqual(evidence.acceptedTrace,[{pending:false,busy:false,current:true}],'Accepted notification occurs exactly once after both pending and busy clear');
  assert.equal(await form.getByLabel('name',{exact:true}).inputValue(),'Unsubmitted follow-up draft');
  assert.equal(await form.getByLabel('name',{exact:true}).evaluate(n=>n.getRootNode().activeElement===n),true,'Readback preserves the open schema form focus');
- assert.equal(await form.getByLabel('Action',{exact:true}).inputValue(),'shopping_lists_create');
+ assert.equal(await form.getByLabel('Action',{exact:true}).inputValue(),'recipes_add');
  await page.getByRole('button',{name:'Home',exact:true}).click();
  await page.getByText('Refresh soup',{exact:true}).first().click();
  const detail=page.locator('rm-recipe-detail');
- await detail.evaluate(d=>d._openShoppingPicker());
- assert.ok(await detail.locator(`select option[value="${created.id}"]`).count(),'Dedicated recipe shopping selector sees accepted list without reload');
- evidence.checks.push('durable event-before-response -> one accepted read -> dedicated recipe selector, schema draft/focus retained');
- // An open recipe editor must not suppress safe list reads or lose typed data.
- await detail.evaluate(d=>{d._showShoppingPicker=false;d._startEdit();});
+ assert.equal(await detail.locator('.shopping-section').count(),0);
+ evidence.checks.push('durable event-before-response -> one accepted read -> recipe library, schema draft/focus retained');
+ // An open recipe editor must not suppress deferred recipe reads or lose typed data.
+ await detail.evaluate(d=>d._startEdit());
  const calories=detail.getByLabel('Declared calories (kcal)',{exact:true});
  await calories.fill('321');await calories.focus();
- const externalList=await domain({action:'shopping_lists_create',payload:{request_id:'refresh-external-list',name:'Published while editing',private:true}});
+ const externalList=await domain({action:'recipes_add',payload:{request_id:'refresh-external-list',name:'Published while editing'}});
  assert.ok(externalList.events[0].durable);
- const readsWhileEditing=captured.filter(m=>m.action==='shopping_lists_get_all').length;
+ const readsWhileEditing=captured.filter(m=>m.action==='recipes_get_all').length;
  await page.evaluate(events=>{for(let i=0;i<20;i++)for(const event of events)window.emitRefresh(event);},externalList.events);
- await page.waitForFunction(()=>card.application._shoppingLists.some(list=>list.name==='Published while editing'),{},{timeout:3000});
- assert.equal(captured.filter(m=>m.action==='shopping_lists_get_all').length-readsWhileEditing,1,'A synchronous live event burst coalesces into one safe list read');
+ await page.waitForFunction(()=>!card.application._refreshRunning&&!card.application._refreshScheduled);
+ assert.equal(captured.filter(m=>m.action==='recipes_get_all').length,readsWhileEditing,'Dirty recipe context defers replacement reads even during event bursts');
  assert.equal(await calories.inputValue(),'321');
  assert.equal(await calories.evaluate(n=>n.getRootNode().activeElement===n),true);
  assert.equal(await detail.evaluate(d=>d._editing),true);
@@ -146,60 +144,49 @@ try{
  evidence.checks.push('safe refresh preserves planner date, open picker, query and servings');
  // Ambiguous acceptance is still held until one explicit same-request retry.
  await page.getByRole('button',{name:'All actions',exact:true}).click();
- await form.getByLabel('Action',{exact:true}).selectOption('shopping_lists_create');
+ await form.getByLabel('Action',{exact:true}).selectOption('recipes_add');
  await form.getByLabel('name',{exact:true}).fill('Lost accepted response');
- await form.getByLabel('private',{exact:true}).check();
  await page.evaluate(()=>window.loseResponse=true);
- const uncertainReads=captured.filter(m=>m.action==='shopping_lists_get_all').length;
+ const uncertainReads=captured.filter(m=>m.action==='recipes_get_all').length;
  await form.getByRole('button',{name:'Save',exact:true}).click();
  const retry=page.locator('macromate-card .status').getByRole('button',{name:'Retry same request',exact:true});
  await retry.waitFor();
  const pending=await page.evaluate(()=>structuredClone(card.api.pending));
  assert.ok(pending.payload.request_id);
- assert.ok(Object.values((await domain({action:'STORE_READ'})).result.data.kitchen.shopping_lists).some(list=>list.name==='Lost accepted response'));
+ assert.ok(Object.values((await domain({action:'STORE_READ'})).result.data.kitchen.recipes).some(list=>list.name==='Lost accepted response'));
  await page.evaluate(events=>{for(let i=0;i<10;i++)for(const event of events)window.emitRefresh(event);},externalList.events);
  await page.waitForTimeout(200);
  assert.deepEqual(await page.evaluate(()=>card.api.pending),pending);
- assert.equal(captured.filter(m=>m.action==='shopping_lists_get_all').length,uncertainReads,'Uncertain pending blocks refresh reads');
- assert.equal(captured.filter(m=>m.action==='shopping_lists_create'&&m.payload.name==='Lost accepted response').length,1,'No automatic write replay');
+ assert.equal(captured.filter(m=>m.action==='recipes_get_all').length,uncertainReads,'Uncertain pending blocks refresh reads');
+ assert.equal(captured.filter(m=>m.action==='recipes_add'&&m.payload.name==='Lost accepted response').length,1,'No automatic write replay');
  await retry.click();
- await page.waitForFunction(()=>!card.api.pending&&!card.application._loading&&card.application._shoppingLists.some(list=>list.name==='Lost accepted response'));
- const replay=captured.filter(m=>m.action==='shopping_lists_create'&&m.payload.name==='Lost accepted response');
+ await page.waitForFunction(()=>!card.api.pending&&!card.application._loading&&card.application._recipes.some(list=>list.name==='Lost accepted response'));
+ const replay=captured.filter(m=>m.action==='recipes_add'&&m.payload.name==='Lost accepted response');
  assert.equal(replay.length,2);assert.deepEqual(replay[0],replay[1]);
- assert.equal(Object.values((await domain({action:'STORE_READ'})).result.data.kitchen.shopping_lists).filter(list=>list.name==='Lost accepted response').length,1);
- assert.equal(await form.getByLabel('name',{exact:true}).inputValue(),'Lost accepted response');
+ assert.equal(Object.values((await domain({action:'STORE_READ'})).result.data.kitchen.recipes).filter(list=>list.name==='Lost accepted response').length,1);
+ assert.equal(await page.evaluate(()=>card.application._view),'grid','Explicit accepted recipe creation returns to the library');
  evidence.checks.push('uncertain accepted write retains stable UUID/payload, blocks automatic reads/writes and replays only by explicit retry without duplication');
- await page.getByRole('button',{name:'Home',exact:true}).click();
- await page.getByText('Published recipe rename',{exact:true}).first().click();
- await detail.evaluate(d=>d._startEdit());
- const closingUpdate=await domain({action:'recipes_update',payload:{request_id:'refresh-closing-recipe',recipe_id:recipeId,name:'Context closed during read'}});
- await page.evaluate(events=>{window.holdListRead=true;for(const event of events)window.emitRefresh(event);},closingUpdate.events);
- await page.waitForFunction(()=>window.listReadHeld);
- await page.getByRole('button',{name:'Home',exact:true}).click();
- await page.evaluate(()=>{window.holdListRead=false;window.releaseListRead();});
- await page.getByText('Context closed during read',{exact:true}).first().waitFor({timeout:3000});
- evidence.checks.push('closing a protected form during its safe list read resumes deferred recipe reads');
  // Hold a read after it has reached the real coordinator, then invalidate the
  // account in-place. The captured old model must never commit or notify locally.
  await page.evaluate(()=>{
   window.acceptedStates=[];card.api.addEventListener('accepted',()=>window.acceptedStates.push({pending:!!card.api.pending,busy:card.api.busy}));
   const call=card.api.hass.callWS;card.api.hass.callWS=async message=>{
    const output=await call(message);
-   if(window.holdRead&&message.action==='shopping_lists_get_all'){window.readHeld=true;await new Promise(done=>window.releaseRead=done);window.readHeld=false;}
+   if(window.holdRead&&message.action==='recipes_get_all'){window.readHeld=true;await new Promise(done=>window.releaseRead=done);window.readHeld=false;}
    return output;
-  };window.holdRead=true;window.oldApp=card.application;window.oldLists=card.application._shoppingLists;window.emitRefresh({event:'refresh',durable:true});
+  };window.holdRead=true;window.oldApp=card.application;window.oldLists=card.application._recipes;window.emitRefresh({event:'refresh',durable:true});
  });
  await page.waitForFunction(()=>window.readHeld);
  await page.evaluate(()=>{card.api.hass.user.id='revoked-in-place';window.holdRead=false;window.releaseRead();});
  await page.waitForFunction(()=>!window.oldApp._refreshRunning);
- assert.equal(await page.evaluate(()=>window.oldApp._shoppingLists===window.oldLists),true,'Old-context read response never commits');
+ assert.equal(await page.evaluate(()=>window.oldApp._recipes===window.oldLists),true,'Old-context read response never commits');
  assert.deepEqual(await page.evaluate(()=>window.acceptedStates),[],'Reads and context-invalid completions never announce accepted writes');
  await page.evaluate(()=>card.remove());
  assert.equal(await page.evaluate(()=>window.refreshCallbacks.size),0,'Native and local refresh callbacks are released on removal');
  evidence.checks.push('in-place account invalidation rejects late read adoption and removal releases subscriptions');
  assert.deepEqual(errors,[]);
- evidence.trace=trace;evidence.list_id=created.id;evidence.postAcceptanceListReads=1;
- console.log('PASS: durable event-before-response race refreshes dedicated recipe selector with one deferred read and preserves schema form/focus');
+ evidence.trace=trace;evidence.recipe_id=created.id;evidence.postAcceptanceRecipeReads=1;
+ console.log('PASS: durable event-before-response race refreshes recipe library with one deferred read and preserves schema form/focus');
 }finally{
  evidence.commands=captured;
  await writeFile(resolve(process.env.EVIDENCE_DIR,'refresh-regression-evidence.json'),JSON.stringify(evidence,null,2)+'\n');

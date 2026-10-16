@@ -113,7 +113,7 @@
 's3fc88456583330f5': `Nenhuma lista encontrada no Shopping List Manager`,
 's403fc869b2213eb3': `+10 min`,
 's417711f56b5a5681': `Métrico`,
-'s41cb654e8909931b': `🍇 Roxo &amp; Ciano`,
+'s41cb654e8909931b': `🍇 Roxo & Ciano`,
 's41f3c5dea156cd44': `Silencioso`,
 's42c4d8abc49d679b': `🌊 Azul Oceano`,
 's44add38a493e53a5': str`${0}min`,

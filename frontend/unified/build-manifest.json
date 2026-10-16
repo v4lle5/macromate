@@ -42,11 +42,6 @@
       "license": "MIT"
     },
     {
-      "name": "jsbarcode",
-      "version": "3.11.6",
-      "license": "MIT"
-    },
-    {
       "name": "jszip",
       "version": "3.10.1",
       "license": "(MIT OR GPL-3.0-or-later)"
@@ -79,11 +74,6 @@
     {
       "name": "process-nextick-args",
       "version": "2.0.1",
-      "license": "MIT"
-    },
-    {
-      "name": "qrcode-generator",
-      "version": "1.4.4",
       "license": "MIT"
     },
     {
@@ -120,53 +110,53 @@
     },
     {
       "path": "frontend/unified/app.js",
-      "bytes": 498505,
-      "sha256": "e3f2fef8a654f67b3358e8e6df5930dfa690d674380870fda875de3cbecc2195"
+      "bytes": 391093,
+      "sha256": "d13598b99e36421fcb11adebbaf75ce0aee19a9069a8aac57d726f645353e670"
     },
     {
-      "path": "frontend/unified/chunks/de-VPUKMWIJ.js",
-      "bytes": 15476,
-      "sha256": "daf6f1797e4f9908251946ca5e825cfc4bbc2973823d2e3d928bfa7ad0564bcf"
+      "path": "frontend/unified/chunks/de-L3JMCSON.js",
+      "bytes": 15460,
+      "sha256": "fa2c2a2d9e3533bd29d55655c91818a5f91bebf737517dc25621ffc6532761e1"
     },
     {
-      "path": "frontend/unified/chunks/es-2ODMFEEJ.js",
+      "path": "frontend/unified/chunks/es-TYY2HB2B.js",
       "bytes": 15574,
-      "sha256": "a260665296c55630d4d0dc138c1e9b58bb5c132cfff833ee370c3e6eb43746c2"
+      "sha256": "aa6ef9824300afc57aa1478b040784dcef1073272b254b2cb168ef8db5673e42"
     },
     {
-      "path": "frontend/unified/chunks/fr-DBXRW4XM.js",
-      "bytes": 16028,
-      "sha256": "9072513b359e78accf724029b5ff8b399c51d0999e207fa49bcc7a8da0d3bb71"
+      "path": "frontend/unified/chunks/fr-VRS6NLY6.js",
+      "bytes": 16024,
+      "sha256": "5a04d44eb7d9a92fe5a73904312da2bca361a80b0de486576a9215b2b7af5a9a"
     },
     {
-      "path": "frontend/unified/chunks/it-B27VJNVB.js",
-      "bytes": 15049,
-      "sha256": "668603ab5a191c6bababacaef702e036fb772d1e611b122221c780c8c0d0ee4e"
+      "path": "frontend/unified/chunks/it-SW3BRMU2.js",
+      "bytes": 15045,
+      "sha256": "740f8712eab84bf8b3dfcb02c0e0a981e34ccdce176b244794634a9ea9360684"
     },
     {
-      "path": "frontend/unified/chunks/nl-J3XFH5GZ.js",
-      "bytes": 14805,
-      "sha256": "72300550c1a3629e2aa678b3638377158e6af093e38d3f227997a0daed56c288"
+      "path": "frontend/unified/chunks/nl-TAIPGW4J.js",
+      "bytes": 14789,
+      "sha256": "2435c57a6d66a492b527c20fbc3049f493715fb3df71952a6f07f06d41cc1328"
     },
     {
-      "path": "frontend/unified/chunks/pt-4PZZOQC2.js",
-      "bytes": 15814,
-      "sha256": "59c2eceae9f990efbbecf0410335b2e8e8972c32b9d68bb09d2c6e2044719bb3"
+      "path": "frontend/unified/chunks/pt-UPH64WCU.js",
+      "bytes": 15810,
+      "sha256": "0eb5750ba540c1a14b8240a7ac30821dcfec7f772d984ba30bae615d072fa37a"
     },
     {
-      "path": "frontend/unified/chunks/chunk-GHX772XU.js.LEGAL.txt",
+      "path": "frontend/unified/chunks/chunk-VYGSGG2W.js.LEGAL.txt",
       "bytes": 1272,
       "sha256": "630427e8f7649304b3cb411a4d742f3c093c11ffd48fcdb76b2c695713af14d2"
     },
     {
-      "path": "frontend/unified/chunks/chunk-GHX772XU.js",
-      "bytes": 18036,
-      "sha256": "923568f873f5fac6f733ec3fe2de197d2b533a1021a35f5698095658129be95e"
+      "path": "frontend/unified/chunks/chunk-VYGSGG2W.js",
+      "bytes": 18028,
+      "sha256": "cab5f3d046af88c099609f3773ef5b840d6c309983ea6a8171495a6092e9c985"
     },
     {
       "path": "frontend/unified/THIRD-PARTY-NOTICES.txt",
-      "bytes": 60824,
-      "sha256": "a64a770fd3210fbbe7b729aaac61113db2296c84509b0896fcb22af1088193c9"
+      "bytes": 58244,
+      "sha256": "cb6d329da482b44f885688f8671e748d3fff3324d3f01d2e65530875b47bda23"
     }
   ]
 }

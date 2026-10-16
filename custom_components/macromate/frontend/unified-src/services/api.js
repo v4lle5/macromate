@@ -1,48 +1,6 @@
 /**
  * Recipe Manager WebSocket API service.
- * Mirrors the pattern from Shopping List Manager's api.js.
  */
-
-import {numericAmount} from './amounts.js';
-
-// ---------------------------------------------------------------------------
-// SLM ingredient helpers
-// ---------------------------------------------------------------------------
-
-const _SLM_UNIT_RE = /^[½¼¾⅓⅔⅛⅜⅝⅞\d][\d.,/½¼¾⅓⅔⅛⅜⅝⅞\s]*\s*(?:tsp|tbsp|tablespoons?|teaspoons?|cups?|oz|lbs?|g|kg|ml|cl|dl|L|(?:milli|centi|deci)?lit(?:re|er)s?|kilo(?:gramme|gram)s?|(?:gramme|gram)s?|pints?|quarts?|gallons?|fl\.?\s*oz|cans?|bunches?|heads?|cloves?|slices?|pieces?|sheets?|pinch(?:es)?|dash(?:es)?|handfuls?|sprigs?|stalks?)\s*/i;
-
-/**
- * Return a clean ingredient name suitable for an SLM item title.
- * When the Python parser failed to split a Unicode fraction (e.g. "½ tsp baking powder"
- * ended up as the full name), this strips the leading measurement so SLM gets
- * "Baking Powder" rather than "½ tsp baking powder".
- */
-function _slmCleanName(ing) {
-  // If the parser captured amount/unit separately, ing.name is already clean.
-  if (ing.amount || ing.unit) return ing.name;
-  // Otherwise try to strip an embedded measurement prefix.
-  const cleaned = ing.name.replace(_SLM_UNIT_RE, '').trim();
-  return cleaned || ing.name;
-}
-
-/**
- * Build the full ingredient string for the recipe note (amount + unit + name).
- * e.g. "1/2 tsp baking powder"
- */
-function _slmIngString(ing, cleanName) {
-  if (!ing.amount && !ing.unit) {
-    // Name may already contain the measurement (malformed parse) — use as-is.
-    return ing.name;
-  }
-  return [ing.amount, ing.unit, cleanName].filter(Boolean).join(' ');
-}
-
-/**
- * Build the "[RM] RecipeName — ½ tsp baking powder" note string.
- */
-function _slmBuildNote(recipeName, ing, cleanName) {
-  return `[RM] ${recipeName} \u2014 ${_slmIngString(ing, cleanName)}`;
-}
 
 export class RecipeManagerAPI {
   constructor(hass) {
@@ -129,87 +87,6 @@ export class RecipeManagerAPI {
 
   async clearMealPlanWeek(weekStart) {
     return this.hass.callWS({ type: 'recipe_manager/meal_plan/clear', week_start: weekStart, confirm: true });
-  }
-
-  // -- Shopping Manager cross-integration -----------------------------------
-
-  /**
-   * Legacy callers without a recipe ID use separate items, never name-only
-   * read/modify/write merges. Atomic recipe/plan transfers are preferred.
-   * Preflight the whole batch; an uncertain write stops it immediately.
-   */
-  async addIngredientsToShoppingList(listId, ingredients, recipeName = null) {
-    const payloads = ingredients.map(ing => {
-      const missing = ing.amount === null || ing.amount === undefined || ing.amount === '';
-      const quantity = missing && (!ing.unit || ing.unit === 'units') ? 1 : numericAmount(ing.amount);
-      if (quantity === null || quantity <= 0) throw new Error('Ingredient quantity is ambiguous or invalid. Use the atomic recipe transfer or an explicit quantity.');
-      const name = ing.product_name ?? _slmCleanName(ing);
-      const payload = {type: 'shopping_list_manager/items/add', list_id: listId,
-        name, quantity, unit: ing.unit || 'units'};
-      if (ing.product_id) payload.product_id = ing.product_id;
-      if (ing.category_id) payload.category_id = ing.category_id;
-      if (recipeName) payload.note = _slmBuildNote(recipeName, ing, _slmCleanName(ing));
-      return payload;
-    });
-    const results = [];
-    for (const payload of payloads) {
-      const result = await this.hass.callWS(payload);
-      results.push({success: true, name: payload.name, result});
-    }
-    return results;
-  }
-
-  async recipeToShopping(recipeId, listId, servings, ingredientIndexes, ingredientMatches = []) {
-    if (ingredientMatches.length && !this.transport.actions.recipe_to_shopping?.schema?.properties?.ingredient_matches) {
-      throw new Error('The server does not support exact catalog matching. Update MacroMate before transferring matched ingredients.');
-    }
-    const payload = {recipe_id:recipeId,list_id:listId,servings,ingredient_indexes:ingredientIndexes};
-    if (ingredientMatches.length) payload.ingredient_matches = ingredientMatches;
-    return this.transport.call('recipe_to_shopping',payload);
-  }
-
-  async updateSlmItem(itemId, data) {
-    return this.hass.callWS({ type: 'shopping_list_manager/items/update', item_id: itemId, ...data });
-  }
-
-  async getShoppingLists() {
-    return this.hass.callWS({ type: 'shopping_list_manager/lists/get_all' });
-  }
-
-  async getSlmItems(listId) {
-    return this.hass.callWS({ type: 'shopping_list_manager/items/get', list_id: listId });
-  }
-
-  async checkSlmItem(itemId, checked) {
-    return this.hass.callWS({ type: 'shopping_list_manager/items/check', item_id: itemId, checked });
-  }
-
-  async clearSlmChecked(listId) {
-    return this.hass.callWS({ type: 'shopping_list_manager/items/clear_checked', list_id: listId });
-  }
-
-  async deleteSlmItem(itemId) {
-    return this.hass.callWS({ type: 'shopping_list_manager/items/delete', item_id: itemId });
-  }
-
-  async addSlmItem(listId, data) {
-    return this.hass.callWS({ type: 'shopping_list_manager/items/add', list_id: listId, ...data });
-  }
-
-  async getSlmCategories() {
-    return this.hass.callWS({ type: 'shopping_list_manager/categories/get_all' });
-  }
-
-  async getSlmProductsByIds(ids) {
-    return this.hass.callWS({ type: 'shopping_list_manager/products/get_by_ids', product_ids: ids });
-  }
-
-  async getSlmProductSuggestions(limit = 20) {
-    return this.hass.callWS({ type: 'shopping_list_manager/products/suggestions', limit });
-  }
-
-  async searchSlmProducts(query, limit = 5) {
-    return this.hass.callWS({ type: 'shopping_list_manager/products/search', query, limit });
   }
 
   // -- Global Timers --------------------------------------------------------
