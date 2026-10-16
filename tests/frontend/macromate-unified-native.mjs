@@ -16,7 +16,7 @@ const control=async message=>{process.stdout.write(JSON.stringify(message)+'\n')
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||process.env.CHROMIUM||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
 const rows=[],failures=[],screenshots=[],errors=[],external=[],consoleErrors=[];
 let page;
-const test=async(name,fn)=>{try{const actual=await fn();rows.push({name,status:'passed',actual:actual??null});return true;}catch(error){const path=resolve(cfg.output,'failure-'+name+'.png');if(page)await page.screenshot({path}).catch(()=>{});failures.push({name,error:error.message,stack:error.stack,screenshot:path});rows.push({name,status:'failed'});return false;}};
+const test=async(name,fn)=>{try{const actual=await fn();rows.push({name,status:'passed',actual:actual??null});return true;}catch(error){const path=resolve(cfg.output,'failure-'+name+'.png');if(page)await (browser.contexts().flatMap(c=>c.pages()).at(-1)||page).screenshot({path}).catch(()=>{});failures.push({name,error:error.message,stack:error.stack,screenshot:path});rows.push({name,status:'failed'});return false;}};
 let recipeId,planId,listId,itemId,recipeDiaryId,quickId;
 try{
  page=await browser.newPage({viewport:{width:1280,height:1000},reducedMotion:'reduce',acceptDownloads:true});
@@ -276,6 +276,15 @@ try{
   assert.ok(!(await store('ui-diary-deleted')).entries.some(e=>e.name==='Native uncertain diary'));
   return {recipe_deleted:recipeId,plan_deleted:planId,item_deleted:itemId,list_deleted:listId,snapshot_retained:recipeDiaryId};
  });
+ await test('native-weight-sensor-fallback-visible-not-live',async()=>{
+  await view('Nutrition');
+  const result=await control({op:'weight_source',state:'unavailable'});
+  assert.equal(result.weight_source,'profile');assert.equal(result.weight_kg,80);
+  await page.locator('mm-nutrition').getByText(/Weight sensor unavailable.*Saved profile weight.*80.*not live/).waitFor();
+  await control({op:'weight_source',state:'80'});
+  await page.locator('mm-nutrition .weight-fallback').waitFor({state:'detached'});
+  return {fallback_kg:80,labelled_not_live:true};
+ });
  await test('native-member-shared-list-and-private-denial-context-clear',async()=>{
   await connect(1);
   await page.waitForFunction(()=>!document.querySelector('macromate-card').shadowRoot.textContent.includes('Native quick diary'));
@@ -304,6 +313,98 @@ try{
   await assert.rejects(()=>native('shopping_lists_get',{list_id:cfg.shared_list_id}));
   assert.equal(await page.locator('mm-nutrition').count(),0);return {reader_not_admin:true,private_denied:true};
  });
+ await test('native-lovelace-panel-view-auto-module-layout-and-cleanup',async()=>{
+  const dashboard=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'reduce'});
+  const dashboardErrors=[],dashboardExternal=[];
+  dashboard.on('request',r=>{if(!/^(blob:|data:)/.test(r.url())&&new URL(r.url()).origin!==cfg.url)dashboardExternal.push(r.url());});
+  await dashboard.route('**/*',async route=>{
+   const request=route.request(),url=request.url();
+   if(!/^(blob:|data:)/.test(url)&&new URL(url).origin!==cfg.url){
+    assert.equal(request.headers().authorization,undefined,'Never forward HA credentials outside loopback');
+    return route.abort(); // HA's built-in picker previews include public demo images.
+   }
+   return route.continue();
+  });
+  dashboard.on('pageerror',e=>dashboardErrors.push({message:e.message,stack:e.stack}));
+  dashboard.on('websocket',socket=>{const sent=new Map();socket.on('framesent',({payload})=>{try{const m=JSON.parse(payload);if(m.id)sent.set(m.id,m.type);}catch{}});socket.on('framereceived',({payload})=>{try{const m=JSON.parse(payload);if(m.success===false)dashboardErrors.push({type:sent.get(m.id),error:m.error});}catch{}});});
+  await dashboard.addInitScript(({url,token})=>localStorage.setItem('hassTokens',JSON.stringify({
+   access_token:token,token_type:'Bearer',expires_in:1800,expires:Date.now()+1800000,
+   hassUrl:url,clientId:url+'/',refresh_token:'unused-synthetic-test-refresh'
+  })),{url:cfg.url,token:cfg.accounts[0].token});
+  await dashboard.goto(cfg.url+'/dashboard-native/macromate');
+  try{await dashboard.locator('hui-panel-view macromate-card mm-unified-app').waitFor();}catch(error){
+   await dashboard.screenshot({path:resolve(cfg.output,'native-dashboard-failure.png')});
+   await writeFile(resolve(cfg.output,'native-dashboard-errors.json'),JSON.stringify({errors:dashboardErrors,text:await dashboard.locator('body').innerText()},null,2));
+   throw error;
+  }
+  for(const name of ['Meal Planner','Shopping List','Timers','Nutrition','Home']){
+   const button=dashboard.locator('macromate-card').getByRole('button',{name,exact:true});
+   await button.click();
+  }
+  await dashboard.screenshot({path:resolve(cfg.output,'native-lovelace-panel-desktop.png')});
+  for(const [width,height] of [[390,844],[844,390]]){
+   await dashboard.setViewportSize({width,height});await dashboard.waitForTimeout(400);
+   const bounds=await dashboard.locator('macromate-card mm-unified-app').evaluate(el=>{
+    const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:r.height,viewport:innerHeight};
+   });
+   assert.ok(bounds.bottom<=bounds.viewport+2,'Panel card must fit the available HA viewport: '+JSON.stringify(bounds));
+   assert.ok(bounds.width<=width,'No horizontal clipping');
+   await dashboard.locator('macromate-card').getByRole('button',{name:'Nutrition',exact:true}).click();
+   await dashboard.locator('mm-nutrition [data-testid="diary"]').waitFor();
+   const scrolled=await dashboard.locator('mm-unified-app .rm-body').evaluate(el=>{el.scrollTop=el.scrollHeight;return el.scrollTop>0;});
+   assert.equal(scrolled,true,'Long nutrition content must scroll inside the dashboard app');
+   await dashboard.locator('macromate-card').getByRole('button',{name:'Timers',exact:true}).click();
+   await dashboard.locator('macromate-card').getByRole('button',{name:'Home',exact:true}).click();
+   await dashboard.screenshot({path:resolve(cfg.output,`native-lovelace-panel-${width}.png`)});
+  }
+  await dashboard.locator('macromate-card').evaluate(c=>{window.retired={api:c.api,app:c.application};});
+  await dashboard.getByRole('tab',{name:'Other',exact:true}).click();
+  await dashboard.locator('macromate-card').waitFor({state:'detached'});
+  assert.equal(await dashboard.evaluate(()=>!retired.api.active&&retired.app._timerTick===null),true,'Leaving the view releases transport and cooking interval');
+  await dashboard.setViewportSize({width:1280,height:900});
+  await dashboard.getByRole('button',{name:'Edit dashboard',exact:true}).press('Enter');
+  await dashboard.getByRole('button',{name:'Add card',exact:true}).click();
+  await dashboard.getByRole('tab',{name:'By card',exact:true}).click();
+  await dashboard.getByPlaceholder('Search cards').fill('MacroMate');
+  await dashboard.locator('hui-card-picker .card').filter({has:dashboard.getByText('MacroMate',{exact:true})}).locator('.overlay').click();
+  await dashboard.locator('macromate-card-editor').waitFor();
+  await dashboard.screenshot({path:resolve(cfg.output,'native-card-picker.png')});
+  await dashboard.getByRole('button',{name:'Save',exact:true}).click();
+  await dashboard.getByRole('button',{name:'Done',exact:true}).click();
+  await dashboard.locator('macromate-card mm-unified-app').first().waitFor();
+  await dashboard.locator('macromate-card').first().evaluate(c=>{window.nativeHass=c.hass;window.profileHost=c;});
+  const formErrorsBefore=dashboardErrors.length;
+  const profileResults=[];
+  for(const pace of ['0,5','0.5']){
+   const profile=await control({op:'profile_form'});
+   await dashboard.evaluate(async schema=>{
+    await customElements.whenDefined('ha-form');
+    const form=document.createElement('ha-form');window.profileForm=form;
+    form.style.cssText='position:fixed;inset:0;z-index:10000;background:white;overflow:auto;padding:24px';
+    form.hass={...window.nativeHass,language:'de'};
+    if(typeof form.hass.localize!=='function'||!form.hass.connection)throw Error('Native HA form must receive the actual authenticated hass context');
+    form.computeLabel=s=>({birthday:'Geburtsdatum (TT.MM.JJJJ)',weekly_pace_kg:'Gewichtsänderung pro Woche (kg/Woche)'}[s.name]||s.name);form.schema=schema;
+    form.data={formula_sex:'male',birthday:'01.01.1990',height_cm:180,target_weight_kg:70,goal:'lose',weekly_pace_kg:'0',activity_level:'low',macro_plan:'balanced',enable_food_database:false,weight_entity:'sensor.synthetic_weight'};
+    window.profilePayload=form.data;
+    form.addEventListener('value-changed',e=>{window.profilePayload=e.detail.value;form.data=e.detail.value;});window.profileHost.shadowRoot.append(form);
+   },profile.schema);
+   await dashboard.locator('ha-form').getByRole('textbox',{name:/^Geburtsdatum/}).fill('23.07.1992');
+   await dashboard.locator('ha-form').getByRole('textbox',{name:/^Gewichtsänderung/}).fill(pace);
+   const payload=await dashboard.evaluate(()=>JSON.parse(JSON.stringify(window.profilePayload)));
+   assert.equal(payload.weekly_pace_kg,pace,'Native HA selector preserves the exact decimal input');
+   assert.equal(Object.hasOwn(payload,'weight_kg'),false,'Manual weight remains blank in the real HA form');
+   const saved=await control({op:'profile_submit',flow_id:profile.flow_id,payload});
+   assert.equal(saved.weekly_pace_kg,.5);assert.equal(saved.birthday,'1992-07-23');assert.equal(saved.weight_kg,80);
+   assert.equal(saved.modules.filter(url=>url.includes('/macromate-card.js')).length,1,'Options reload must not duplicate module registration');
+   profileResults.push({input:pace,...saved});
+   await dashboard.evaluate(()=>profileForm.remove());
+  }
+  assert.deepEqual(dashboardErrors.slice(formErrorsBefore).filter(d=>d.message),[],'Native profile form must retain HA context without render errors');
+  assert.ok(dashboardErrors.every(d=>!d.stack?.includes('/macromate-assets/')),'No MacroMate exception in native Lovelace');
+  assert.ok(dashboardExternal.every(url=>/^https:\/\/demo\.home-assistant\.io\/stub_config\/(t-shirt-promo|floorplan|kitchen)\.png$/.test(url)),'Only native HA picker demo images may attempt an external request; every attempt is blocked');
+  await dashboard.close();
+  return {native_lovelace:true,automatic_module:true,view_type:'panel',mobile_and_landscape:true,visual_picker_saved:true,native_ha_form:profileResults,shell_diagnostics:dashboardErrors,blocked_native_picker_demo_images:dashboardExternal};
+ });
  await test('no-unhandled-errors-external-network',async()=>{assert.deepEqual(errors,[]);assert.deepEqual(external,[]);return {errors,external,console_errors:consoleErrors};});
 } catch(error){failures.push({name:'browser-setup',error:error.message,stack:error.stack});}
 finally{
@@ -315,7 +416,7 @@ finally{
  cfg.accounts=[];
  await browser.close();input.close();
  const report={ok:failures.length===0,rows,failures,screenshots,page_errors:errors,external_requests:external,
-               console_errors:consoleErrors,evidence_tier:'native-authenticated-HA-synthetic-isolated',lovelace_editor:false,physical_devices:false};
+               console_errors:consoleErrors,evidence_tier:'native-authenticated-HA-synthetic-isolated',lovelace_editor:rows.some(row=>row.name==='native-lovelace-panel-view-auto-module-layout-and-cleanup'&&row.status==='passed'),physical_devices:false};
  await writeFile(resolve(cfg.output,'browser-report.json'),JSON.stringify(report,null,2));
  process.stdout.write(JSON.stringify({op:'done',report})+'\n');
 }

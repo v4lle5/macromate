@@ -57,6 +57,74 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
         flow.handler = entry.entry_id
         return flow
 
+    async def test_german_birthday_normalizes_and_reopens_without_rewriting_iso_data(self):
+        result = await self.flow().async_step_user({**PROFILE_INPUT, 'birthday': '23.07.1992'})
+        self.assertEqual(result['type'], 'create_entry')
+        self.assertEqual(result['data']['birthday'], '1992-07-23')
+        entry = self.register_entry(result['data'])
+        form = await self.options_flow(entry).async_step_init()
+        field = next(k for k in form['data_schema'].schema if str(k) == 'birthday')
+        self.assertEqual(field.default(), '23.07.1992')
+        self.assertEqual(entry.data['birthday'], '1992-07-23')
+
+    async def test_decimal_comma_weekly_pace_through_native_schema(self):
+        for text in ('0,5', '0.5'):
+            for goal, target in (('lose', 70), ('gain', 90)):
+                flow = self.flow()
+                form = await flow.async_step_user()
+                submitted = form['data_schema']({**PROFILE_INPUT, 'weekly_pace_kg': text,
+                                                'goal': goal, 'target_weight_kg': target})
+                result = await flow.async_step_user(submitted)
+                self.assertEqual(result['type'], 'create_entry')
+                self.assertEqual(result['data']['weekly_pace_kg'], .5)
+
+    async def test_current_weight_sensor_replaces_required_manual_weight(self):
+        self.hass.states.async_set('sensor.synthetic_weight', '80', {'unit_of_measurement': 'kg'})
+        values = {**PROFILE_INPUT, 'weight_entity': 'sensor.synthetic_weight'}
+        values.pop('weight_kg')
+        flow = self.flow()
+        form = await flow.async_step_user()
+        submitted = form['data_schema'](values)
+        result = await flow.async_step_user(submitted)
+        self.assertEqual(result['type'], 'create_entry')
+        self.assertEqual(result['data']['weight_kg'], 80)
+        entry = self.register_entry(result['data'])
+        options = self.options_flow(entry)
+        form = await options.async_step_init()
+        self.hass.states.async_set('sensor.synthetic_weight', '81', {'unit_of_measurement': 'kg'})
+        result = await options.async_step_init(form['data_schema'](values))
+        self.assertEqual(result['data']['weight_kg'], 81, 'Omission must not reinsert an old mandatory default')
+        self.hass.states.async_set('sensor.synthetic_weight', 'unavailable', {'unit_of_measurement': 'kg'})
+        result = await options.async_step_init(form['data_schema'](values))
+        self.assertEqual(result['errors'], {'weight_kg': 'weight_required'})
+        fallback = await options.async_step_init(form['data_schema']({**values, 'weight_kg': 79}))
+        self.assertEqual(fallback['data']['weight_kg'], 79)
+
+    async def test_sensor_only_setup_rejects_unusable_stale_restored_and_bad_targets(self):
+        values = {k:v for k,v in PROFILE_INPUT.items() if k != 'weight_kg'}
+        values['weight_entity'] = 'sensor.synthetic_weight'
+        for state, attrs in [('unavailable', {}), ('nan', {}), ('0', {}), ('500', {}),
+                             ('80', {'restored': True}), ('80', {'measurement_date': '2000-01-01'}),
+                             ('80', {'measurement_date': '2999-01-01'})]:
+            with self.subTest(state=state, attrs=attrs):
+                self.hass.states.async_set(values['weight_entity'], state, {'unit_of_measurement': 'kg', **attrs})
+                result = await self.flow().async_step_user(values)
+                self.assertEqual(result['errors'], {'weight_kg': 'weight_required'})
+        self.hass.states.async_set(values['weight_entity'], '80', {'unit_of_measurement': 'kg'})
+        result = await self.flow().async_step_user({**values, 'target_weight_kg': 90})
+        self.assertEqual(result['errors'], {'target_weight_kg': 'goal_mismatch'})
+
+    async def test_sensor_date_uses_ha_timezone_at_local_midnight(self):
+        from datetime import timezone
+        now = datetime(2026,10,16,22,30,tzinfo=timezone.utc)
+        with patch('homeassistant.util.dt.utc_from_timestamp', return_value=now), patch.object(self.module.dt_util, 'utcnow', return_value=now):
+            self.hass.states.async_set('sensor.synthetic_weight', '80',
+                {'unit_of_measurement': 'kg', 'measurement_date': '2026-10-17'})
+            values = {**PROFILE_INPUT, 'weight_entity': 'sensor.synthetic_weight'}
+            values.pop('weight_kg')
+            result = await self.flow().async_step_user(values)
+            self.assertEqual(result['type'], 'create_entry')
+
     async def test_birthday_is_manual_text_without_an_implicit_today_in_both_forms(self):
         import voluptuous as vol
         from homeassistant.helpers.selector import TextSelector
@@ -95,7 +163,7 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
             options = self.options_flow(entry)
             form = await options.async_step_init()
             field = next(key for key in form["data_schema"].schema if str(key) == "birthday")
-            self.assertEqual(field.default(), entry.options.get("birthday", birthday))
+            self.assertEqual(field.default(), datetime.fromisoformat(entry.options.get("birthday", birthday)).strftime('%d.%m.%Y'))
             submitted = form["data_schema"]({**PROFILE_INPUT, "birthday": expected})
             result = await options.async_step_init(submitted)
             self.assertEqual(result["data"]["birthday"], expected)
@@ -104,13 +172,13 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(exact.options["birthday"], expected)
             reopened = await self.options_flow(exact).async_step_init()
             field = next(key for key in reopened["data_schema"].schema if str(key) == "birthday")
-            self.assertEqual(field.default(), expected)
+            self.assertEqual(field.default(), datetime.fromisoformat(expected).strftime('%d.%m.%Y'))
         self.assertEqual(entry.data["birthday"], birthday)
 
     async def test_manual_birthday_errors_keep_typed_value_in_both_forms(self):
         entry = self.register_entry(self.module._normalized(PROFILE_INPUT))
         for value, code in (("", "invalid_profile"), ("1990-02-30", "invalid_profile"),
-                            ("23.07.1992", "invalid_profile"), ("07/23/1992", "invalid_profile"),
+                            ("32.07.1992", "invalid_profile"), ("07/23/1992", "invalid_profile"),
                             ("19920723", "invalid_profile"), ("2027-01-01", "invalid_profile"),
                             ("2008-10-15", "adults_only"), ("1905-01-01", "adults_only")):
             for kind in ("config", "options"):

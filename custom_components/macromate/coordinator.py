@@ -336,6 +336,7 @@ class MealTrackerCoordinator(PlatformCommands):
             return None
 
     def recommendation(self) -> NutritionRecommendation | None:
+        from homeassistant.util import dt as dt_util
         from .profile import is_profile_complete
         from zoneinfo import ZoneInfo
 
@@ -347,6 +348,12 @@ class MealTrackerCoordinator(PlatformCommands):
                 return None
 
         weight = normalized(self.settings.get(CONF_WEIGHT_ENTITY), weight_to_kg)
+        if is_profile_complete(self.settings, self.today()):
+            from .weight_source import current_weight_kg
+            weight = current_weight_kg(
+                self.hass.states.get(self.settings.get(CONF_WEIGHT_ENTITY) or ''),
+                dt_util.utcnow().astimezone(ZoneInfo(self.hass.config.time_zone)),
+            )
         active_calories = normalized(
             self.settings.get(CONF_ACTIVE_CALORIES_ENTITY), energy_to_kcal
         )

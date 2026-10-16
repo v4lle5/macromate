@@ -152,6 +152,21 @@ async def _async_panel(hass) -> None:
         )
 
 
+async def _async_card_resource(hass) -> None:
+    """Load the dashboard card like Recipe Manager, without editing Lovelace.
+
+    HA's extra-module API works with both YAML and storage dashboards. It does
+    not create a dashboard, view, card or resource record on the user's behalf.
+    Headless runtimes deliberately have no frontend module manager.
+    """
+    from homeassistant.components import frontend
+
+    modules = hass.data.get(frontend.DATA_EXTRA_MODULE_URL)
+    url = "/macromate-assets/macromate-card.js?v=dashboard2"
+    if modules is not None and url not in modules.urls:
+        frontend.add_extra_js_url(hass, url)
+
+
 async def async_setup_entry(hass, entry) -> bool:
     from .coordinator import MealTrackerCoordinator
 
@@ -162,6 +177,7 @@ async def async_setup_entry(hass, entry) -> bool:
     entry.async_on_unload(runtime.async_start())
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await _async_panel(hass)
+    await _async_card_resource(hass)
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     return True
 

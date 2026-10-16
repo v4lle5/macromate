@@ -46,19 +46,23 @@ The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tes
 
 The local dashboard card opens the combined recipe, shopping, planner, timer and nutrition workspace. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
 
-After installing a revision containing the complete combined frontend, register `/macromate-assets/macromate-card.js?v=unified1` as a **JavaScript module** under dashboard resources, then add a manual card:
+The integration loads the card module automatically, just like Recipe Manager. No manual resource URL or YAML is needed for a normal storage dashboard:
 
-```yaml
-type: custom:macromate-card
-```
+1. Open your dashboard → **Edit dashboard** → add/edit a view.
+2. Set its **Layout** to **Panel (single card)** (German: **Panel (einzelne Karte)**).
+3. **Add card → By card → MacroMate → Save**, as the only card in that view. Leave **Full application** selected in its visual editor.
 
-For the original read-only compact overview, explicitly add `mode: summary`. The default combined card is editable according to server-side permissions; do not describe it as read-only.
+The view URL is a simple view name, **not a JavaScript URL**. This is the complete dashboard app, not the separate legacy diary-only sidebar item (which remains unchanged). Recipes, Meal Planner, Shopping List, Timers and Nutrition stay together in one responsive, full-width card.
 
-Updating the integration does not register the resource automatically. Full setup, requirements and troubleshooting: [Dashboard card](docs/DASHBOARD_CARD.md). Copyable YAML: [example](examples/macromate-dashboard.yaml).
+The visual editor also offers the original read-only **Compact summary**. Existing `type: custom:macromate-card` / `mode: summary` configurations remain supported. The default combined card is editable according to server-side permissions.
+
+Full setup and troubleshooting: [Dashboard card](docs/DASHBOARD_CARD.md). Optional advanced YAML: [example](examples/macromate-dashboard.yaml).
 
 ## Profile, goals and Garmin
 
-Setup collects birth date, physiological formula sex, height, current/target weight, loss/maintenance/gain intent, weekly pace, activity category and a named macro plan. MacroMate supports adults and bounded values only; support bounds are not medical recommendations.
+Setup collects birth date, physiological formula sex, height, current/target weight, loss/maintenance/gain intent, weekly pace, activity category and a named macro plan. Enter birth dates directly as `DD.MM.YYYY` (`TT.MM.JJJJ` in German), for example `23.07.1990`; ISO `1990-07-23` remains accepted, and persisted dates remain ISO. Weekly pace is a **positive magnitude**, e.g. `0,5` or `0.5` kg/week; loss/gain chooses the direction and maintenance uses `0`. MacroMate supports adults and bounded values only; support bounds are not medical recommendations.
+
+Manual weight is optional when a selected weight sensor supplies a finite 30–350 kg-equivalent reading in kg/lb/stone, non-restored and at most 7 days old (including a declared measurement date). If it cannot, setup asks for a manual fallback instead of inventing a weight. A sensor-only setup saves the accepted real reading as the profile fallback. If the sensor later fails, Nutrition visibly labels that saved weight as **not live**, while recommendations report `weight_source: profile` and `weight_unavailable`. Clearing a source in options remains authoritative; no migration or formula coefficients change.
 
 Nutrition goal rules:
 

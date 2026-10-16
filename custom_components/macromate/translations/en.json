@@ -4,12 +4,12 @@
     "step": {
       "user": {
         "title": "Your profile and automatic goals",
-        "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The companion panel is available automatically inside Home Assistant; no separate server or port is needed.",
+        "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The complete dashboard card loads automatically. Add MacroMate using the visual card picker and choose the view layout Panel (single card); no resource URL or YAML is needed.",
         "data": {
           "formula_sex": "Sex used by the energy formula",
-          "birthday": "Date of birth (YYYY-MM-DD)",
+          "birthday": "Date of birth (DD.MM.YYYY)",
           "height_cm": "Height (cm)",
-          "weight_kg": "Current profile weight (kg)",
+          "weight_kg": "Manual fallback weight (kg, optional with sensor)",
           "target_weight_kg": "Target weight (kg)",
           "goal": "Weight goal",
           "weekly_pace_kg": "Weekly weight-change pace (kg/week)",
@@ -21,12 +21,12 @@
           "enable_food_database": "Allow explicit online food searches with Open Food Facts"
         },
         "data_description": {
-          "birthday": "Type your date of birth as YYYY-MM-DD, e.g. 1990-07-23 (year-month-day). Adults aged 18–120 only.",
+          "birthday": "Type DD.MM.YYYY, e.g. 23.07.1990. ISO YYYY-MM-DD (1990-07-23) is also accepted. Adults aged 18–120 only.",
           "formula_sex": "Select the physiological sex coefficient used by the formula, not gender identity. This estimate may not suit everyone.",
           "target_weight_kg": "For maintenance, use your current profile weight. For loss/gain, choose a lower/higher target.",
-          "weekly_pace_kg": "Enter a positive pace for loss or gain; use zero for maintenance. The goal determines the direction.",
+          "weekly_pace_kg": "Enter a positive amount without a sign, e.g. 0.5 kg/week (0,5 is also accepted). Use zero for maintenance; the goal determines the direction. Supported range: 0–1.5, not a health recommendation.",
           "active_calories_entity": "Use only current-day active energy (kcal or kJ), not total daily energy. A usable reading replaces the activity-level estimate; the two are never added together.",
-          "weight_entity": "Uses kg, lb or stone. Without a usable sensor, your profile weight is used.",
+          "weight_entity": "Uses kg, lb or stone. A finite, non-restored reading no older than 7 days is sufficient; leave manual weight blank. The accepted reading is saved as a labelled profile fallback if the sensor later fails.",
           "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate.",
           "enable_food_database": "Off by default. Only explicitly submitted online searches/barcodes contact Open Food Facts and share the query or barcode; profile data is not sent. Local diary and custom foods work without this."
         }
@@ -38,6 +38,7 @@
     "error": {
       "invalid_profile": "Enter a supported, finite value for this field.",
       "profile_required": "Complete your profile to enable automatic goals.",
+      "weight_required": "No usable current weight sensor value. Enter a manual fallback weight or restore a valid sensor reading.",
       "adults_only": "MacroMate supports adult profiles aged 18–120 only. This is not medical advice.",
       "goal_mismatch": "Target weight and weekly pace must match your goal; maintenance uses current profile weight and zero pace.",
       "invalid_recommendation": "These inputs produce an unsupported energy estimate. Review your profile.",
@@ -49,12 +50,12 @@
     "step": {
       "init": {
         "title": "Your profile and automatic goals",
-        "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The companion panel is available automatically inside Home Assistant; no separate server or port is needed.",
+        "description": "MacroMate supports adults (18–120) only. Calorie and macro goals are estimates, not medical advice. Garmin sensors are optional. The complete dashboard card loads automatically. Add MacroMate using the visual card picker and choose the view layout Panel (single card); no resource URL or YAML is needed.",
         "data": {
           "formula_sex": "Sex used by the energy formula",
-          "birthday": "Date of birth (YYYY-MM-DD)",
+          "birthday": "Date of birth (DD.MM.YYYY)",
           "height_cm": "Height (cm)",
-          "weight_kg": "Current profile weight (kg)",
+          "weight_kg": "Manual fallback weight (kg, optional with sensor)",
           "target_weight_kg": "Target weight (kg)",
           "goal": "Weight goal",
           "weekly_pace_kg": "Weekly weight-change pace (kg/week)",
@@ -66,12 +67,12 @@
           "enable_food_database": "Allow explicit online food searches with Open Food Facts"
         },
         "data_description": {
-          "birthday": "Type your date of birth as YYYY-MM-DD, e.g. 1990-07-23 (year-month-day). Adults aged 18–120 only.",
+          "birthday": "Type DD.MM.YYYY, e.g. 23.07.1990. ISO YYYY-MM-DD (1990-07-23) is also accepted. Adults aged 18–120 only.",
           "formula_sex": "Select the physiological sex coefficient used by the formula, not gender identity. This estimate may not suit everyone.",
           "target_weight_kg": "For maintenance, use your current profile weight. For loss/gain, choose a lower/higher target.",
-          "weekly_pace_kg": "Enter a positive pace for loss or gain; use zero for maintenance. The goal determines the direction.",
+          "weekly_pace_kg": "Enter a positive amount without a sign, e.g. 0.5 kg/week (0,5 is also accepted). Use zero for maintenance; the goal determines the direction. Supported range: 0–1.5, not a health recommendation.",
           "active_calories_entity": "Use only current-day active energy (kcal or kJ), not total daily energy. A usable reading replaces the activity-level estimate; the two are never added together.",
-          "weight_entity": "Uses kg, lb or stone. Without a usable sensor, your profile weight is used.",
+          "weight_entity": "Uses kg, lb or stone. A finite, non-restored reading no older than 7 days is sufficient; leave manual weight blank. The accepted reading is saved as a labelled profile fallback if the sensor later fails.",
           "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate.",
           "enable_food_database": "Off by default. Only explicitly submitted online searches/barcodes contact Open Food Facts and share the query or barcode; profile data is not sent. Local diary and custom foods work without this."
         }
@@ -80,6 +81,7 @@
     "error": {
       "invalid_profile": "Enter a supported, finite value for this field.",
       "profile_required": "Complete your profile to enable automatic goals.",
+      "weight_required": "No usable current weight sensor value. Enter a manual fallback weight or restore a valid sensor reading.",
       "adults_only": "MacroMate supports adult profiles aged 18–120 only. This is not medical advice.",
       "goal_mismatch": "Target weight and weekly pace must match your goal; maintenance uses current profile weight and zero pace.",
       "invalid_recommendation": "These inputs produce an unsupported energy estimate. Review your profile.",

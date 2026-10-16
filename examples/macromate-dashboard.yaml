@@ -1,5 +1,6 @@
-# Register /macromate-assets/macromate-card.js?v=unified1 as a JavaScript module
-# in your dashboard resources first. See docs/DASHBOARD_CARD.md.
+# Optional advanced YAML example. The integration loads the module automatically.
+# Normal setup: Edit dashboard → view Layout: Panel (single card) →
+# Add card → By card → MacroMate → Save. No Resources entry is needed.
 # Combined workspace; existing HA authentication, no entity IDs or extra token.
 # For the original read-only overview, explicitly add: mode: summary
 type: custom:macromate-card

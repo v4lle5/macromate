@@ -6,7 +6,7 @@ This is a development candidate. A local checkout is not automatically published
 
 ## Preview
 
-Actual Chromium captures from a disposable Home Assistant 2026.10.1 instance. All diary data is synthetic; these are not household screenshots or proof of physical-device/Lovelace-editor acceptance.
+Actual Chromium captures from a disposable Home Assistant 2026.10.1 instance. All diary data is synthetic; these are not household screenshots or proof of physical-device acceptance.
 
 <img src="images/macromate-unified-light.png" alt="Combined MacroMate mobile nutrition pane with retained calorie ring and explicitly incomplete macros; synthetic data" width="300">
 <img src="images/macromate-unified-dark.png" alt="Combined MacroMate desktop workspace in a dark theme; synthetic data" width="640">
@@ -19,35 +19,20 @@ Actual Chromium captures from a disposable Home Assistant 2026.10.1 instance. Al
 
 The tested framework is HA 2026.10.1 / Python 3.14.2. No npm server, separate recipe/shopping integration or additional runtime custom-card dependency is required. Optional remote lookups/imports need explicit consent. Camera access requires HTTPS or localhost and browser permission.
 
-## Register the resource
+## Add the full dashboard app — no resource URL or YAML
 
-Enable advanced mode in your HA user profile if Resources is hidden. Open **Settings → Dashboards → three-dot menu → Resources** and add:
+After the integration is loaded and Home Assistant has been restarted, MacroMate automatically loads its card module using HA's native extra-module API (the same approach as the pinned Recipe Manager integration). This works with storage and YAML dashboards without editing either resource store. No separate frontend installation is needed. Existing manually configured resources are left untouched; you do not need to add another one.
 
-- URL: `/macromate-assets/macromate-card.js?v=unified1`
-- Type: **JavaScript module**
+1. Open the dashboard you want to use and choose **Edit dashboard**.
+2. Add a view, or choose **Edit view** for an existing one. Under **Layout**, select **Panel (single card)** (German: **Panel (einzelne Karte)**).
+3. Choose **Add card → By card**, search for **MacroMate**, select it and **Save**. Leave **Display → Full application** selected. Add it as the **only card** in that view.
+4. Finish editing. Recipes, Shopping List, Meal Planner, Timers and Nutrition are inside this one full-width, responsive dashboard card.
 
-Keep one registration. Updating the integration does not register the resource automatically. In YAML-mode dashboards use the equivalent resource entry instead of registering it twice:
+The view URL/path is just a normal name such as `macromate` — **never paste a `.js` resource URL into the view URL field**. The dashboard card is not HA's legacy MacroMate sidebar item; that separate diary-only menu remains unchanged for compatibility.
 
-```yaml
-resources:
-  - url: /macromate-assets/macromate-card.js?v=unified1
-    type: module
-```
+The visual editor also offers **Compact summary (read-only)** for a small overview. Existing `mode: summary` cards keep their original behavior. Advanced users can still configure `type: custom:macromate-card` and `mode: summary` in YAML, but ordinary storage-dashboard setup does not require YAML, a resource URL, entity IDs or an extra bearer token.
 
-Add a **Manual** dashboard card:
-
-```yaml
-type: custom:macromate-card
-```
-
-For the original read-only calorie/macro/meal-group overview:
-
-```yaml
-type: custom:macromate-card
-mode: summary
-```
-
-The default combined card is editable according to server permissions. Home Assistant supplies authentication; no entity IDs or extra bearer token are needed in card configuration.
+The default combined card is editable according to server permissions. The card fills the available space below HA's dashboard header, including narrow/mobile and short landscape views; content scrolls inside the app rather than forcing a 550px minimum height.
 
 ## Permissions, data and connected workflows
 
@@ -65,12 +50,12 @@ The local candidate has executable coverage for native authenticated HA HTTP/Web
 
 These are different evidence tiers, not interchangeable claims. The feature inventory is in `UNIFIED_FEATURE_MATRIX.json`; build commands and evidence boundaries are in `../frontend/unified-src/README.md`; agent CRUD/transfer contracts are in `AGENT_API.md`. Local tests are not a GitHub Actions result for an unpublished revision.
 
-Physical cameras, iOS/Safari/WebKit, a full native Lovelace-editor session, live OFF coverage and live Garmin devices remain unverified. Some nutrition summary wording/number formatting still follows German conventions in an English UI. The card is not a medical tool.
+Native Lovelace acceptance covers the actual served HA dashboard, visual card picker/save, panel view, desktop/mobile/landscape dimensions and view-removal cleanup. Native HA form-component input is separately submitted to HA's options-flow manager; this is not an end-to-end integration-settings dialog test. Physical cameras, iOS/Safari/WebKit, live OFF coverage and live Garmin devices remain unverified. Some nutrition summary wording/number formatting still follows German conventions in an English UI. The card is not a medical tool.
 
 ## Troubleshooting
 
-- **Custom element missing / 404:** verify the complete installed frontend, configured integration, HA restart and module resource. A version number alone does not prove the files are present.
-- **Old UI:** refresh the dashboard/browser cache and keep one resource registration. A partial chunk update is not a valid installation.
+- **Custom element missing / 404:** verify the complete installed frontend, configured integration, HA restart and automatic module loading. No resource URL belongs in the view URL field. A version number alone does not prove the files are present.
+- **Old UI:** restart HA after the integration update, then refresh the dashboard/browser cache. The full app is the MacroMate dashboard card, not the legacy sidebar diary. A partial chunk update is not a valid installation.
 - **Permission denied:** use an identity authorized for the exact domain/object; do not bypass server restrictions.
 - **Unknown goals:** complete integration profile/options. Missing goals are not an instruction to consume zero calories.
 - **Uncertain write:** inspect the exact target before an operator-approved identical-ID retry. Never create a replacement UUID merely to hide uncertainty.

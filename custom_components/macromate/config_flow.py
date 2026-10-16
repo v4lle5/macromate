@@ -1,7 +1,10 @@
 """Profile-based UI setup for MacroMate; Garmin readings are optional."""
 from __future__ import annotations
 
+from datetime import date, datetime
+import re
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
@@ -34,14 +37,30 @@ def _select(options, key):
     return SelectSelector(SelectSelectorConfig(options=list(options), mode=SelectSelectorMode.DROPDOWN, translation_key=key))
 
 
-def _schema(hass, values: dict[str, Any]) -> vol.Schema:
+class _DecimalTextSelector(TextSelector):
+    """Keep comma input intact in HA's form; accept older numeric API clients."""
+
+    def __call__(self, data):
+        if type(data) in (int, float):
+            data = str(data)
+        return super().__call__(data)
+
+
+def _schema(hass, values: dict[str, Any], *, display_saved: bool = False) -> vol.Schema:
+    values = dict(values)
+    birthday = values.get(CONF_BIRTHDAY)
+    if display_saved and isinstance(birthday, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", birthday):
+        try:
+            values[CONF_BIRTHDAY] = date.fromisoformat(birthday).strftime("%d.%m.%Y")
+        except ValueError:
+            pass  # Preserve invalid input verbatim for correction.
     fields = {
         CONF_FORMULA_SEX: _select(("female", "male"), "formula_sex"),
         CONF_BIRTHDAY: TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
         CONF_HEIGHT_CM: _number(100, 250, 0.1),
         CONF_WEIGHT_KG: _number(30, 350, 0.1), CONF_TARGET_WEIGHT_KG: _number(30, 350, 0.1),
         CONF_GOAL: _select(("lose", "maintain", "gain"), "goal"),
-        CONF_WEEKLY_PACE_KG: _number(0, 1.5, 0.05),
+        CONF_WEEKLY_PACE_KG: _DecimalTextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
         CONF_ACTIVITY_LEVEL: _select(ACTIVITY_LEVELS, "activity_level"),
         CONF_MACRO_PLAN: _select(MACRO_PLANS, "macro_plan"),
         CONF_ENABLE_FOOD_DATABASE: bool,
@@ -51,7 +70,17 @@ def _schema(hass, values: dict[str, Any]) -> vol.Schema:
     schema = {}
     for key, validator in fields.items():
         default = values.get(key, defaults.get(key, vol.UNDEFINED))
-        schema[vol.Required(key, default=default)] = validator
+        if key == CONF_WEEKLY_PACE_KG and default is not vol.UNDEFINED:
+            default = str(default)
+            if hass.config.language == 'de':
+                default = default.replace('.', ',')
+        if key == CONF_WEIGHT_KG:
+            # Optional input, not an optional physiological weight: a usable
+            # selected sensor must supply it when this field is left blank.
+            description = {'suggested_value': values[key]} if key in values else None
+            schema[vol.Optional(key, description=description)] = validator
+        else:
+            schema[vol.Required(key, default=default)] = validator
     # Suggestions display existing choices without reinserting a cleared source.
     # Clearing a submitted field is persisted as an explicit None by _normalized.
     for key in (CONF_WEIGHT_ENTITY, CONF_BMR_ENTITY, CONF_ACTIVE_CALORIES_ENTITY):
@@ -61,11 +90,38 @@ def _schema(hass, values: dict[str, Any]) -> vol.Schema:
 
 
 def _normalized(user_input: dict[str, Any]) -> dict[str, Any]:
-    return normalize_settings(user_input, dt_util.now().date())
+    values = dict(user_input)
+    birthday = values.get(CONF_BIRTHDAY)
+    if isinstance(birthday, str) and re.fullmatch(r"\d{2}\.\d{2}\.\d{4}", birthday):
+        try:
+            values[CONF_BIRTHDAY] = datetime.strptime(birthday, "%d.%m.%Y").date().isoformat()
+        except ValueError:
+            raise ProfileValidationError(CONF_BIRTHDAY) from None
+    pace = values.get(CONF_WEEKLY_PACE_KG)
+    if isinstance(pace, str):
+        if not re.fullmatch(r"\d+(?:[.,]\d+)?", pace.strip()):
+            raise ProfileValidationError(CONF_WEEKLY_PACE_KG)
+        values[CONF_WEEKLY_PACE_KG] = float(pace.strip().replace(',', '.'))
+    return normalize_settings(values, dt_util.now().date())
 
 
 def _validated(hass, user_input: dict[str, Any]) -> dict[str, Any]:
-    result = _normalized(user_input)
+    from .weight_source import current_weight_kg
+
+    values = dict(user_input)
+    entity = values.get(CONF_WEIGHT_ENTITY)
+    if entity and (not isinstance(entity, str) or not re.fullmatch(r'sensor\.[a-z0-9_]+', entity)):
+        raise ProfileValidationError(CONF_WEIGHT_ENTITY)
+    if values.get(CONF_WEIGHT_KG) in (None, '') and entity:
+        weight = current_weight_kg(hass.states.get(entity), dt_util.utcnow().astimezone(ZoneInfo(hass.config.time_zone)))
+        if weight is None:
+            raise ProfileValidationError(CONF_WEIGHT_KG, 'weight_required')
+        # A real accepted reading is retained as the explicitly labelled profile
+        # fallback; it is not subsequently represented as live sensor data.
+        values[CONF_WEIGHT_KG] = weight
+    if values.get(CONF_WEIGHT_KG) == '':
+        values.pop(CONF_WEIGHT_KG)
+    result = _normalized(values)
     for key in (CONF_WEIGHT_ENTITY, CONF_BMR_ENTITY, CONF_ACTIVE_CALORIES_ENTITY):
         if (entity := result[key]) is None:
             continue
@@ -118,4 +174,4 @@ class MealTrackerOptionsFlow(OptionsFlow):
                 errors[err.field] = err.code
             else:
                 return self.async_create_entry(data=settings)
-        return self.async_show_form(step_id="init", data_schema=_schema(self.hass, current if user_input is None else user_input), errors=errors)
+        return self.async_show_form(step_id="init", data_schema=_schema(self.hass, current if user_input is None else user_input, display_saved=user_input is None), errors=errors)

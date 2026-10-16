@@ -2,6 +2,7 @@
   "domain": "macromate",
   "name": "MacroMate",
   "after_dependencies": [
+    "frontend",
     "http"
   ],
   "codeowners": [],

@@ -125,12 +125,43 @@ async def main():
         hass.config.components.add('websocket_api')
         assert await api.async_setup(hass, {})
         hass.config.components.add('api')
+        from homeassistant.components import frontend as ha_frontend, lovelace
+        assert await ha_frontend.async_setup(hass, {})
+        hass.config.components.add('frontend')
+        dashboards = lovelace.dashboard.DashboardsCollection(hass)
+        await dashboards.async_load()
+        await dashboards.async_create_item({'title': 'Synthetic dashboard',
+            'url_path': 'dashboard-native', 'show_in_sidebar': True, 'require_admin': True})
+        await dashboards.store.async_save({'items': dashboards.async_items()})
+        assert await lovelace.async_setup(hass, {'lovelace': {'mode': 'storage'}})
+        hass.config.components.add('lovelace')
+        from homeassistant.components import auth as auth_component
+        assert await auth_component.async_setup(hass, {})
+        hass.config.components.add('auth')
+        from homeassistant.components import config as config_component, labs, brands
+        from homeassistant.components.http import websocket_api as http_websocket
+        http_websocket.async_register_websocket_commands(hass)
+        assert await config_component.async_setup(hass, {})
+        hass.config.components.add('config')
+        assert await labs.async_setup(hass, {})
+        hass.config.components.add('labs')
+        assert await brands.async_setup(hass, {})
+        hass.config.components.add('brands')
+        assert await async_setup_component(hass, 'persistent_notification', {})
+        assert await async_setup_component(hass, 'system_log', {})
+        await hass.data[lovelace.LOVELACE_DATA].dashboards['dashboard-native'].async_save({
+            'title': 'Synthetic dashboard', 'views': [
+                {'title': 'MacroMate', 'path': 'macromate', 'type': 'panel',
+                 'cards': [{'type': 'custom:macromate-card'}]},
+                {'title': 'Other', 'path': 'other', 'cards': []}]})
         assert await async_setup_component(hass, 'macromate', {})
         assert hass.http is server
         fixture = run / 'native-card.html'
         fixture.write_text(HTML)
         await server.async_register_static_paths([StaticPathConfig('/native-card/', str(fixture), False)])
+        hass.states.async_set('sensor.synthetic_weight', '80', {'unit_of_measurement': 'kg'})
         profile = {'formula_sex': 'male', 'birthday': '1990-01-01', 'height_cm': 180,
+                   'weight_entity': 'sensor.synthetic_weight',
                    'weight_kg': 80, 'target_weight_kg': 80, 'goal': 'maintain',
                    'weekly_pace_kg': 0, 'activity_level': 'low', 'macro_plan': 'balanced',
                    'enable_food_database': False}
@@ -139,6 +170,10 @@ async def main():
         await hass.async_block_till_done()
         entry = flow['result']
         assert entry.state.value == 'loaded'
+        modules = hass.data[ha_frontend.DATA_EXTRA_MODULE_URL].urls
+        assert any(url.split('?')[0] == '/macromate-assets/macromate-card.js' for url in modules), (
+            'MacroMate must load its complete dashboard card automatically, without manual resources')
+        report['automatic_card_modules'] = sorted(modules)
         coord = entry.runtime_data
         await hass.async_start()
         await server.start()
@@ -332,9 +367,27 @@ async def main():
             message = json.loads(line)
             if message.get('op') == 'done':
                 report['browser'] = message['report']
+                report['lovelace_editor'] = message['report']['lovelace_editor']
                 break
             if message['op'] == 'store':
                 result = store(message['label'])
+            elif message['op'] == 'weight_source':
+                hass.states.async_set('sensor.synthetic_weight', message['state'], {'unit_of_measurement': 'kg'})
+                await hass.async_block_till_done()
+                result = coord.diary_data()['recommendation']
+            elif message['op'] == 'profile_form':
+                from homeassistant.helpers import config_validation as cv
+                from probatio import to_field_list
+                form = await hass.config_entries.options.async_init(entry.entry_id)
+                result = {'flow_id': form['flow_id'],
+                          'schema': to_field_list(form['data_schema'], custom_serializer=cv.custom_serializer)}
+            elif message['op'] == 'profile_submit':
+                result = await hass.config_entries.options.async_configure(message['flow_id'], user_input=message['payload'])
+                assert result['type'] == 'create_entry', result
+                await hass.async_block_till_done()
+                coord = entry.runtime_data
+                result = {'birthday': entry.options['birthday'], 'weekly_pace_kg': entry.options['weekly_pace_kg'],
+                          'weight_kg': entry.options['weight_kg'], 'modules': sorted(hass.data[ha_frontend.DATA_EXTRA_MODULE_URL].urls)}
             elif message['op'] == 'cli':
                 result = await cli(message['action'], message.get('payload', {}), message.get('actor', 0))
             elif message['op'] == 'backup':
@@ -396,6 +449,12 @@ async def main():
         assert all(token.encode() not in stderr for token in tokens)
         (run / 'browser.stderr.log').write_bytes(stderr)
         assert await asyncio.wait_for(proc.wait(), 15) == 0
+        if report['lovelace_editor']:
+            dashboard_config = await hass.data[lovelace.LOVELACE_DATA].dashboards['dashboard-native'].async_load(False)
+            assert dashboard_config['views'][0]['type'] == 'panel'
+            assert dashboard_config['views'][0]['cards'] == [{'type': 'custom:macromate-card'}]
+            assert dashboard_config['views'][1]['cards'] == [{'type': 'custom:macromate-card'}]
+            report['native_dashboard_saved_readback'] = dashboard_config
         if not report['browser']['ok']:
             report['failures'].append({'phase': 'browser', 'failures': report['browser']['failures']})
         assert hashlib.sha256(client_path.read_bytes()).hexdigest() == client_hash, 'Client changed while acceptance ran'

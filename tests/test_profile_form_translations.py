@@ -8,9 +8,9 @@ ROOT = Path(__file__).resolve().parents[1] / "custom_components" / "macromate"
 
 class ProfileFormTranslationTests(unittest.TestCase):
     def test_birthday_format_hint_in_setup_and_options_in_both_languages(self):
-        for filename, format_hint in (("strings.json", "YYYY-MM-DD"),
-                                      ("translations/en.json", "YYYY-MM-DD"),
-                                      ("translations/de.json", "JJJJ-MM-TT")):
+        for filename, format_hint in (("strings.json", "DD.MM.YYYY"),
+                                      ("translations/en.json", "DD.MM.YYYY"),
+                                      ("translations/de.json", "TT.MM.JJJJ")):
             content = json.loads((ROOT / filename).read_text())
             for section, step in (("config", "user"), ("options", "init")):
                 with self.subTest(filename=filename, section=section):

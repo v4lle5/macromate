@@ -13,13 +13,14 @@ export class MacroMateCard extends MacroMateSummary {
  disconnectedCallback(){this.cleanup();super.disconnectedCallback();}
  cleanup(){this.api?.dispose();this.api=null;this.application=null;this.shadowRoot.replaceChildren();super.invalidate();}
  render(){if(this.mode==='summary'){super.render();return;}if(!this.isConnected)return;if(!this._hass?.user?.id||!this._hass.connection){this.shadowRoot.textContent='Connecting to Home Assistant…';return;}if(this.application)return;
- this.api=new MacroMateAPI(this._hass);const api=this.api;const stylesheet=document.createElement('style');stylesheet.textContent=':host{display:block}mm-unified-app{height:100%;min-height:550px}.status:empty{display:none}.status{padding:12px;background:#fff4dc;color:#443700;font:14px system-ui}.status button{padding:8px;margin-left:12px}';
+ this.api=new MacroMateAPI(this._hass);const api=this.api;const stylesheet=document.createElement('style');stylesheet.textContent=':host{display:block;min-width:0;height:100%}mm-unified-app{height:100%;min-height:0}.status:empty{display:none}.status{padding:12px;background:#fff4dc;color:#443700;font:14px system-ui}.status button{padding:8px;margin-left:12px}';
  const status=document.createElement('div');status.className='status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');const app=document.createElement('mm-unified-app');this.application=app;app.transport=api;app.hass=api.facade();app.setConfig(this.config);
  const state=()=>{if(this.api!==api||!api.current())return;status.replaceChildren();if(api.pending){const text=document.createElement('span');text.textContent=api.busy?'Saving…':'Write status uncertain. Do not create another request.';status.append(text);if(!api.busy){const retry=document.createElement('button');retry.textContent=this._hass.language==='de'?'Gleiche Anfrage erneut senden':'Retry same request';retry.addEventListener('click',async()=>{try{const request=api.pending;const result=await api.retry();if(this.api!==api||!api.current())return;const pane=app.shadowRoot.querySelector('mm-nutrition');if(pane?.client?.pending?.payload?.request_id===request.payload.request_id){pane.client.pending=null;pane.dialog?.close();pane.message.textContent='Saved.';await pane.loadDiary(pane.date);}if(request.action==='recipes_add')app._view='grid';await app._init();}catch{}state();});status.append(retry);}}};api.addEventListener('state',state);
  this.shadowRoot.replaceChildren(stylesheet,status,app);api.call('describe').then(()=>{if(this.api===api&&api.current())app.requestUpdate();}).catch(()=>{});
  }
  getCardSize(){return this.mode==='summary'?super.getCardSize():16;}
  getGridOptions(){return this.mode==='summary'?super.getGridOptions():{columns:12,min_columns:6};}
+ static async getConfigElement(){await import('./macromate-card-editor.js');return document.createElement('macromate-card-editor');}
  static getStubConfig(){return {type:'custom:macromate-card'};}
 }
 if(!customElements.get('macromate-card'))customElements.define('macromate-card',MacroMateCard);

@@ -4,12 +4,12 @@
     "step": {
       "user": {
         "title": "Dein Profil und automatische Ziele",
-        "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Das Begleitpanel ist automatisch in Home Assistant verfügbar; kein eigener Server oder Port ist nötig.",
+        "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Die vollständige Dashboard-Karte wird automatisch geladen. MacroMate im visuellen Kartenpicker hinzufügen und für die Ansicht das Layout Panel (einzelne Karte) wählen; keine Ressourcen-URL und kein YAML nötig.",
         "data": {
           "formula_sex": "Geschlecht",
-          "birthday": "Geburtsdatum (JJJJ-MM-TT)",
+          "birthday": "Geburtsdatum (TT.MM.JJJJ)",
           "height_cm": "Körpergröße (cm)",
-          "weight_kg": "Aktuelles Profilgewicht (kg)",
+          "weight_kg": "Manuelles Ersatzgewicht (kg, mit Sensor optional)",
           "target_weight_kg": "Zielgewicht (kg)",
           "goal": "Gewichtsziel",
           "weekly_pace_kg": "Gewichtsänderung pro Woche (kg/Woche)",
@@ -21,12 +21,12 @@
           "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
         },
         "data_description": {
-          "birthday": "Geburtsdatum direkt als JJJJ-MM-TT eingeben, z. B. 1990-07-23 (Jahr-Monat-Tag). Nur für Erwachsene von 18–120 Jahren.",
+          "birthday": "Geburtsdatum direkt als TT.MM.JJJJ eingeben, z. B. 23.07.1990. ISO JJJJ-MM-TT (1990-07-23) wird ebenfalls akzeptiert. Nur für Erwachsene von 18–120 Jahren.",
           "formula_sex": "Wird zur Schätzung des Kalorienbedarfs verwendet.",
           "target_weight_kg": "Zum Halten das aktuelle Profilgewicht verwenden. Zum Abnehmen/Zunehmen ein niedrigeres/höheres Ziel wählen.",
-          "weekly_pace_kg": "Zum Abnehmen oder Zunehmen einen positiven Wert angeben; zum Halten null. Die Zielauswahl bestimmt die Richtung.",
+          "weekly_pace_kg": "Positiven Betrag ohne Vorzeichen eingeben, z. B. 0,5 kg/Woche (auch 0.5 möglich). Zum Halten null; die Zielauswahl bestimmt die Richtung. Unterstützter Bereich: 0–1,5, keine Gesundheitsempfehlung.",
           "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
-          "weight_entity": "Verwendet kg, lb oder Stone. Ohne nutzbaren Sensor gilt dein Profilgewicht.",
+          "weight_entity": "Verwendet kg, lb oder Stone. Ein gültiger, nicht wiederhergestellter Messwert bis 7 Tage genügt; manuelles Gewicht leer lassen. Bei späterem Sensorausfall wird der gespeicherte Wert ausdrücklich als Ersatz, nicht als Live-Messwert angezeigt.",
           "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung.",
           "enable_food_database": "Standardmäßig aus. Nur ausdrücklich abgesendete Online-Suchen/Barcodes kontaktieren Open Food Facts und übermitteln Suchtext oder Barcode; keine Profildaten. Lokales Tagebuch und eigene Lebensmittel funktionieren auch ohne diese Freigabe."
         }
@@ -38,6 +38,7 @@
     "error": {
       "invalid_profile": "Gib einen unterstützten, endlichen Wert für dieses Feld ein.",
       "profile_required": "Vervollständige dein Profil für automatische Ziele.",
+      "weight_required": "Kein nutzbarer aktueller Gewichtssensorwert. Manuelles Ersatzgewicht eingeben oder einen gültigen Sensormesswert bereitstellen.",
       "adults_only": "MacroMate unterstützt nur Erwachsenenprofile von 18–120 Jahren. Dies ist keine medizinische Beratung.",
       "goal_mismatch": "Zielgewicht und Wochenrate müssen zum Ziel passen; beim Halten gelten das aktuelle Profilgewicht und Wochenrate null.",
       "invalid_recommendation": "Diese Angaben ergeben eine nicht unterstützte Energieschätzung. Prüfe dein Profil.",
@@ -49,12 +50,12 @@
     "step": {
       "init": {
         "title": "Dein Profil und automatische Ziele",
-        "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Das Begleitpanel ist automatisch in Home Assistant verfügbar; kein eigener Server oder Port ist nötig.",
+        "description": "MacroMate unterstützt nur Erwachsene (18–120). Kalorien- und Makroziele sind Schätzungen, keine medizinische Beratung. Garmin-Sensoren sind optional. Die vollständige Dashboard-Karte wird automatisch geladen. MacroMate im visuellen Kartenpicker hinzufügen und für die Ansicht das Layout Panel (einzelne Karte) wählen; keine Ressourcen-URL und kein YAML nötig.",
         "data": {
           "formula_sex": "Geschlecht",
-          "birthday": "Geburtsdatum (JJJJ-MM-TT)",
+          "birthday": "Geburtsdatum (TT.MM.JJJJ)",
           "height_cm": "Körpergröße (cm)",
-          "weight_kg": "Aktuelles Profilgewicht (kg)",
+          "weight_kg": "Manuelles Ersatzgewicht (kg, mit Sensor optional)",
           "target_weight_kg": "Zielgewicht (kg)",
           "goal": "Gewichtsziel",
           "weekly_pace_kg": "Gewichtsänderung pro Woche (kg/Woche)",
@@ -66,12 +67,12 @@
           "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
         },
         "data_description": {
-          "birthday": "Geburtsdatum direkt als JJJJ-MM-TT eingeben, z. B. 1990-07-23 (Jahr-Monat-Tag). Nur für Erwachsene von 18–120 Jahren.",
+          "birthday": "Geburtsdatum direkt als TT.MM.JJJJ eingeben, z. B. 23.07.1990. ISO JJJJ-MM-TT (1990-07-23) wird ebenfalls akzeptiert. Nur für Erwachsene von 18–120 Jahren.",
           "formula_sex": "Wird zur Schätzung des Kalorienbedarfs verwendet.",
           "target_weight_kg": "Zum Halten das aktuelle Profilgewicht verwenden. Zum Abnehmen/Zunehmen ein niedrigeres/höheres Ziel wählen.",
-          "weekly_pace_kg": "Zum Abnehmen oder Zunehmen einen positiven Wert angeben; zum Halten null. Die Zielauswahl bestimmt die Richtung.",
+          "weekly_pace_kg": "Positiven Betrag ohne Vorzeichen eingeben, z. B. 0,5 kg/Woche (auch 0.5 möglich). Zum Halten null; die Zielauswahl bestimmt die Richtung. Unterstützter Bereich: 0–1,5, keine Gesundheitsempfehlung.",
           "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
-          "weight_entity": "Verwendet kg, lb oder Stone. Ohne nutzbaren Sensor gilt dein Profilgewicht.",
+          "weight_entity": "Verwendet kg, lb oder Stone. Ein gültiger, nicht wiederhergestellter Messwert bis 7 Tage genügt; manuelles Gewicht leer lassen. Bei späterem Sensorausfall wird der gespeicherte Wert ausdrücklich als Ersatz, nicht als Live-Messwert angezeigt.",
           "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung.",
           "enable_food_database": "Standardmäßig aus. Nur ausdrücklich abgesendete Online-Suchen/Barcodes kontaktieren Open Food Facts und übermitteln Suchtext oder Barcode; keine Profildaten. Lokales Tagebuch und eigene Lebensmittel funktionieren auch ohne diese Freigabe."
         }
@@ -80,6 +81,7 @@
     "error": {
       "invalid_profile": "Gib einen unterstützten, endlichen Wert für dieses Feld ein.",
       "profile_required": "Vervollständige dein Profil für automatische Ziele.",
+      "weight_required": "Kein nutzbarer aktueller Gewichtssensorwert. Manuelles Ersatzgewicht eingeben oder einen gültigen Sensormesswert bereitstellen.",
       "adults_only": "MacroMate unterstützt nur Erwachsenenprofile von 18–120 Jahren. Dies ist keine medizinische Beratung.",
       "goal_mismatch": "Zielgewicht und Wochenrate müssen zum Ziel passen; beim Halten gelten das aktuelle Profilgewicht und Wochenrate null.",
       "invalid_recommendation": "Diese Angaben ergeben eine nicht unterstützte Energieschätzung. Prüfe dein Profil.",

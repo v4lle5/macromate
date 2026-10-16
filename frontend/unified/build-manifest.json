@@ -120,8 +120,8 @@
     },
     {
       "path": "frontend/unified/app.js",
-      "bytes": 498069,
-      "sha256": "b93ab9ae9c3aeb13e8e3163bcc4af8780bd996c88ac302e481c23901bd426452"
+      "bytes": 498505,
+      "sha256": "e3f2fef8a654f67b3358e8e6df5930dfa690d674380870fda875de3cbecc2195"
     },
     {
       "path": "frontend/unified/chunks/de-VPUKMWIJ.js",

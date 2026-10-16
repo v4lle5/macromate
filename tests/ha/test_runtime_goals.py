@@ -18,6 +18,20 @@ class RuntimeGoalTests(CoordinatorTransactions):
         clock.start()
         self.addCleanup(clock.stop)
 
+    async def test_weight_source_fallback_is_explicit_for_stale_and_restored_values(self):
+        self.coord.settings = {**PROFILE, 'weight_entity': 'sensor.synthetic_weight'}
+        self.coord.today = lambda: date(2026, 10, 14)
+        with patch('homeassistant.util.dt.utcnow', return_value=datetime(2026,10,14,12,tzinfo=timezone.utc)):
+            self.hass.states.async_set('sensor.synthetic_weight', '82', {'unit_of_measurement': 'kg'})
+            self.assertEqual(self.coord.recommendation().weight_source, 'garmin')
+            for attrs in ({'restored': True}, {'measurement_date': '2026-10-01'}):
+                self.hass.states.async_set('sensor.synthetic_weight', '82', {'unit_of_measurement': 'kg', **attrs})
+                recommendation = self.coord.recommendation()
+                self.assertEqual(recommendation.weight_source, 'profile')
+                self.assertEqual(recommendation.weight_kg, 80)
+                self.assertIn('weight_unavailable', recommendation.fallback_reasons)
+                self.assertEqual(recommendation.source_status, 'fallback')
+
     async def test_unavailable_current_goal_does_not_reuse_stale_today_snapshot(self):
         self.coord.settings = {**PROFILE,"goal":"maintain","target_weight_kg":80,"weekly_pace_kg":0,
                                "active_calories_entity":"sensor.synthetic_active"}
