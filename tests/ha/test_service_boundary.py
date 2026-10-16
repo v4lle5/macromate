@@ -73,7 +73,7 @@ class ServiceBoundaryTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(set(translations), names)
         self.assertEqual(
             json.loads((root / "manifest.json").read_text())["requirements"],
-            ["recipe-scrapers==15.12.0", "beautifulsoup4==4.14.3", "Pillow==12.3.0"],
+            ["recipe-scrapers==15.12.0"],
         )
 
     async def test_native_subscription_filters_private_and_previous_audiences(self):
