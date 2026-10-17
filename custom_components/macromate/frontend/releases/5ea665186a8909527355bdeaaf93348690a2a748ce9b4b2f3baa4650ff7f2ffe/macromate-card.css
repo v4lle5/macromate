@@ -42,7 +42,7 @@ time { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-n
 .remaining { font-size: 43px; font-weight: 650; line-height: 1.12; letter-spacing: -1.6px; font-variant-numeric: tabular-nums; }
 .ring-state { font-size: 17px; line-height: 1.25; margin: 5px 0; }
 .over-budget .ring-label { color: var(--primary-text-color, #253a32); font-weight: 600; }
-.energy-detail { display: flex; align-items: center; justify-content: center; gap: 26px; max-width: 100%; }
+.energy-detail { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 18px; max-width: 100%; }
 .energy-detail > div { min-width: 0; text-align: center; }
 .energy-detail > div > span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
 .energy-detail strong { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }

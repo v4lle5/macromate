@@ -1,21 +1,26 @@
 import {el,button,field,nutrients,display,MEALS} from './dom.js';
+import {quickEntry} from './entry-ui.js';
 export function selectField(label,name,options,value){const input=el('select',{name,'aria-label':label},...options.map(([id,text])=>el('option',{value:id},text)));if(value!=null)input.value=value;return el('label',{},el('span',{},label),input);}
 export function positive(input){const n=Number(input.value);if(!input.value.trim()||!Number.isFinite(n)||n<=0)throw {code:'invalid_request'};return n;}
 export class FoodBrowser {
  constructor(panel){this.panel=panel;this.sequence=0;}
  render(){
-  this.query=field('Lebensmittel suchen',{type:'search',maxlength:200});
+  this.query=field('Name oder Barcode',{type:'search','aria-label':'Lebensmittel suchen',placeholder:'Lebensmittelname oder EAN',maxlength:200,autocomplete:'off'});
   this.filter=selectField('Filter','filter',[['all','Alle'],['favorites','Favoriten'],['recent','Zuletzt erfasst'],['custom','Eigene Lebensmittel']],'all');
   this.online=field('Online-Suche (Open Food Facts)',{type:'checkbox'});
   this.results=el('div',{class:'results','aria-live':'polite'});
   this.detail=el('div',{class:'food-detail'});
-  this.node=el('div',{class:'card'},el('h2',{},'Lebensmittel'),el('form',{onsubmit:event=>{event.preventDefault();this.search();}},el('div',{class:'toolbar'},this.query,this.filter,el('button',{type:'submit',class:'primary'},'Suchen')),this.online,el('small',{},'Standard: nur lokal. Online nur nach Absenden und Freigabe in der Integrationskonfiguration.')),this.results,this.detail);
+  this.node=el('div',{class:'card'},el('h2',{},'Lebensmittel eintragen'),el('form',{onsubmit:event=>{event.preventDefault();this.search();}},el('div',{class:'toolbar'},this.query,this.filter,el('button',{type:'submit',class:'primary'},'Suchen'),button('Schnelleintrag',()=>quickEntry(this.panel),{'data-write':true}),this.panel.barcode.render()),this.online,el('small',{},'Name suchen oder Barcode eingeben. Für eigene Nährwerte Schnelleintrag wählen. Standard: nur lokal. Online nur nach Absenden und Freigabe in der Integrationskonfiguration.')),this.results,this.detail);
   return this.node;
  }
  invalidate(){this.sequence++;this.results.replaceChildren();this.detail.replaceChildren();this.food=null;}
  readContext(){return {sequence:++this.sequence,connection:this.panel.hass.connection,userId:this.panel.hass.user?.id,authorized:this.panel.authorized};}
  current(context){return context.sequence===this.sequence&&context.connection===this.panel.hass.connection&&context.userId===this.panel.hass.user?.id&&context.authorized&&this.panel.authorized&&this.panel.isConnected;}
  async search(){const context=this.readContext();try{
+  const query=this.query.querySelector('input').value;
+  this.detail.replaceChildren();
+  if(/^[\p{Decimal_Number}\s]+$/u.test(query)&&/\p{Decimal_Number}/u.test(query)){await this.panel.barcode.lookup(query);return;}
+  if(!query.trim()&&this.filter.querySelector('select').value==='all'){this.results.replaceChildren(el('p',{},'Name oder Barcode eingeben. Für eigene Nährwerte einen Namen eingeben und Schnelleintrag wählen.'));this.query.querySelector('input').focus();return;}
   const result=await this.panel.client.read('search_foods',{query:this.query.querySelector('input').value,online:this.online.querySelector('input').checked,filter:this.filter.querySelector('select').value});
   if(!this.current(context))return;
   this.showResults(result);

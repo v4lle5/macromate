@@ -115,11 +115,15 @@ export class MacroMateSummary extends HTMLElement {
       element('span',{class:'ring-unit'},exact?'kcal':incomplete?'Werte fehlen':!this.data.recommendation?'Profil einrichten':'Keine sichere Bilanz')
     ));
     const consumed=known(value)?`${amount(value,'kcal')}${incomplete?' bekannt':''}`:'Unbekannt';
+    const recommendation=this.data.recommendation;
+    const activeKnown=typeof this.data.date==='string'&&this.data.date.length>0&&this.data.date===this.data.today&&recommendation?.budget_source==='bmr_plus_active'&&!recommendation.fallback_reasons?.includes('active_calories_unavailable')&&known(recommendation.active_calories);
     return element('section',{class:'energy','aria-label':'Kalorien'},ring,
       element('div',{class:'energy-detail'},
         element('div',{},element('span',{},'Gegessen'),element('strong',{},consumed)),
         element('span',{class:'detail-divider','aria-hidden':'true'}),
-        element('div',{},element('span',{},'Tagesziel'),element('strong',{},goalKnown?amount(target,'kcal'):'Ziel unbekannt'))));
+        element('div',{},element('span',{},'Tagesziel'),element('strong',{},goalKnown?amount(target,'kcal'):'Ziel unbekannt')),
+        element('span',{class:'detail-divider','aria-hidden':'true'}),
+        element('div',{'data-metric':'active-calories'},element('span',{},'Aktivkalorien'),element('strong',{},activeKnown?amount(recommendation.active_calories,'kcal'):'Nicht verfügbar'))));
   }
   renderMacros(){
     const section=element('section',{class:'macros','aria-label':'Makronährstoffe'});

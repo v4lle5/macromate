@@ -31,6 +31,40 @@ function backend(data){
  assert.equal(run.status,0,run.stderr);return JSON.parse(run.stdout);
 }
 
+test('one shared food entry routes literal GTIN and text and reuses the name for quick nutrients',async()=>{
+ const page=await open();const pane=panel(page);
+ assert.equal(await pane.locator('input[type=search], input[inputmode=numeric]').count(),1,'one name/barcode input, not separate search and EAN fields');
+ const query=pane.getByLabel('Lebensmittel suchen',{exact:true});
+ await query.fill('012345678905');assert.equal((await calls(page)).length,1,'typing never sends a request');
+ await query.press('Enter');await page.waitForFunction(()=>window.calls.some(c=>c.action==='barcode'));
+ assert.equal((await calls(page)).find(c=>c.action==='barcode').payload.barcode,'012345678905');
+ for(const value of ['4006381333932','123',' 012345678905','012345678905 ','０１２３４５６７８９０５','٠١٢٣٤٥٦٧٨٩٠٥']){const before=(await calls(page)).length;await query.fill(value);await query.press('Enter');await page.waitForTimeout(30);assert.equal((await calls(page)).length,before,'malformed numeric token must not be repaired or sent as text');}
+ await query.fill('Kantine');await query.press('Enter');await page.waitForFunction(()=>window.calls.some(c=>c.action==='search_foods'&&c.payload.query==='Kantine'));
+ await pane.getByRole('button',{name:'Schnelleintrag',exact:true}).click();const dialog=pane.getByRole('dialog');
+ assert.equal(await dialog.locator('input[name=name]:visible').count(),0,'typed name is not entered again');
+ await dialog.getByLabel('Energie (kcal)',{exact:true}).fill('125');await dialog.getByRole('button',{name:'Speichern',exact:true}).click();
+ await page.waitForFunction(()=>window.calls.some(c=>c.action==='log_meal'));assert.equal((await calls(page)).find(c=>c.action==='log_meal').payload.name,'Kantine');
+ for(const width of [320,390,844,1280]){await page.setViewportSize({width,height:700});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);const box=await query.boundingBox();assert.ok(box.width>=44&&box.x>=0&&box.x+box.width<=width,'shared field fits mobile/desktop');}
+ await page.close();
+});
+
+test('shared entry provides empty and no-result guidance without extra name fields',async()=>{
+ const page=await open();const pane=panel(page);const query=pane.getByLabel('Lebensmittel suchen',{exact:true});
+ await pane.getByRole('button',{name:'Schnelleintrag',exact:true}).click();assert.equal(await pane.getByRole('dialog').count(),0);assert.equal(await query.evaluate(n=>n.getRootNode().activeElement===n),true);
+ await query.press('Enter');assert.equal((await calls(page)).length,1);assert.match(await pane.locator('.results').innerText(),/Name oder Barcode/);
+ await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane'),read=app.hass.callWS;app.hass={...app.hass,callWS:message=>message.action==='search_foods'?Promise.resolve({foods:[],source:'local'}):read(message)};});
+ await query.fill('Unbekanntes Essen');await query.press('Enter');await pane.getByText(/Keine Lebensmittel gefunden/).waitFor();await pane.getByRole('button',{name:'Schnelleintrag',exact:true}).click();assert.match(await pane.getByRole('dialog').innerText(),/Unbekanntes Essen/);assert.equal(await pane.getByRole('dialog').locator('input[name=name]:visible').count(),0);await page.close();
+});
+
+test('top energy overview shows only snapshot current active energy, preserving zero and unknown',async()=>{
+ const page=await open();
+ const cases=[{active_calories:321,budget_source:'bmr_plus_active',expected:'321 kcal'},{active_calories:0,budget_source:'bmr_plus_active',expected:'0 kcal'},{active_calories:0,budget_source:'profile_pal',expected:'Nicht verfügbar'},{active_calories:999,budget_source:'bmr_plus_active',fallback_reasons:['active_calories_unavailable'],expected:'Nicht verfügbar'},{expected:'Nicht verfügbar'}];
+ for(const item of cases){const text=await page.evaluate(async item=>{await import('/macromate-assets/unified-src/summary.js');const summary=document.createElement('mm-summary');summary.data={date:'2026-10-14',today:'2026-10-14',totals:{calories:300},recommendation:{calorie_target:2000,...item}};return summary.renderEnergy().querySelector('[data-metric=active-calories]')?.textContent;},item);assert.ok(text?.includes(item.expected),JSON.stringify({item,text}));}
+ const undated=await page.evaluate(()=>{const summary=document.createElement('mm-summary');summary.data={totals:{},recommendation:{active_calories:321,budget_source:'bmr_plus_active'}};return summary.renderEnergy().querySelector('[data-metric=active-calories]')?.textContent;});assert.match(undated,/Nicht verfügbar/);
+ const historical=await page.evaluate(()=>{const summary=document.createElement('mm-summary');summary.data={date:'2026-10-13',today:'2026-10-14',totals:{},recommendation:{active_calories:321,budget_source:'bmr_plus_active'}};return summary.renderEnergy().querySelector('[data-metric=active-calories]')?.textContent;});assert.match(historical,/Nicht verfügbar/);
+ await page.close();
+});
+
 test('diary loads HA-local today, shows unknown nutrients and dated goals, and navigates without timezone shifts',async()=>{
  const page=await open();
  assert.match(await panel(page).locator('main').innerText(),/MacroMate/);
@@ -84,9 +118,10 @@ test('manual local search escapes product text, fetches detail, logs ml portions
 
 test('quick entry stores total nutrients and edit/copy/delete target entry IDs',async()=>{
  const page=await open();
+ await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('Kantine');
  await panel(page).getByRole('button',{name:'Schnelleintrag',exact:true}).click();
  const dialog=panel(page).getByRole('dialog');
- await dialog.getByLabel('Name',{exact:true}).fill('Kantine');
+
  await dialog.getByLabel('Energie (kcal)',{exact:true}).fill('600');
  await dialog.getByLabel('Protein (g)',{exact:true}).fill('25');
  await dialog.getByRole('button',{name:'Speichern',exact:true}).click();
@@ -113,9 +148,10 @@ test('quick entry stores total nutrients and edit/copy/delete target entry IDs',
 
 test('quick blank macros remain unknown through the actual command boundary',async()=>{
  const page=await open();
+ await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('Energy only');
  await panel(page).getByRole('button',{name:'Schnelleintrag',exact:true}).click();
  const dialog=panel(page).getByRole('dialog');
- await dialog.getByLabel('Name',{exact:true}).fill('Energy only');
+
  await dialog.getByLabel('Energie (kcal)',{exact:true}).fill('250');
  await dialog.getByLabel('Protein (g)',{exact:true}).fill('0');
  await dialog.getByRole('button',{name:'Speichern',exact:true}).click();
@@ -259,13 +295,13 @@ test('real bundled ZXing decodes generated EAN13 pixels without BarcodeDetector'
 test('barcode manual input preserves leading zeros and scanner image input decodes pixels before lookup',async()=>{
  const page=await open();
  await page.evaluate(()=>{window.BarcodeDetector=undefined;});
- await panel(page).getByLabel('Barcode / EAN',{exact:true}).fill('012345678905');
- await panel(page).getByRole('button',{name:'Barcode suchen',exact:true}).click();
+ await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('012345678905');
+ await panel(page).getByRole('button',{name:'Suchen',exact:true}).click();
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='barcode'));
  assert.equal((await calls(page)).find(c=>c.action==='barcode').payload.barcode,'012345678905');
  assert.equal((await calls(page)).find(c=>c.action==='barcode').payload.online,false);
- await panel(page).getByLabel('Barcode / EAN',{exact:true}).fill('4006381333932');
- await panel(page).getByRole('button',{name:'Barcode suchen',exact:true}).click();
+ await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('4006381333932');
+ await panel(page).getByRole('button',{name:'Suchen',exact:true}).click();
  assert.equal((await calls(page)).filter(c=>c.action==='barcode').length,1);
  assert.match(await panel(page).locator('main').innerText(),/Prüfziffer/);
  await panel(page).getByRole('button',{name:'EAN scannen',exact:true}).click();
@@ -295,9 +331,10 @@ test('disconnecting the panel releases camera tracks and closes scanner even wit
 test('uncertain writes show a modal-safe explicit retry, retain request ID, and unlock only after success',async()=>{
  const page=await open();
  await page.evaluate(()=>{const original=window.hass.callWS;let fail=true;window.hass.callWS=async msg=>{if(msg.action==='log_meal'&&fail){fail=false;window.calls.push(structuredClone(msg));throw new Error('RAW PRIVATE LOG');}return original(msg);};});
+ await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('Unsicher');
  await panel(page).getByRole('button',{name:'Schnelleintrag',exact:true}).click();
  const dialog=panel(page).getByRole('dialog');
- await dialog.getByLabel('Name',{exact:true}).fill('Unsicher');await dialog.getByLabel('Energie (kcal)',{exact:true}).fill('42');
+ await dialog.getByLabel('Energie (kcal)',{exact:true}).fill('42');
  await dialog.getByRole('button',{name:'Speichern',exact:true}).click();
  const retry=dialog.getByRole('button',{name:'Gleiche Anfrage erneut senden'});
  await retry.waitFor({state:'visible'});
@@ -404,6 +441,7 @@ async function delayedFoodContext(page,action,change,{reject=false}={}){
   }};
   app.foodBrowser.showResults({foods:[window.product],source:'old context'});
   app.foodBrowser.showFood(window.product);
+  app.foodBrowser.query.querySelector('input').value='Hafer';
   const read=action==='food'?app.foodBrowser.pick('milk1'):action==='barcode'?app.barcode.lookup('4006381333931'):app.foodBrowser.search();
   const pending={action:'log_meal',payload:{name:'Uncertain',request_id:'keep-logical-write'}};
   app.client.pending=pending;
@@ -482,6 +520,7 @@ for(const action of ['search_foods','food','barcode']){
      const original=window.hass.callWS;let resolve;
      app.hass={...app.hass,callWS:msg=>msg.action===action?new Promise(yes=>resolve=yes):original(msg)};
      const browser=app.foodBrowser;browser.invalidate();
+     browser.query.querySelector('input').value='Hafer';
      const pending=action==='food'?browser.pick('milk1'):action==='barcode'?app.barcode.lookup('4006381333931'):browser.search();
      const generation=browser.sequence;
      // Mutate in place to prove the captured context guard independently of setter invalidation.
@@ -545,6 +584,7 @@ test('subscription setup failure falls back without uncaught browser errors',asy
 
 test('live refresh waits for an open edit dialog to close before disabling write controls',async()=>{
  const page=await open();
+ await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('Dialog');
  await panel(page).getByRole('button',{name:'Schnelleintrag',exact:true}).click();
  const count=(await calls(page)).filter(c=>c.action==='diary').length;
  await page.evaluate(()=>window.emitUpdate());await page.waitForTimeout(250);
