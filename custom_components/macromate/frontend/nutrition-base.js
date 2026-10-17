@@ -48,7 +48,7 @@ export class MacroMateNutritionBase extends HTMLElement {
   this.shadowRoot.replaceChildren(stylesheet,el('main',{},el('header',{class:'brand'},el('img',{src:new URL('./brand-icon.png',import.meta.url).href,alt:'',width:64,height:64}),el('div',{},el('h1',{},'MacroMate'),el('p',{class:'eyebrow'},'TRACK · EAT · PROGRESS'))),this.message,this.diaryNode,this.workspace));
   this.foodBrowser=new FoodBrowser(this);
   this.barcode=new BarcodeUI(this);
-  this.workspace.append(el('div',{class:'toolbar'},button('Eigenes Lebensmittel',()=>customFood(this),{'data-write':true})),this.foodBrowser.render(),this.barcode.render());
+  this.workspace.append(el('div',{class:'toolbar'},button('Eigenes Lebensmittel',()=>customFood(this),{'data-write':true})),this.foodBrowser.render());
   this.startLive();this.loadDiary();
  }
  async write(action,payload,refresh=true){
@@ -109,7 +109,7 @@ export class MacroMateNutritionBase extends HTMLElement {
    entries.forEach(entry=>section.append(el('div',{class:'entry'},el('strong',{},entry.name),el('p',{},display(entry.calories,'kcal')),el('details',{},el('summary',{},'Nährwerte'),nutrients(entry.nutrients||Object.fromEntries(Object.keys(NUTRIENTS).map(k=>[k,entry[k]])))),el('div',{class:'actions'},button('Bearbeiten',()=>entry.food_id?editFoodEntry(this,entry):quickEntry(this,entry),{'aria-label':`${entry.name} bearbeiten`,'data-write':true}),button('Kopieren',()=>copyEntry(this,entry),{'aria-label':`${entry.name} kopieren`,'data-write':true}),button('Löschen',()=>deleteEntry(this,entry),{'aria-label':`${entry.name} löschen`,class:'danger','data-write':true})))));
    meals.append(section);
   }
-  this.diaryNode.replaceChildren(navigation,el('div',{class:'toolbar diary-toolbar'},el('h2',{},'Dein Tagebuch'),button('Schnelleintrag',()=>quickEntry(this),{'data-write':true})),progress,...(!recommendation?[el('p',{class:'muted'},'Kein gespeichertes Tagesziel')]:[]),el('details',{},el('summary',{},'Alle Tagesnährwerte'),nutrients({...data.totals,...Object.fromEntries((data.nutrition_missing||[]).map(key=>[key,null]))})),meals);
+  this.diaryNode.replaceChildren(navigation,el('div',{class:'toolbar diary-toolbar'},el('h2',{},'Dein Tagebuch')),progress,...(!recommendation?[el('p',{class:'muted'},'Kein gespeichertes Tagesziel')]:[]),el('details',{},el('summary',{},'Alle Tagesnährwerte'),nutrients({...data.totals,...Object.fromEntries((data.nutrition_missing||[]).map(key=>[key,null]))})),meals);
   this.diaryNode.dataset.testid='diary';
  }
 }

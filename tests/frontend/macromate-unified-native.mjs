@@ -129,8 +129,9 @@ try{
  });
  await test('native-diary-quick-create-edit-copy-and-omission',async()=>{
   await view('Nutrition');const pane=page.locator('mm-nutrition');
+  await pane.locator('input[type=search]').fill('Native quick diary');
   await pane.getByRole('button',{name:'Quick entry',exact:true}).click();
-  const dialog=pane.getByRole('dialog');await dialog.locator('input[name=name]').fill('Native quick diary');
+  const dialog=pane.getByRole('dialog');
   await dialog.locator('input[name=calories]').fill('100');
   await dialog.getByRole('button',{name:'Save',exact:true}).click();
   await pane.getByRole('button',{name:'Native quick diary edit',exact:true}).waitFor();
@@ -152,8 +153,9 @@ try{
  await test('accepted-native-result-loss-explicit-stable-retry',async()=>{
   await view('Nutrition');const pane=page.locator('mm-nutrition');
   await page.evaluate(()=>window.dropNextAction='log_meal');
+  await pane.locator('input[type=search]').fill('Native uncertain diary');
   await pane.getByRole('button',{name:'Quick entry',exact:true}).click();
-  const dialog=pane.getByRole('dialog');await dialog.locator('input[name=name]').fill('Native uncertain diary');
+  const dialog=pane.getByRole('dialog');
   await dialog.locator('input[name=calories]').fill('73');await dialog.getByRole('button',{name:'Save',exact:true}).click();
   await dialog.getByRole('button',{name:'Retry same request',exact:true}).waitFor();
   const committed=(await store('ui-native-lost-result')).entries.filter(e=>e.name==='Native uncertain diary');
@@ -395,7 +397,7 @@ try{
    await dashboard.locator('mm-nutrition').getByRole('button',{name:'Cancel',exact:true}).click();
    for(let i=0;i<8;i++)await dashboard.mouse.wheel(0,700);
    await dashboard.waitForTimeout(200);
-   const barcode=await dashboard.locator('mm-nutrition').getByRole('button',{name:'Search barcode',exact:true}).boundingBox();
+   const barcode=await dashboard.locator('mm-nutrition').getByRole('button',{name:'Scan barcode',exact:true}).boundingBox();
    metric.finalBarcodeControl=barcode;
    assert.ok(barcode.y>=paneBounds.y&&barcode.y+barcode.height<=height,'The entire nutrition pane reaches its final barcode controls');
    await dashboard.screenshot({path:resolve(cfg.output,`native-nutrition-end-${width}.png`)});

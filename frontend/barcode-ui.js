@@ -5,8 +5,8 @@ import {CameraScanner,decodeSource} from './scanner.js';
 export class BarcodeUI {
  constructor(panel){this.panel=panel;}
  render(){
-  this.input=field('Barcode / EAN',{type:'text',inputmode:'numeric',autocomplete:'off',maxlength:14});
-  return el('div',{class:'card'},el('h2',{},'Barcode'),el('form',{onsubmit:event=>{event.preventDefault();this.lookup(this.input.querySelector('input').value);}},el('div',{class:'toolbar'},this.input,el('button',{type:'submit'},'Barcode suchen'),button('EAN scannen',()=>this.openScanner()))),el('small',{},'EAN-8 / EAN-13 / UPC-A / GTIN-14 mit gültiger Prüfziffer. Führende Nullen bleiben erhalten. Online-Schalter der Lebensmittelsuche gilt auch hier.'));
+  this.input=this.panel.foodBrowser.query;
+  return button('EAN scannen',()=>this.openScanner());
  }
  async lookup(barcode){
   if(!validGTIN(barcode)){this.panel.message.replaceChildren(el('p',{role:'alert'},'Barcode ungültig: 8, 12, 13 oder 14 ASCII-Ziffern mit gültiger Prüfziffer eingeben.'));return;}

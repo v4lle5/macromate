@@ -9,8 +9,10 @@ export function openDialog(panel,title,children){
 export function numericFields(keys,values={}){return keys.map(key=>{const [label,unit]=NUTRIENTS[key];return field(`${label} (${unit})`,{name:key,type:'number',min:0,step:'any',required:key==='calories',value:values[key]??''});});}
 export function readNumbers(form,keys){const result={};for(const key of keys){const input=form.elements.namedItem(key);if(input.value==='')continue;const n=Number(input.value);if(!Number.isFinite(n)||n<0)throw {code:'invalid_request'};result[key]=n;}return result;}
 export function quickEntry(panel,entry){
+ const query=panel.foodBrowser.query.querySelector('input');
+ if(!entry&&!query.value.trim()){query.focus();panel.foodBrowser.results.replaceChildren(el('p',{},'Für den Schnelleintrag zuerst einen Namen eingeben.'));return;}
  const title=entry?'Eintrag bearbeiten':'Schnelleintrag';
- const name=field('Name',{name:'name',required:true,maxlength:200,value:entry?.name||''});
+ const name=entry?field('Name',{name:'name',required:true,maxlength:200,value:entry.name}):el('div',{},el('p',{'data-user-content':true},query.value),el('input',{type:'hidden',name:'name',value:query.value}));
  const meal=selectField('Mahlzeit','meal_type',Object.entries(MEALS),entry?.meal_type||'snack');
  const keys=['calories','protein','carbs','fat'];
  let dialog;

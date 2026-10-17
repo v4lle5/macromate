@@ -34,6 +34,14 @@ The visual editor also offers **Compact summary (read-only)** for a small overvi
 
 The default combined card is editable according to server permissions. The card fills the available space below HA's dashboard header, including narrow/mobile and short landscape views; content scrolls inside the app rather than forcing a 550px minimum height.
 
+## Food entry and active energy
+
+Nutrition has one shared **Name or barcode** field. Submit a food name to search the local database; enable the online checkbox only when an explicitly submitted external lookup is wanted and integration consent permits it. Submit an exact valid EAN-8, UPC-A, EAN-13 or GTIN-14 to look it up as a barcode. Leading zeros are preserved; invalid numeric tokens, whitespace-padded codes and non-ASCII digits are rejected rather than repaired. Typing alone never sends a lookup.
+
+For a manual entry, type its name into the same field and choose **Quick entry** to enter total nutrients. The name is reused without a second name field. Empty input focuses the shared field; no-result searches retain the name and keep Quick entry and custom-food creation available. Camera and image scanning use the same result/portion workflow and still decode locally.
+
+The top calorie overview shows **Active calories** separately from intake and the daily target. It uses only the existing server snapshot's confirmed current-day active-energy reading: a valid zero is displayed as `0 kcal`. Missing, estimated/PAL, stale, historical or unconfirmed legacy values show **Unavailable**, not a fabricated zero or a value inferred from total expenditure. This display does not change the target calculation or add an overlapping energy source.
+
 ## Permissions, data and connected workflows
 
 Private nutrition, recipes and planning require an administrator. Internal shopping is retired; historical records stay preserved but have no operational action endpoints. A read-only HA identity cannot mutate data. Dashboard placement does not grant access; the server enforces permissions for both UI and agents.

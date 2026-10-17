@@ -79,8 +79,17 @@ try {
  await test('settings-help-version-and-rejected-backup',async()=>{
   await view('settings');const settings=page.locator('rm-settings-view');await settings.getByRole('button',{name:'Help',exact:true}).click();assert.equal(await settings.evaluate(s=>s._rmVersion),'fixture');assert.equal(await settings.locator('a[href^="https://github.com/"]').count(),3);await settings.getByRole('button',{name:'Sync',exact:true}).click();await settings.getByRole('button',{name:'Download backup',exact:true}).click();await page.waitForTimeout(70);assert.equal(await settings.evaluate(s=>s._backupState),'error');assert.equal(await settings.getByRole('button',{name:'Failed ✗',exact:true}).count(),1);return {version:'fixture',links:3,backup:'real fixture rejection shown, no synthetic success'};
  });
+ await test('nutrition-shared-entry-and-active-energy-mobile',async()=>{
+  await view('nutrition');const pane=page.locator('mm-nutrition');await pane.locator('.calorie-ring').waitFor();
+  assert.equal(await pane.locator('input[type=search],input[inputmode=numeric]').count(),1);
+  const layouts=[];for(const width of [320,390,844,1280]){await page.setViewportSize({width,height:700});await page.waitForTimeout(150);
+   for(const active of [321,0,null]){await pane.evaluate((n,active)=>{n.data={...n.data,date:n.data.today,recommendation:{...n.data.recommendation,active_calories:active??0,budget_source:active===null?'profile_pal':'bmr_plus_active'}};n.renderDiary();},active);const metric=pane.locator('[data-metric=active-calories]');assert.match(await metric.innerText(),active===null?/Unavailable/:new RegExp(`${active} kcal`));const box=await metric.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=width,'active metric fits viewport');}
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);for(const name of ['Search','Quick entry','Scan barcode']){const box=await pane.getByRole('button',{name,exact:true}).boundingBox();assert.ok(box.width>=44&&box.height>=44,`${name} mobile touch target`);}layouts.push(width);
+  }
+  await pane.evaluate(n=>n.loadDiary(n.date));return {widths:layouts,active:[321,0,'unavailable'],oneSharedInput:true};
+ });
  await test('nutrition-reversible-labels-preserve-data',async()=>{
-  await view('nutrition');const pane=page.locator('mm-nutrition');await pane.getByRole('button',{name:'Quick entry',exact:true}).waitFor();await pane.getByRole('button',{name:'Quick entry',exact:true}).click();const dialog=pane.getByRole('dialog');await dialog.locator('input[name=name]').fill('Speichern');
+  await view('nutrition');const pane=page.locator('mm-nutrition');await pane.getByRole('button',{name:'Quick entry',exact:true}).waitFor();await pane.locator('input[type=search]').fill('Speichern');await pane.getByRole('button',{name:'Quick entry',exact:true}).click();const dialog=pane.getByRole('dialog');
   await pane.evaluate(n=>{n.hass={...n.hass,language:'de'};});assert.equal(await dialog.getByRole('button',{name:'Speichern',exact:true}).count(),1);assert.equal(await dialog.locator('input[name=name]').inputValue(),'Speichern');
   await pane.evaluate(n=>{n.hass={...n.hass,language:'en'};});assert.equal(await dialog.getByRole('button',{name:'Save',exact:true}).count(),1);assert.equal(await dialog.locator('input[name=name]').inputValue(),'Speichern');await dialog.getByRole('button',{name:'Cancel',exact:true}).click();return {en:'Save',de:'Speichern',userText:'Speichern'};
  });
