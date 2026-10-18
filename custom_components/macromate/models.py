@@ -5,12 +5,16 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections import OrderedDict
+from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date, datetime
-from typing import Any, Iterable
+from typing import Any
 from zoneinfo import ZoneInfo
-from .platform_support import identifier, number as validate_number, validate_json
+
+from .platform_support import identifier, validate_json
+from .platform_support import number as validate_number
 
 NUTRIENTS = ("calories", "protein", "carbs", "fat")
 MEAL_TYPES = ("breakfast", "lunch", "dinner", "snack")
@@ -85,12 +89,17 @@ class MealEntry:
                     raise ValueError(f"{field} is outside supported range")
                 object.__setattr__(self, field, number)
         if self.nutrients is not None:
-            object.__setattr__(self, "nutrients", {
-                key: _non_negative(key, value) for key, value in self.nutrients.items()
-            })
+            object.__setattr__(
+                self,
+                "nutrients",
+                {key: _non_negative(key, value) for key, value in self.nutrients.items()},
+            )
         if self.food_snapshot is not None:
             object.__setattr__(self, "food_snapshot", deepcopy(self.food_snapshot))
-        if any(value is not None for value in (self.recipe_id, self.recipe_servings, self.recipe_snapshot)):
+        if any(
+            value is not None
+            for value in (self.recipe_id, self.recipe_servings, self.recipe_snapshot)
+        ):
             identifier(self.recipe_id, "recipe_id")
             servings = validate_number(self.recipe_servings, "recipe_servings", maximum=100000)
             if servings is None or servings <= 0 or not isinstance(self.recipe_snapshot, dict):
@@ -115,7 +124,18 @@ class MealEntry:
             "fat": self.fat,
             "eaten_at": self.eaten_at.isoformat(),
         }
-        for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot", "recipe_id", "recipe_servings", "recipe_snapshot"):
+        for key in (
+            "food_id",
+            "amount",
+            "base_unit",
+            "serving_id",
+            "quantity",
+            "nutrients",
+            "food_snapshot",
+            "recipe_id",
+            "recipe_servings",
+            "recipe_snapshot",
+        ):
             if (extra := getattr(self, key)) is not None:
                 value[key] = deepcopy(extra)
         return value
@@ -127,7 +147,7 @@ class MealEntry:
         return value
 
     @classmethod
-    def from_dict(cls, value: dict[str, Any]) -> "MealEntry":
+    def from_dict(cls, value: dict[str, Any]) -> MealEntry:
         return cls(
             id=str(value["id"]),
             name=str(value["name"]),
@@ -137,7 +157,22 @@ class MealEntry:
             carbs=float(value["carbs"]),
             fat=float(value["fat"]),
             eaten_at=datetime.fromisoformat(str(value["eaten_at"])),
-            **{key: value[key] for key in ("food_id", "amount", "base_unit", "serving_id", "quantity", "nutrients", "food_snapshot", "recipe_id", "recipe_servings", "recipe_snapshot") if key in value},
+            **{
+                key: value[key]
+                for key in (
+                    "food_id",
+                    "amount",
+                    "base_unit",
+                    "serving_id",
+                    "quantity",
+                    "nutrients",
+                    "food_snapshot",
+                    "recipe_id",
+                    "recipe_servings",
+                    "recipe_snapshot",
+                )
+                if key in value
+            },
         )
 
 
@@ -247,22 +282,26 @@ class OperationLedger:
         return deepcopy(list(self._records.values()))
 
     @classmethod
-    def from_list(
-        cls, values: list[dict[str, Any]], *, max_entries: int = 1000
-    ) -> "OperationLedger":
+    def from_list(cls, values: list[dict[str, Any]], *, max_entries: int = 1000) -> OperationLedger:
         ledger = cls(max_entries=max_entries)
         if not isinstance(values, list):
             raise ValueError("operation ledger must be a list")
         for value in values:
             if not isinstance(value, dict) or set(value) != {
-                "request_id", "operation", "payload_hash", "result"
+                "request_id",
+                "operation",
+                "payload_hash",
+                "result",
             }:
                 raise ValueError("invalid operation ledger record")
             cls._validate_identifier(value["request_id"], "request_id")
             cls._validate_identifier(value["operation"], "operation")
             digest = value["payload_hash"]
-            if (not isinstance(digest, str) or len(digest) != 64
-                    or any(char not in "0123456789abcdef" for char in digest)):
+            if (
+                not isinstance(digest, str)
+                or len(digest) != 64
+                or any(char not in "0123456789abcdef" for char in digest)
+            ):
                 raise ValueError("invalid payload hash")
             cls._canonical(value["result"])
             if value["request_id"] in ledger._records:
@@ -278,30 +317,50 @@ class MealLog:
         if len({item.id for item in items}) != len(items):
             raise ValueError("meal entry ids must be unique")
         self._entries = items
+        self._ordered = None
+        self._date_indexes = OrderedDict()
+
+    def _invalidate(self):
+        self._ordered = None
+        self._date_indexes.clear()
 
     @property
     def entries(self) -> tuple[MealEntry, ...]:
-        return tuple(sorted(self._entries, key=lambda item: item.eaten_at))
+        if self._ordered is None:
+            self._ordered = tuple(sorted(self._entries, key=lambda item: item.eaten_at))
+        return self._ordered
 
     def add(self, item: MealEntry) -> None:
         if any(existing.id == item.id for existing in self._entries):
             raise ValueError(f"duplicate meal entry id: {item.id}")
         self._entries.append(item)
+        self._invalidate()
 
     def remove(self, entry_id: str) -> MealEntry:
         for index, item in enumerate(self._entries):
             if item.id == entry_id:
-                return self._entries.pop(index)
+                result = self._entries.pop(index)
+                self._invalidate()
+                return result
         raise KeyError(entry_id)
 
     def _entries_for_date(self, requested: str | date, timezone: str) -> list[MealEntry]:
         day = date.fromisoformat(requested) if isinstance(requested, str) else requested
-        zone = ZoneInfo(timezone)
-        return [item for item in self._entries if item.eaten_at.astimezone(zone).date() == day]
+        if timezone not in self._date_indexes:
+            zone = ZoneInfo(timezone)
+            index = {}
+            for item in self._entries:
+                index.setdefault(item.eaten_at.astimezone(zone).date(), []).append(item)
+            self._date_indexes[timezone] = index
+            if len(self._date_indexes) > 4:
+                self._date_indexes.popitem(last=False)
+        self._date_indexes.move_to_end(timezone)
+        return list(self._date_indexes[timezone].get(day, ()))
 
     def clear_date(self, requested: str | date, timezone: str) -> int:
         selected = {item.id for item in self._entries_for_date(requested, timezone)}
         self._entries = [item for item in self._entries if item.id not in selected]
+        self._invalidate()
         return len(selected)
 
     def summary_for_date(
@@ -312,17 +371,22 @@ class MealLog:
     ) -> DailySummary:
         day = date.fromisoformat(requested) if isinstance(requested, str) else requested
         selected = self._entries_for_date(day, timezone)
-        declared = [item.nutrients if item.nutrients is not None else
-                    {key:getattr(item,key) for key in NUTRIENTS} for item in selected]
+        declared = [
+            item.nutrients
+            if item.nutrients is not None
+            else {key: getattr(item, key) for key in NUTRIENTS}
+            for item in selected
+        ]
         missing = tuple(key for key in NUTRIENTS if any(key not in values for values in declared))
         totals = {
-            nutrient: round(sum(values.get(nutrient,0) for values in declared), 2)
+            nutrient: round(sum(values.get(nutrient, 0) for values in declared), 2)
             for nutrient in NUTRIENTS
         }
         remaining = (
             {
                 nutrient: round(max(0.0, getattr(goals, nutrient) - totals[nutrient]), 2)
-                for nutrient in NUTRIENTS if nutrient not in missing
+                for nutrient in NUTRIENTS
+                if nutrient not in missing
             }
             if goals
             else {}

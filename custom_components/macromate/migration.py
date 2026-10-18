@@ -4,10 +4,12 @@ Parent integration must export/import async_migrate_entry from its __init__.py.
 Old factors remain internal for the legacy runtime until a complete profile is
 submitted in options. No demographic values or new online consent are invented.
 """
+
 from __future__ import annotations
 
+from collections.abc import Mapping
 from copy import deepcopy
-from typing import Any, Mapping
+from typing import Any
 
 from .profile import PROFILE_VERSION
 
@@ -33,6 +35,10 @@ async def async_migrate_entry(hass, config_entry) -> bool:
         return False
     settings = migrate_settings_v1(config_entry.data, config_entry.options)
     hass.config_entries.async_update_entry(
-        config_entry, version=CONFIG_VERSION, minor_version=1, data=settings, options={},
+        config_entry,
+        version=CONFIG_VERSION,
+        minor_version=1,
+        data=settings,
+        options={},
     )
     return True

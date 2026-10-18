@@ -124,11 +124,11 @@ class RestoreConsistencyTests(unittest.IsolatedAsyncioTestCase):
             await self.assert_restored_exact(backup, 'aliases-' + basis)
             original = next(row for row in backup['entries'] if row['id'] == entry_id)
             self.assertIn('carbs', original['nutrients'])
-            self.assertIn('sugars', original['nutrients'])
+            self.assertIn('sugar', original['nutrients'])
             updated = (await self.api('recipe_entry_update', {'entry_id': entry_id, 'servings': .3333333}))['entry']
             self.assertEqual(updated['nutrients'], original['nutrients'])
             await self.assert_native_entry_exact(updated)
-            for alias, canonical in [('carbohydrates', 'carbs'), ('sugar', 'sugars')]:
+            for alias, canonical in [('carbohydrates', 'carbs'), ('sugars', 'sugar')]:
                 candidate = await self.backup()
                 row = next(row for row in candidate['entries'] if row['id'] == entry_id)
                 row['nutrients'][alias] = row['nutrients'][canonical]

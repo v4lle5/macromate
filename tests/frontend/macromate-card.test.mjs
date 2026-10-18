@@ -276,6 +276,27 @@ test('HA sizing reflects rendered card height and leaves sections rows unconstra
   await page.close();
 });
 
+test('summary navigation accepts a local dashboard and defaults to an inline open event',async()=>{
+  const page=await open();
+  await page.evaluate(()=>window.mount());await loaded(page);
+  assert.equal(await card(page).locator('.diary-link').getAttribute('href'),'/lovelace/nutrition');
+  assert.equal(await page.evaluate(()=>{
+    for(const navigation_path of ['https://example.invalid/','//example.invalid/','/dashboard/../private','/dashboard?token=secret',42]){
+      try{document.createElement('macromate-card').setConfig({navigation_path});return false;}catch{}
+    }return true;
+  }),true);
+  await page.evaluate(()=>{
+    window.card.setConfig({mode:'summary'});
+    window.openEvents=0;
+    window.card.addEventListener('macromate-open-app',event=>{window.openEvents++;event.stopImmediatePropagation();},{capture:true});
+  });
+  assert.equal(await card(page).locator('.diary-link').evaluate(node=>node.tagName),'BUTTON');
+  await card(page).locator('.diary-link').click();
+  assert.equal(await page.evaluate(()=>window.openEvents),1);
+  assert.equal(new URL(page.url()).pathname,'/');
+  await page.close();
+});
+
 test('synchronous disconnect before subscription microtask prevents starting a detached subscription',async()=>{
   const page=await open();await page.evaluate(()=>{window.deferReads=true;window.mount();window.card.remove();});
   await page.waitForTimeout(30);
@@ -309,7 +330,7 @@ test('background read failure removes stale metrics and minute fallback recovers
 
 test('native diary anchor is keyboard navigable and the full interaction issues only diary reads',async()=>{
   const page=await open();await page.clock.install();
-  await page.route(base+'/macromate',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Diary destination</title>'}));
+  await page.route(base+'/lovelace/nutrition',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Diary destination</title>'}));
   await page.evaluate(()=>{
     const hass=window.makeHass();const read=hass.callWS;
     hass.callService=()=>{throw new Error('Unexpected mutation');};
@@ -318,7 +339,7 @@ test('native diary anchor is keyboard navigable and the full interaction issues 
   });await loaded(page);
   await page.evaluate(()=>{window.emit();window.emit();});await page.clock.fastForward(200);
   assert.deepEqual(await page.evaluate(()=>window.calls),Array(2).fill({type:'macromate/command',action:'diary',payload:{}}));
-  await page.keyboard.press('Tab');await page.keyboard.press('Enter');await page.waitForURL(base+'/macromate');
+  await page.keyboard.press('Tab');await page.keyboard.press('Enter');await page.waitForURL(base+'/lovelace/nutrition');
   assert.equal(await page.title(),'Diary destination');
   await page.close();
 });
@@ -356,7 +377,7 @@ test('glanceable overview renders remaining calories, macro progress, meal summa
   assert.equal(await card(page).locator('.meal').count(),4);
   assert.match(await card(page).locator('[data-meal="breakfast"]').innerText(),/Frühstück.*1 Eintrag.*340 kcal/s);
   assert.match(await card(page).locator('[data-meal="dinner"]').innerText(),/Abendessen.*0 Einträge.*0 kcal/s);
-  assert.equal(await card(page).getByRole('link',{name:/Tagebuch öffnen/}).getAttribute('href'),'/macromate');
+  assert.equal(await card(page).getByRole('link',{name:/Tagebuch öffnen/}).getAttribute('href'),'/lovelace/nutrition');
   await page.close();
 });
 

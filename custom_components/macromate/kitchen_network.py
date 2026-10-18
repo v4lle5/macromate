@@ -20,28 +20,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from __future__ import annotations
 
-from fractions import Fraction
-import copy
-import math
-import re
-import json
+import asyncio
 import base64
 import binascii
+import copy
 import io
+import ipaddress
+import json
+import math
+import posixpath
+import re
+import socket
+import stat
+import threading
+import time
 import warnings
 import zipfile
-import stat
-import posixpath
-import asyncio
-import ipaddress
-import socket
-import time
-import threading
 import zlib
 from collections import deque
-from urllib.parse import urljoin, urlsplit, unquote
+from fractions import Fraction
+from urllib.parse import unquote, urljoin, urlsplit
 
 MAX_REDIRECTS = 3
 REQUEST_TIMEOUT = 20
@@ -72,7 +73,11 @@ async def _read_response(response, limit):
     encoding = response.headers.get("Content-Encoding", "identity").strip().lower()
     if encoding not in {"", "identity", "gzip", "deflate"}:
         raise ValueError("Unsupported remote content encoding")
-    decoder = zlib.decompressobj(16 + zlib.MAX_WBITS if encoding == "gzip" else zlib.MAX_WBITS) if encoding in {"gzip", "deflate"} else None
+    decoder = (
+        zlib.decompressobj(16 + zlib.MAX_WBITS if encoding == "gzip" else zlib.MAX_WBITS)
+        if encoding in {"gzip", "deflate"}
+        else None
+    )
     body = bytearray()
     received = 0
     try:
@@ -96,7 +101,8 @@ async def _fetch_bytes(url: str, *, enabled: bool, image=False):
     if enabled is not True:
         raise ValueError("Explicit remote import consent required")
     url = validate_remote_url(url)
-    from aiohttp import ClientSession, ClientTimeout, TCPConnector, DummyCookieJar, ClientError
+    from aiohttp import ClientError, ClientSession, ClientTimeout, DummyCookieJar, TCPConnector
+
     with _RATE_LOCK:
         if _IN_FLIGHT >= MAX_CONCURRENT_REQUESTS:
             raise ValueError("Remote concurrency limit")
@@ -105,15 +111,31 @@ async def _fetch_bytes(url: str, *, enabled: bool, image=False):
         async with asyncio.timeout(REQUEST_TIMEOUT):
             # A private connector/session per operation. Neither HA sessions,
             # cookies, .netrc, environment proxies nor auth can reach this client.
-            connector = TCPConnector(resolver=SafeResolver(), socket_factory=_socket_factory,
-                                     use_dns_cache=False, force_close=True, limit=1)
+            connector = TCPConnector(
+                resolver=SafeResolver(),
+                socket_factory=_socket_factory,
+                use_dns_cache=False,
+                force_close=True,
+                limit=1,
+            )
             try:
-                async with ClientSession(connector=connector, cookie_jar=DummyCookieJar(),
-                                         trust_env=False, auto_decompress=False,
-                                         timeout=ClientTimeout(total=REQUEST_TIMEOUT, connect=CONNECT_TIMEOUT,
-                                                               sock_connect=CONNECT_TIMEOUT, sock_read=READ_TIMEOUT),
-                                         headers={"User-Agent": "MacroMate/recipe-import", "Accept-Encoding": "identity",
-                                                  "Accept": "image/*" if image else "text/html,application/xhtml+xml"}) as session:
+                async with ClientSession(
+                    connector=connector,
+                    cookie_jar=DummyCookieJar(),
+                    trust_env=False,
+                    auto_decompress=False,
+                    timeout=ClientTimeout(
+                        total=REQUEST_TIMEOUT,
+                        connect=CONNECT_TIMEOUT,
+                        sock_connect=CONNECT_TIMEOUT,
+                        sock_read=READ_TIMEOUT,
+                    ),
+                    headers={
+                        "User-Agent": "MacroMate/recipe-import",
+                        "Accept-Encoding": "identity",
+                        "Accept": "image/*" if image else "text/html,application/xhtml+xml",
+                    },
+                ) as session:
                     for hop in range(MAX_REDIRECTS + 1):
                         validate_remote_url(url)
                         _request_rate()
@@ -126,11 +148,31 @@ async def _fetch_bytes(url: str, *, enabled: bool, image=False):
                                 continue
                             if response.status != 200:
                                 raise ValueError("Remote server did not return success")
-                            content_type = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
-                            if (image and content_type not in {"image/png", "image/jpeg", "image/webp", "image/gif", "image/bmp", "application/octet-stream"}) or (
-                                    not image and content_type not in {"text/html", "application/xhtml+xml"}):
+                            content_type = (
+                                response.headers.get("Content-Type", "")
+                                .split(";", 1)[0]
+                                .strip()
+                                .lower()
+                            )
+                            if (
+                                image
+                                and content_type
+                                not in {
+                                    "image/png",
+                                    "image/jpeg",
+                                    "image/webp",
+                                    "image/gif",
+                                    "image/bmp",
+                                    "application/octet-stream",
+                                }
+                            ) or (
+                                not image
+                                and content_type not in {"text/html", "application/xhtml+xml"}
+                            ):
                                 raise ValueError("Unsupported remote content type")
-                            payload = await _read_response(response, MAX_IMAGE_BYTES if image else MAX_HTML_BYTES)
+                            payload = await _read_response(
+                                response, MAX_IMAGE_BYTES if image else MAX_HTML_BYTES
+                            )
                             return payload, url, response.charset or "utf-8"
             finally:
                 await connector.close()
@@ -158,10 +200,13 @@ async def fetch_image(url: str, *, enabled: bool) -> dict:
     payload, _, _ = await _fetch_bytes(url, enabled=enabled, image=True)
     return await asyncio.to_thread(_normalize_image_bytes, payload)
 
+
 # Block translation/tunnelling ranges too: a global-looking IPv6 address may
 # embed a private IPv4 destination, or be routed through a local NAT64 gateway.
-_BLOCKED_V6 = tuple(ipaddress.ip_network(n) for n in (
-    "::/96", "::ffff:0:0/96", "64:ff9b::/96", "64:ff9b:1::/48", "2001::/32", "2002::/16"))
+_BLOCKED_V6 = tuple(
+    ipaddress.ip_network(n)
+    for n in ("::/96", "::ffff:0:0/96", "64:ff9b::/96", "64:ff9b:1::/48", "2001::/32", "2002::/16")
+)
 
 
 def _public_ip(value: str):
@@ -169,24 +214,40 @@ def _public_ip(value: str):
         address = ipaddress.ip_address(value)
     except ValueError:
         raise ValueError("Invalid destination IP") from None
-    if (str(address) == "168.63.129.16" or  # Azure host platform/wire server
-            not address.is_global or address.is_multicast or address.is_unspecified or
-            address.is_reserved or getattr(address, "scope_id", None) or
-            (address.version == 6 and any(address in net for net in _BLOCKED_V6))):
+    if (
+        str(address) == "168.63.129.16"  # Azure host platform/wire server
+        or not address.is_global
+        or address.is_multicast
+        or address.is_unspecified
+        or address.is_reserved
+        or getattr(address, "scope_id", None)
+        or (address.version == 6 and any(address in net for net in _BLOCKED_V6))
+    ):
         raise ValueError("Blocked destination IP")
     return address
 
 
 def validate_remote_url(url: str) -> str:
     """Strict HTTPS/443 without credentials, ambiguous authority or local names."""
-    if not isinstance(url, str) or len(url) > 8192 or any(c.isspace() or ord(c) < 32 for c in url) or "\\" in url:
+    if (
+        not isinstance(url, str)
+        or len(url) > 8192
+        or any(c.isspace() or ord(c) < 32 for c in url)
+        or "\\" in url
+    ):
         raise ValueError("Invalid remote URL")
     try:
         parsed = urlsplit(url)
         host = parsed.hostname
-        if (parsed.scheme != "https" or not host or parsed.username is not None or
-                parsed.password is not None or parsed.port not in {None, 443} or "%" in host or
-                parsed.fragment):
+        if (
+            parsed.scheme != "https"
+            or not host
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.port not in {None, 443}
+            or "%" in host
+            or parsed.fragment
+        ):
             raise ValueError("Invalid remote URL")
         host = host.lower().rstrip(".")
         try:
@@ -197,10 +258,18 @@ def validate_remote_url(url: str) -> str:
             _public_ip(host)
         else:
             ascii_host = host.encode("idna").decode("ascii")
-            if ("." not in ascii_host or not re.fullmatch(r"[a-z0-9.-]+", ascii_host) or
-                    ascii_host.endswith((".localhost", ".local", ".internal", ".home", ".lan", ".test", ".invalid")) or
-                    any(not label or len(label) > 63 or label.startswith("-") or label.endswith("-") for label in ascii_host.split(".")) or
-                    re.fullmatch(r"[0-9.]+", ascii_host)):
+            if (
+                "." not in ascii_host
+                or not re.fullmatch(r"[a-z0-9.-]+", ascii_host)
+                or ascii_host.endswith(
+                    (".localhost", ".local", ".internal", ".home", ".lan", ".test", ".invalid")
+                )
+                or any(
+                    not label or len(label) > 63 or label.startswith("-") or label.endswith("-")
+                    for label in ascii_host.split(".")
+                )
+                or re.fullmatch(r"[0-9.]+", ascii_host)
+            ):
                 raise ValueError("Blocked remote hostname")
         return url
     except (ValueError, UnicodeError):
@@ -213,12 +282,14 @@ class SafeResolver:
     Returned numeric addresses go directly to sockets. Caching is disabled in
     our connector. Mixed public/private DNS answers fail closed as a whole.
     """
+
     async def resolve(self, host: str, port: int = 443, family: int = socket.AF_UNSPEC):
         validate_remote_url("https://" + ("[" + host + "]" if ":" in host else host))
         if port != 443:
             raise ValueError("Blocked destination port")
-        answers = await asyncio.get_running_loop().getaddrinfo(host, port, family=family,
-                                                               type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP)
+        answers = await asyncio.get_running_loop().getaddrinfo(
+            host, port, family=family, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP
+        )
         if not answers:
             raise ValueError("No destination addresses")
         result = []
@@ -226,8 +297,16 @@ class SafeResolver:
             _public_ip(sockaddr[0])
             if sockaddr[1] != 443:
                 raise ValueError("Blocked destination port")
-            result.append({"hostname": host, "host": sockaddr[0], "port": port,
-                           "family": af, "proto": proto, "flags": socket.AI_NUMERICHOST})
+            result.append(
+                {
+                    "hostname": host,
+                    "host": sockaddr[0],
+                    "port": port,
+                    "family": af,
+                    "proto": proto,
+                    "flags": socket.AI_NUMERICHOST,
+                }
+            )
         return result
 
     async def close(self):
@@ -241,6 +320,7 @@ def _socket_factory(addr_info):
         raise ValueError("Blocked destination")
     return socket.socket(family=family, type=kind, proto=proto)
 
+
 MAX_ARCHIVE_BYTES = 32 * 1024 * 1024
 MAX_ARCHIVE_EXPANSION = 64 * 1024 * 1024
 MAX_ARCHIVE_MEMBERS = 512
@@ -249,8 +329,14 @@ MAX_ARCHIVE_RATIO = 100
 
 
 def _archive_name(name: str) -> str:
-    if (not name or len(name) > 512 or "\\" in name or ":" in name or
-            name.startswith("/") or any(ord(c) < 32 for c in name)):
+    if (
+        not name
+        or len(name) > 512
+        or "\\" in name
+        or ":" in name
+        or name.startswith("/")
+        or any(ord(c) < 32 for c in name)
+    ):
         raise ValueError("Unsafe archive member path")
     parts = name.rstrip("/").split("/")
     if any(part in {"", ".", ".."} for part in parts):
@@ -283,13 +369,23 @@ def parse_recipe_archive(base64_data: str) -> dict:
                 mode = member.external_attr >> 16
                 if stat.S_IFMT(mode) not in {0, stat.S_IFREG, stat.S_IFDIR}:
                     raise ValueError("Archive special file or symlink")
-                if member.flag_bits & 1 or member.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
+                if member.flag_bits & 1 or member.compress_type not in {
+                    zipfile.ZIP_STORED,
+                    zipfile.ZIP_DEFLATED,
+                }:
                     raise ValueError("Unsupported encrypted/compressed archive")
                 total += member.file_size
-                if (member.file_size > MAX_ARCHIVE_MEMBER_BYTES or total > MAX_ARCHIVE_EXPANSION or
-                        member.file_size > max(1, member.compress_size) * MAX_ARCHIVE_RATIO):
+                if (
+                    member.file_size > MAX_ARCHIVE_MEMBER_BYTES
+                    or total > MAX_ARCHIVE_EXPANSION
+                    or member.file_size > max(1, member.compress_size) * MAX_ARCHIVE_RATIO
+                ):
                     raise ValueError("Archive expansion limit")
-            html_files = [m for m in members if not m.is_dir() and m.filename.lower().endswith((".html", ".htm"))]
+            html_files = [
+                m
+                for m in members
+                if not m.is_dir() and m.filename.lower().endswith((".html", ".htm"))
+            ]
             if not html_files:
                 raise ValueError("No Recipe Keeper HTML in archive")
             recipes, media = [], {}
@@ -311,7 +407,9 @@ def parse_recipe_archive(base64_data: str) -> dict:
                     recipes.extend(rows)
                     if len(recipes) > MAX_RECIPES:
                         raise ValueError("Recipe count limit")
-                elif member.filename.lower().endswith((".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp")):
+                elif member.filename.lower().endswith(
+                    (".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp")
+                ):
                     record = _normalize_image_bytes(payload)
                     normalized_bytes += len(record["data"])
                     if normalized_bytes > MAX_ARCHIVE_EXPANSION:
@@ -319,7 +417,8 @@ def parse_recipe_archive(base64_data: str) -> dict:
                     media[member.filename] = record
             for row in recipes:
                 parent = posixpath.dirname(row["provenance"]["archive_member"])
-                def reference(ref):
+
+                def reference(ref, parent=parent):
                     if urlsplit(ref).scheme or ref.startswith("//"):
                         return ref  # metadata only, never fetched
                     ref = _archive_name(unquote(ref))
@@ -328,16 +427,20 @@ def parse_recipe_archive(base64_data: str) -> dict:
                         return relative
                     if ref in media:
                         return ref
-                    matches = [key for key in media if posixpath.basename(key) == posixpath.basename(ref)]
+                    matches = [
+                        key for key in media if posixpath.basename(key) == posixpath.basename(ref)
+                    ]
                     if len(matches) > 1:
                         raise ValueError("Ambiguous archive image reference")
                     return matches[0] if matches else ref
+
                 row["photos"] = [reference(ref) for ref in row["photos"]]
                 row["image_url"] = row["photos"][0] if row["photos"] else None
                 row["_image_filename"] = row["image_url"]
             return {"recipes": recipes, "media": media}
     except (zipfile.BadZipFile, OSError, EOFError, UnicodeError, RuntimeError, NotImplementedError):
         raise ValueError("Invalid Recipe Keeper archive") from None
+
 
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_IMAGE_PIXELS = 16_000_000
@@ -365,6 +468,7 @@ def _decode_base64(data: str, limit: int, *, image=False) -> bytes:
 
 def _normalize_image_bytes(data: bytes) -> dict:
     from PIL import Image, ImageOps
+
     if not data or len(data) > MAX_IMAGE_BYTES:
         raise ValueError("Image byte limit")
     try:
@@ -373,21 +477,33 @@ def _normalize_image_bytes(data: bytes) -> dict:
             with Image.open(io.BytesIO(data)) as image:
                 if image.format not in {"JPEG", "PNG", "WEBP", "GIF", "BMP"}:
                     raise ValueError("Unsupported image format")
-                if (image.width * image.height > MAX_IMAGE_PIXELS or
-                        max(image.size) > MAX_IMAGE_DIMENSION):
+                if (
+                    image.width * image.height > MAX_IMAGE_PIXELS
+                    or max(image.size) > MAX_IMAGE_DIMENSION
+                ):
                     raise ValueError("Image pixel limit")
                 if getattr(image, "n_frames", 1) != 1:
                     raise ValueError("Animated images are not supported")
                 image.load()  # real decoding, never pass original encoded bytes through
                 oriented = ImageOps.exif_transpose(image)
-                pixels = oriented.convert("RGBA" if "A" in oriented.getbands() or "transparency" in oriented.info else "RGB")
+                pixels = oriented.convert(
+                    "RGBA"
+                    if "A" in oriented.getbands() or "transparency" in oriented.info
+                    else "RGB"
+                )
                 # Construct a clean image so EXIF/XMP/ICC/text cannot survive.
                 clean = Image.new(pixels.mode, pixels.size)
                 clean.paste(pixels)
                 output = io.BytesIO()
                 clean.save(output, format="WEBP", lossless=True, method=4)
                 result = output.getvalue()
-    except (OSError, ValueError, SyntaxError, Image.DecompressionBombError, Image.DecompressionBombWarning):
+    except (
+        OSError,
+        ValueError,
+        SyntaxError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ):
         raise ValueError("Invalid, unsupported or oversized image") from None
     if len(result) > MAX_WEBP_BYTES:
         raise ValueError("Normalized image byte limit")
@@ -402,6 +518,7 @@ def normalize_image(base64_data: str) -> dict:
     """
     return _normalize_image_bytes(_decode_base64(base64_data, MAX_IMAGE_BYTES, image=True))
 
+
 MAX_HTML_BYTES = 2 * 1024 * 1024
 MAX_HTML_NODES = 30000
 MAX_RECIPES = 500
@@ -409,10 +526,12 @@ MAX_RECIPES = 500
 
 def _soup(html_content: str):
     from bs4 import BeautifulSoup
+
     if not isinstance(html_content, str) or len(html_content.encode("utf-8")) > MAX_HTML_BYTES:
         raise ValueError("HTML exceeds limit")
     soup = BeautifulSoup(html_content, "html.parser")
     from bs4.element import Tag
+
     pending = [(soup, 0)]
     nodes = 0
     while pending:
@@ -436,7 +555,9 @@ def _plain(value) -> str:
 def _strings(value) -> list[str]:
     if value is None:
         return []
-    return [_plain(item) for item in (value if isinstance(value, list) else [value]) if item is not None]
+    return [
+        _plain(item) for item in (value if isinstance(value, list) else [value]) if item is not None
+    ]
 
 
 def _bounded_measure(value):
@@ -449,10 +570,19 @@ def _duration(value):
     if value is None:
         return None
     value = str(value).strip()
-    iso = re.fullmatch(r"P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?", value, re.I)
+    iso = re.fullmatch(
+        r"P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?", value, re.I
+    )
     if iso and any(iso.groups()):
-        return _bounded_measure(sum(float(v or 0) * factor for v, factor in zip(iso.groups(), [1440, 60, 1, 1/60])))
-    human = re.fullmatch(r"(?:(\d+)\s*h(?:ours?)?\s*(?:and\s*)?)?(?:(\d+)\s*m(?:in(?:ute)?s?)?)?", value, re.I)
+        return _bounded_measure(
+            sum(
+                float(v or 0) * factor
+                for v, factor in zip(iso.groups(), [1440, 60, 1, 1 / 60], strict=False)
+            )
+        )
+    human = re.fullmatch(
+        r"(?:(\d+)\s*h(?:ours?)?\s*(?:and\s*)?)?(?:(\d+)\s*m(?:in(?:ute)?s?)?)?", value, re.I
+    )
     if human and any(human.groups()):
         return _bounded_measure(int(human[1] or 0) * 60 + int(human[2] or 0))
     return _bounded_measure(int(value)) if value.isdecimal() else None
@@ -482,7 +612,9 @@ def _steps(value, groups: list, depth=0) -> list[str]:
 
 
 def _json_recipe(soup) -> dict | None:
-    for script in soup.find_all("script", attrs={"type": re.compile(r"^application/ld\+json$", re.I)}):
+    for script in soup.find_all(
+        "script", attrs={"type": re.compile(r"^application/ld\+json$", re.I)}
+    ):
         try:
             data = json.loads(script.string or script.get_text(), parse_constant=lambda _: None)
         except (ValueError, RecursionError):
@@ -516,7 +648,9 @@ def _json_recipe(soup) -> dict | None:
                 types = types if isinstance(types, list) else [types]
                 if any(str(t).rsplit("/", 1)[-1] == "Recipe" for t in types) and node.get("name"):
                     return node
-                pending.extend((item, depth + 1) for item in node.values() if isinstance(item, (list, dict)))
+                pending.extend(
+                    (item, depth + 1) for item in node.values() if isinstance(item, (list, dict))
+                )
     return None
 
 
@@ -526,8 +660,16 @@ def _from_node(node: dict, url: str) -> dict:
     servings, servings_text = _servings(node.get("recipeYield", node.get("yield")))
     images = node.get("image", [])
     images = images if isinstance(images, list) else [images]
-    photos = [urljoin(url, str(image.get("url", image.get("contentUrl", "")) if isinstance(image, dict) else image))
-              for image in images if image]
+    photos = [
+        urljoin(
+            url,
+            str(
+                image.get("url", image.get("contentUrl", "")) if isinstance(image, dict) else image
+            ),
+        )
+        for image in images
+        if image
+    ]
     categories, cuisines = _strings(node.get("recipeCategory")), _strings(node.get("recipeCuisine"))
     keywords = node.get("keywords", [])
     keywords = keywords.split(",") if isinstance(keywords, str) else keywords
@@ -540,19 +682,32 @@ def _from_node(node: dict, url: str) -> dict:
     except (ValueError, TypeError):
         rating = None
     return {
-        "name": _plain(node.get("name")), "source_url": url,
+        "name": _plain(node.get("name")),
+        "source_url": url,
         "description": _plain(node.get("description")) or None,
-        "ingredients": [parse_ingredient(_plain(item)) for item in _strings(node.get("recipeIngredient"))],
-        "instructions": instructions, "instruction_groups": groups,
-        "servings": servings, "servings_text": servings_text,
-        "prep_time": _duration(node.get("prepTime")), "cook_time": _duration(node.get("cookTime")),
+        "ingredients": [
+            parse_ingredient(_plain(item)) for item in _strings(node.get("recipeIngredient"))
+        ],
+        "instructions": instructions,
+        "instruction_groups": groups,
+        "servings": servings,
+        "servings_text": servings_text,
+        "prep_time": _duration(node.get("prepTime")),
+        "cook_time": _duration(node.get("cookTime")),
         "total_time": _duration(node.get("totalTime")),
-        "courses": _strings(node.get("recipeCourse")), "collections": _strings(node.get("recipeCollection")),
-        "categories": categories, "category": categories[0] if categories else None,
-        "cuisines": cuisines, "cuisine": cuisines[0] if cuisines else None,
-        "tags": list(dict.fromkeys(s.strip().lower() for s in _strings(keywords) + categories if s.strip())),
-        "photos": photos, "image_url": photos[0] if photos else None,
-        "rating": rating, "notes": _plain(node.get("notes")) or None,
+        "courses": _strings(node.get("recipeCourse")),
+        "collections": _strings(node.get("recipeCollection")),
+        "categories": categories,
+        "category": categories[0] if categories else None,
+        "cuisines": cuisines,
+        "cuisine": cuisines[0] if cuisines else None,
+        "tags": list(
+            dict.fromkeys(s.strip().lower() for s in _strings(keywords) + categories if s.strip())
+        ),
+        "photos": photos,
+        "image_url": photos[0] if photos else None,
+        "rating": rating,
+        "notes": _plain(node.get("notes")) or None,
         "import_metadata": copy.deepcopy(node),
         **parse_nutrition(node.get("nutrition"), basis=node.get("nutrition_basis")),
     }
@@ -570,22 +725,31 @@ def parse_recipe_html(html_content: str, url: str) -> dict:
     result = _from_node(node, url) if node else None
     parsers = ["json-ld"] if node else []
     from recipe_scrapers import scrape_html
+
     try:
-        scraper = scrape_html(html_content, org_url=url, online=False, supported_only=False, best_image=False)
+        scraper = scrape_html(
+            html_content, org_url=url, online=False, supported_only=False, best_image=False
+        )
+
         def safe(name):
             try:
                 return getattr(scraper, name)()
             except Exception:
                 return None
+
         title = safe("title")
         if title:
             parsers.append("recipe-scrapers")
             scraper_node = {
-                "name": title, "description": safe("description"), "recipeYield": safe("yields"),
+                "name": title,
+                "description": safe("description"),
+                "recipeYield": safe("yields"),
                 "recipeIngredient": safe("ingredients"),
                 "recipeInstructions": safe("instructions_list") or safe("instructions"),
-                "image": safe("image"), "recipeCuisine": safe("cuisine"),
-                "recipeCategory": safe("category"), "keywords": safe("keywords"),
+                "image": safe("image"),
+                "recipeCuisine": safe("cuisine"),
+                "recipeCategory": safe("category"),
+                "keywords": safe("keywords"),
                 "nutrition": safe("nutrients"),
             }
             if result is None:
@@ -601,7 +765,10 @@ def parse_recipe_html(html_content: str, url: str) -> dict:
                 result["nutrition_raw"] = {**supplement["nutrition_raw"], **result["nutrition_raw"]}
             ingredient_groups = safe("ingredient_groups") or []
             result["ingredient_groups"] = [
-                {"name": _plain(group.purpose), "ingredients": [parse_ingredient(_plain(item)) for item in group.ingredients]}
+                {
+                    "name": _plain(group.purpose),
+                    "ingredients": [parse_ingredient(_plain(item)) for item in group.ingredients],
+                }
                 for group in ingredient_groups
             ]
     except Exception:
@@ -637,13 +804,28 @@ def _element_text(element):
 
 def _nutrition_text(text):
     raw = {}
-    labels = {"calories": "calories", "total fat": "fat", "fat": "fat",
-              "saturated fat": "saturated_fat", "trans fat": "trans_fat",
-              "cholesterol": "cholesterol", "sodium": "sodium", "carbohydrates": "carbohydrates",
-              "total carbs": "carbohydrates", "carbs": "carbohydrates",
-              "dietary fiber": "fiber", "fiber": "fiber", "sugar": "sugar",
-              "sugars": "sugar", "protein": "protein"}
-    pattern = r"\b(" + "|".join(re.escape(label) for label in sorted(labels, key=len, reverse=True)) + r")\s*[:\-]\s*(\d+(?:[.,]\d+)?\s*(?:kcal|kj|mg|g)?)"
+    labels = {
+        "calories": "calories",
+        "total fat": "fat",
+        "fat": "fat",
+        "saturated fat": "saturated_fat",
+        "trans fat": "trans_fat",
+        "cholesterol": "cholesterol",
+        "sodium": "sodium",
+        "carbohydrates": "carbohydrates",
+        "total carbs": "carbohydrates",
+        "carbs": "carbohydrates",
+        "dietary fiber": "fiber",
+        "fiber": "fiber",
+        "sugar": "sugar",
+        "sugars": "sugar",
+        "protein": "protein",
+    }
+    pattern = (
+        r"\b("
+        + "|".join(re.escape(label) for label in sorted(labels, key=len, reverse=True))
+        + r")\s*[:\-]\s*(\d+(?:[.,]\d+)?\s*(?:kcal|kj|mg|g)?)"
+    )
     for match in re.finditer(pattern, text, re.I):
         raw[labels[match[1].lower()]] = match[2].strip()
     return raw
@@ -669,58 +851,130 @@ def parse_recipe_keeper(html_content: str) -> list[dict]:
         element.decompose()
     containers = soup.find_all(class_="recipe-details")
     if not containers:
-        candidates = [el for el in soup.find_all(["article", "section", "div"])
-                      if el.find(class_=re.compile(r"\brecipe-name\b", re.I))]
-        containers = [el for el in candidates if not any(child in candidates for child in el.find_all(["article", "section", "div"]))]
+        candidates = [
+            el
+            for el in soup.find_all(["article", "section", "div"])
+            if el.find(class_=re.compile(r"\brecipe-name\b", re.I))
+        ]
+        containers = [
+            el
+            for el in candidates
+            if not any(child in candidates for child in el.find_all(["article", "section", "div"]))
+        ]
     if not containers or len(containers) > MAX_RECIPES:
         raise ValueError("Invalid Recipe Keeper containers/count")
     recipes = []
     for container in containers:
-        def text(*classes, prop=None):
+
+        def text(*classes, prop=None, container=container):
             return _element_text(_element(container, *classes, prop=prop))
+
         name = text("recipe-name", prop="name") or _element_text(container.find(["h2", "h3", "h1"]))
         if not name:
             raise ValueError("Recipe Keeper recipe has no name")
-        node = {"name": name, "description": text("recipe-description", prop="description"),
-                "recipeYield": text("recipe-serving-size", "recipe-yield", "recipe-servings", prop="recipeYield"),
-                "prepTime": text("recipe-prep-time", "recipe-preptime", prop="prepTime"),
-                "cookTime": text("recipe-cook-time", "recipe-cooktime", prop="cookTime"),
-                "totalTime": text("recipe-total-time", "recipe-totaltime", prop="totalTime"),
-                "recipeCuisine": text("recipe-cuisine", prop="recipeCuisine"),
-                "notes": text("recipe-notes", "recipe-note")}
+        node = {
+            "name": name,
+            "description": text("recipe-description", prop="description"),
+            "recipeYield": text(
+                "recipe-serving-size", "recipe-yield", "recipe-servings", prop="recipeYield"
+            ),
+            "prepTime": text("recipe-prep-time", "recipe-preptime", prop="prepTime"),
+            "cookTime": text("recipe-cook-time", "recipe-cooktime", prop="cookTime"),
+            "totalTime": text("recipe-total-time", "recipe-totaltime", prop="totalTime"),
+            "recipeCuisine": text("recipe-cuisine", prop="recipeCuisine"),
+            "notes": text("recipe-notes", "recipe-note"),
+        }
         for key, classes in [
             ("recipeCourse", ("recipe-course", "recipe-courses")),
             ("recipeCategory", ("recipe-category", "recipe-categories")),
             ("recipeCollection", ("recipe-collection", "recipe-collections")),
         ]:
             vals = [_element_text(el) for el in container.find_all(attrs={"itemprop": key})]
-            node[key] = [v for v in vals if v] or [v.strip() for v in re.split(r"[,;/]", text(*classes) or "") if v.strip()]
-        source = _element(container, "recipe-source", "recipe-url", "recipe-source-url", prop="recipeSource")
-        anchor = source if source is not None and source.name == "a" else source.find("a") if source else None
+            node[key] = [v for v in vals if v] or [
+                v.strip() for v in re.split(r"[,;/]", text(*classes) or "") if v.strip()
+            ]
+        source = _element(
+            container, "recipe-source", "recipe-url", "recipe-source-url", prop="recipeSource"
+        )
+        anchor = (
+            source
+            if source is not None and source.name == "a"
+            else source.find("a")
+            if source
+            else None
+        )
         source_url = anchor.get("href") if anchor else _element_text(source)
-        ing = _element(container, "recipe-ingredients?", "p-ingredients?", "ingredient-list", "ingredients-list", prop="recipeIngredients")
+        ing = _element(
+            container,
+            "recipe-ingredients?",
+            "p-ingredients?",
+            "ingredient-list",
+            "ingredients-list",
+            prop="recipeIngredients",
+        )
         if ing:
             items = ing.find_all("li") or ing.find_all("p") or ing.find_all("span")
-            node["recipeIngredient"] = [_element_text(el) for el in items] if items else ing.get_text("\n", strip=True).splitlines()
+            node["recipeIngredient"] = (
+                [_element_text(el) for el in items]
+                if items
+                else ing.get_text("\n", strip=True).splitlines()
+            )
         else:
-            node["recipeIngredient"] = [_element_text(el) for el in container.find_all(attrs={"itemprop": "recipeIngredient"})]
-        method = _element(container, "recipe-method-directions", "recipe-method", "recipe-directions?",
-                          "recipe-instructions?", "recipe-steps?", "e-instructions?", "directions?-list",
-                          "steps?-list", "method", "directions?", prop="recipeDirections")
+            node["recipeIngredient"] = [
+                _element_text(el)
+                for el in container.find_all(attrs={"itemprop": "recipeIngredient"})
+            ]
+        method = _element(
+            container,
+            "recipe-method-directions",
+            "recipe-method",
+            "recipe-directions?",
+            "recipe-instructions?",
+            "recipe-steps?",
+            "e-instructions?",
+            "directions?-list",
+            "steps?-list",
+            "method",
+            "directions?",
+            prop="recipeDirections",
+        )
         if method is None:
             method = _element(container, prop="recipeInstructions")
         if method is None:
-            method = next((el for el in container.find_all(["ol", "ul"])
-                           if el is not ing and (ing is None or el not in ing.descendants)
-                           and el.find("li") and len(el.find("li").get_text(strip=True)) > 10), None)
+            method = next(
+                (
+                    el
+                    for el in container.find_all(["ol", "ul"])
+                    if el is not ing
+                    and (ing is None or el not in ing.descendants)
+                    and el.find("li")
+                    and len(el.find("li").get_text(strip=True)) > 10
+                ),
+                None,
+            )
         if method:
             items = method.find_all("li") or method.find_all("p")
-            lines = [_element_text(el) for el in items] if items else method.get_text("\n", strip=True).splitlines()
-            node["recipeInstructions"] = [re.sub(r"^(?:Step\s*)?\d+[.):\s]+", "", line or "", flags=re.I).strip() for line in lines]
-        photos = [el for el in container.find_all("img")
-                  if "recipe-photo" in el.get("class", []) or el.find_parent(class_="recipe-photo") is not None
-                  or not re.search(r"logo|icon|banner", el.get("src", ""), re.I)]
-        node["image"] = [el.get("src") or el.get("data-src") for el in photos if el.get("src") or el.get("data-src")]
+            lines = (
+                [_element_text(el) for el in items]
+                if items
+                else method.get_text("\n", strip=True).splitlines()
+            )
+            node["recipeInstructions"] = [
+                re.sub(r"^(?:Step\s*)?\d+[.):\s]+", "", line or "", flags=re.I).strip()
+                for line in lines
+            ]
+        photos = [
+            el
+            for el in container.find_all("img")
+            if "recipe-photo" in el.get("class", [])
+            or el.find_parent(class_="recipe-photo") is not None
+            or not re.search(r"logo|icon|banner", el.get("src", ""), re.I)
+        ]
+        node["image"] = [
+            el.get("src") or el.get("data-src")
+            for el in photos
+            if el.get("src") or el.get("data-src")
+        ]
         nutr = _element(container, "recipe-nutrition", prop="nutrition")
         raw = {}
         if nutr:
@@ -740,29 +994,54 @@ def parse_recipe_keeper(html_content: str) -> list[dict]:
             raw["servingSize"] = serving_size
         node["nutrition"] = raw
         basis = container.get("data-nutrition-basis")
-        node["nutrition_basis"] = basis or ("per_serving" if serving_size else _declared_basis((nutr.get_text(" ", strip=True) if nutr else "") + " " + (node.get("notes") or "")))
+        node["nutrition_basis"] = basis or (
+            "per_serving"
+            if serving_size
+            else _declared_basis(
+                (nutr.get_text(" ", strip=True) if nutr else "") + " " + (node.get("notes") or "")
+            )
+        )
         rating = text("recipe-rating", prop="ratingValue")
         node["aggregateRating"] = {"ratingValue": rating}
         row = _from_node(node, "")
-        for field, classes in [("prep_time", ("recipe-prep-time", "recipe-preptime")),
-                               ("cook_time", ("recipe-cook-time", "recipe-cooktime")),
-                               ("total_time", ("recipe-total-time", "recipe-totaltime"))]:
+        for field, classes in [
+            ("prep_time", ("recipe-prep-time", "recipe-preptime")),
+            ("cook_time", ("recipe-cook-time", "recipe-cooktime")),
+            ("total_time", ("recipe-total-time", "recipe-totaltime")),
+        ]:
             if row[field] is None:
                 row[field] = _duration(text(*classes))
-        row.update(source_url=source_url, _image_filename=row["image_url"],
-                   provenance={"source": "recipe_keeper", "parsers": ["beautifulsoup4"]})
+        row.update(
+            source_url=source_url,
+            _image_filename=row["image_url"],
+            provenance={"source": "recipe_keeper", "parsers": ["beautifulsoup4"]},
+        )
         recipes.append(row)
     return recipes
 
+
 _NUTRIENTS = {
-    "calories": "calories", "fatContent": "fat", "proteinContent": "protein",
-    "carbohydrateContent": "carbohydrates", "saturatedFatContent": "saturated_fat",
-    "transFatContent": "trans_fat", "cholesterolContent": "cholesterol",
-    "sodiumContent": "sodium", "fiberContent": "fiber", "sugarContent": "sugar",
+    "calories": "calories",
+    "fatContent": "fat",
+    "proteinContent": "protein",
+    "carbohydrateContent": "carbohydrates",
+    "saturatedFatContent": "saturated_fat",
+    "transFatContent": "trans_fat",
+    "cholesterolContent": "cholesterol",
+    "sodiumContent": "sodium",
+    "fiberContent": "fiber",
+    "sugarContent": "sugar",
 }
 _NUTRIENTS.update({value: value for value in list(_NUTRIENTS.values())})
-_NUTRIENTS.update({"total_fat": "fat", "total_carbs": "carbohydrates",
-                   "carbs": "carbohydrates", "dietary_fiber": "fiber", "sugars": "sugar"})
+_NUTRIENTS.update(
+    {
+        "total_fat": "fat",
+        "total_carbs": "carbohydrates",
+        "carbs": "carbohydrates",
+        "dietary_fiber": "fiber",
+        "sugars": "sugar",
+    }
+)
 
 
 def parse_nutrition(raw: dict | None, *, basis: str | None = None) -> dict:
@@ -783,7 +1062,9 @@ def parse_nutrition(raw: dict | None, *, basis: str | None = None) -> dict:
         key = _NUTRIENTS.get(source)
         if not key or isinstance(value, bool):
             continue
-        match = re.fullmatch(r"\s*(\d+(?:[.,]\d+)?)\s*(kcal|cal|kj|g|mg|mcg|µg)?\s*", str(value), re.I)
+        match = re.fullmatch(
+            r"\s*(\d+(?:[.,]\d+)?)\s*(kcal|cal|kj|g|mg|mcg|µg)?\s*", str(value), re.I
+        )
         if not match:
             continue
         number = Fraction(match[1].replace(",", "."))
@@ -800,34 +1081,72 @@ def parse_nutrition(raw: dict | None, *, basis: str | None = None) -> dict:
                 continue
             target_mg = key in {"sodium", "cholesterol"}
             if unit:
-                number *= {"g": Fraction(1), "mg": Fraction(1, 1000),
-                           "mcg": Fraction(1, 1000000), "µg": Fraction(1, 1000000)}[unit]
+                number *= {
+                    "g": Fraction(1),
+                    "mg": Fraction(1, 1000),
+                    "mcg": Fraction(1, 1000000),
+                    "µg": Fraction(1, 1000000),
+                }[unit]
                 if target_mg:
                     number *= 1000
         values[key] = float(number)
     return {"nutrition": values, "nutrition_raw": copy.deepcopy(raw), "nutrition_basis": basis}
 
-_FRACTIONS = dict(zip("½¼¾⅓⅔⅛⅜⅝⅞⅐⅑⅒⅕⅖⅗⅘⅙⅚", (
-    "1/2", "1/4", "3/4", "1/3", "2/3", "1/8", "3/8", "5/8", "7/8",
-    "1/7", "1/9", "1/10", "1/5", "2/5", "3/5", "4/5", "1/6", "5/6")))
+
+_FRACTIONS = dict(
+    zip(
+        "½¼¾⅓⅔⅛⅜⅝⅞⅐⅑⅒⅕⅖⅗⅘⅙⅚",
+        (
+            "1/2",
+            "1/4",
+            "3/4",
+            "1/3",
+            "2/3",
+            "1/8",
+            "3/8",
+            "5/8",
+            "7/8",
+            "1/7",
+            "1/9",
+            "1/10",
+            "1/5",
+            "2/5",
+            "3/5",
+            "4/5",
+            "1/6",
+            "5/6",
+        ),
+        strict=False,
+    )
+)
 _UNITS = {}
 for _names, _unit in [
-    ("teaspoon teaspoons tsp", "tsp"), ("tablespoon tablespoons tbsp", "Tbsp"),
-    ("ounce ounces oz", "oz"), ("pound pounds lb lbs", "lb"),
+    ("teaspoon teaspoons tsp", "tsp"),
+    ("tablespoon tablespoons tbsp", "Tbsp"),
+    ("ounce ounces oz", "oz"),
+    ("pound pounds lb lbs", "lb"),
     ("gram grams gramme grammes g", "g"),
     ("kilogram kilograms kilogramme kilogrammes kg", "kg"),
     ("millilitre millilitres milliliter milliliters ml", "ml"),
     ("centilitre centilitres centiliter centiliters cl", "cl"),
     ("decilitre decilitres deciliter deciliters dl", "dl"),
-    ("litre litres liter liters l", "L"), ("cup cups", "cup"),
-    ("pint pints pt", "pt"), ("quart quarts qt", "qt"), ("gallon gallons gal", "gal"),
+    ("litre litres liter liters l", "L"),
+    ("cup cups", "cup"),
+    ("pint pints pt", "pt"),
+    ("quart quarts qt", "qt"),
+    ("gallon gallons gal", "gal"),
 ]:
     _UNITS.update({name: _unit for name in _names.split()})
 _UNITS.update({name: "fl oz" for name in ["fluid ounce", "fluid ounces", "fl oz", "fl. oz"]})
 for _unit in "can bunch head clove slice piece sheet pinch dash handful sprig stalk".split():
     _UNITS[_unit] = _unit
     _UNITS[_unit + ("es" if _unit in {"bunch", "pinch", "dash"} else "s")] = _unit
-_UNIT_RE = re.compile(r"^(" + "|".join(re.escape(k) for k in sorted(_UNITS, key=len, reverse=True)) + r")\.?(?=\s|$)\s*", re.I)
+_UNIT_RE = re.compile(
+    r"^("
+    + "|".join(re.escape(k) for k in sorted(_UNITS, key=len, reverse=True))
+    + r")\.?(?=\s|$)\s*",
+    re.I,
+)
 _NUMBER = r"(?:\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)"
 _AMOUNT_RE = re.compile(r"^(" + _NUMBER + r")(?:\s*[-–]\s*(" + _NUMBER + r"))?\s*")
 
@@ -845,10 +1164,20 @@ def parse_ingredient(raw: str) -> dict:
     if not isinstance(raw, str) or len(raw) > 8192:
         raise ValueError("Invalid ingredient")
     text = raw.strip()
-    result = {"raw": raw, "name": text, "amount": None, "unit": None, "notes": None,
-              "amount_fraction": None}
-    if text and not re.search(r"\d|[" + "".join(_FRACTIONS) + "]", text) and (
-        (text.upper() == text and re.search(r"[A-Z]", text)) or re.match(r"^For\s", text, re.I)
+    result = {
+        "raw": raw,
+        "name": text,
+        "amount": None,
+        "unit": None,
+        "notes": None,
+        "amount_fraction": None,
+    }
+    if (
+        text
+        and not re.search(r"\d|[" + "".join(_FRACTIONS) + "]", text)
+        and (
+            (text.upper() == text and re.search(r"[A-Z]", text)) or re.match(r"^For\s", text, re.I)
+        )
     ):
         return {**result, "name": text.rstrip(":"), "is_heading": True}
     for char, replacement in _FRACTIONS.items():
@@ -860,13 +1189,16 @@ def parse_ingredient(raw: str) -> dict:
         result.update(amount=amount, amount_fraction=_fraction(amount))
         if match[2]:
             upper = match[2].replace(",", ".")
-            result.update(amount=amount + "-" + upper, amount_fraction=None,
-                          amount_range=[_fraction(amount), _fraction(upper)])
-        text = text[match.end():]
+            result.update(
+                amount=amount + "-" + upper,
+                amount_fraction=None,
+                amount_range=[_fraction(amount), _fraction(upper)],
+            )
+        text = text[match.end() :]
     unit = _UNIT_RE.match(text)
     if unit:
         result["unit"] = _UNITS[unit[1].lower()]
-        text = text[unit.end():]
+        text = text[unit.end() :]
     text = re.sub(r"^of\s+(?:the\s+)?", "", text, flags=re.I)
     name, comma, notes = text.partition(",")
     result.update(name=name.strip(), notes=notes.strip() if comma else None)

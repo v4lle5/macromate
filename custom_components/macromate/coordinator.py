@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 import asyncio
+import logging
+from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import asdict
 from datetime import date
-import logging
 from typing import Any
 from uuid import uuid4
 
-from homeassistant.core import HomeAssistant, CoreState, callback
+from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers.event import (
-    async_track_state_change_event,
     async_track_time_change,
 )
 from homeassistant.helpers.storage import Store
@@ -37,34 +36,17 @@ from .const import (
 from .models import DailyGoals, DailySummary, MealEntry, MealLog, OperationLedger
 from .platform_api import PlatformCommands
 from .platform_support import empty_kitchen
-from .storage_budget import validate_storage_root
 from .recommendation import (
     NutritionRecommendation,
-    build_recommendation,
     build_profile_recommendation,
+    build_recommendation,
     energy_to_kcal,
     weight_to_kg,
 )
-
+from .storage import DurableStore
+from .storage_budget import validate_storage_root
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class DurableStore(Store[dict[str, Any]]):
-    """Preserve native HA atomic storage, but never swallow write failures.
-
-    HA Store logs WriteError/SerializationError and otherwise returns normally.
-    A transaction cannot treat that return as evidence of a durable commit.
-    """
-
-    async def _async_write_data(self, data: dict) -> None:
-        from homeassistant.util.file import WriteError
-        from homeassistant.util.json import SerializationError
-
-        try:
-            await super()._async_write_data(data)
-        except (WriteError, SerializationError) as error:
-            raise OSError("MacroMate atomic storage write failed") from error
 
 
 class MealTrackerCoordinator(PlatformCommands):
@@ -78,24 +60,38 @@ class MealTrackerCoordinator(PlatformCommands):
         self.foods: dict[str, dict[str, Any]] = {}
         self.favorites: dict[str, dict[str, Any]] = {}
         self.daily_goals: dict[str, dict[str, Any]] = {}
+        self.profiles: dict[str, dict[str, Any]] = {}
+        self.timer_receipts: dict[str, dict[str, Any]] = {}
         self.kitchen: dict[str, Any] = empty_kitchen()
         self._lock = asyncio.Lock()
         self._store: Store[dict[str, Any]] = DurableStore(
-            hass, STORE_VERSION, STORE_KEY, private=True, atomic_writes=True
+            hass,
+            STORE_VERSION,
+            STORE_KEY,
+            private=True,
+            atomic_writes=True,
+            serialize_in_event_loop=False,
         )
         self._listeners: list[Callable[[], None]] = []
 
     @property
     def source_entities(self) -> list[str]:
-        return [
+        selected = [
             entity_id
             for entity_id in (
-                self.settings[CONF_WEIGHT_ENTITY],
-                self.settings[CONF_ACTIVE_CALORIES_ENTITY],
+                self.settings.get(CONF_WEIGHT_ENTITY),
+                self.settings.get(CONF_ACTIVE_CALORIES_ENTITY),
                 self.settings.get(CONF_BMR_ENTITY),
             )
             if entity_id
         ]
+        for profile in self.profiles.values():
+            selected.extend(
+                profile["settings"].get(key)
+                for key in (CONF_WEIGHT_ENTITY, CONF_ACTIVE_CALORIES_ENTITY, CONF_BMR_ENTITY)
+                if profile["settings"].get(key)
+            )
+        return list(dict.fromkeys(selected))
 
     async def async_load(self) -> None:
         data = await self._store.async_load() or {}
@@ -109,6 +105,8 @@ class MealTrackerCoordinator(PlatformCommands):
             self.foods,
             self.favorites,
             self.daily_goals,
+            self.profiles,
+            self.timer_receipts,
             self.kitchen,
         ) = decoded
 
@@ -116,6 +114,9 @@ class MealTrackerCoordinator(PlatformCommands):
     def _decode_state(data: dict[str, Any]):
         """Validate a complete candidate before changing memory or durable state."""
         data = validate_storage_root(data)
+        from .restore_consistency import normalize_legacy_recipe_sugar
+
+        data = normalize_legacy_recipe_sugar(data)
         if (
             not isinstance(data, dict)
             or type(data.get("schema", 1)) is not int
@@ -130,6 +131,8 @@ class MealTrackerCoordinator(PlatformCommands):
             "favorites",
             "daily_goals",
             "kitchen",
+            "profiles",
+            "timer_receipts",
         }:
             raise ValueError("unknown MacroMate data section")
         if not isinstance(data.get("entries", []), list) or not isinstance(
@@ -153,12 +156,20 @@ class MealTrackerCoordinator(PlatformCommands):
             raise ValueError("invalid kitchen record")
         if any(not isinstance(lid, str) for lid in kitchen["active_lists"].values()):
             raise ValueError("invalid active list selection")
+        from .household import validate_profiles
+
+        profiles = validate_profiles(data.get("profiles", {}))
+        from .timer_notifications import validate_receipts
+
+        receipts = validate_receipts(data.get("timer_receipts", {}))
         return (
             MealLog(MealEntry.from_dict(item) for item in data.get("entries", [])),
             OperationLedger.from_list(data.get("ledger", [])),
             data.get("foods", {}),
             data.get("favorites", {}),
             data.get("daily_goals", {}),
+            profiles,
+            receipts,
             kitchen,
         )
 
@@ -171,6 +182,8 @@ class MealTrackerCoordinator(PlatformCommands):
             "favorites": deepcopy(self.favorites),
             "daily_goals": deepcopy(self.daily_goals),
             "kitchen": deepcopy(self.kitchen),
+            **({"profiles": deepcopy(self.profiles)} if self.profiles else {}),
+            **({"timer_receipts": deepcopy(self.timer_receipts)} if self.timer_receipts else {}),
         }
 
     async def _transact(
@@ -183,11 +196,11 @@ class MealTrackerCoordinator(PlatformCommands):
         guard: Callable[[dict[str, Any]], None] | None = None,
         replay_guard=None,
         access_metadata=None,
-        executor: bool = False,
+        executor: bool = True,
     ) -> dict[str, Any]:
         """Serialize replay, stage, durable atomic save, then publish accepted state."""
         async with self._lock:
-            staged = self._state()
+            staged = await self.hass.async_add_executor_job(self._state)
             if guard is not None:
                 if executor:
                     await self.hass.async_add_executor_job(guard, staged)
@@ -201,9 +214,7 @@ class MealTrackerCoordinator(PlatformCommands):
                     # Preserve pre-unification private nutrition replay records.
                     legacy = (
                         self.ledger.replay(request_id, operation, payload)
-                        if any(
-                            row["request_id"] == request_id for row in staged["ledger"]
-                        )
+                        if any(row["request_id"] == request_id for row in staged["ledger"])
                         else None
                     )
                     if legacy is not None:
@@ -217,44 +228,47 @@ class MealTrackerCoordinator(PlatformCommands):
                         },
                         "payload": payload,
                     }
-                previous = self.ledger.replay(request_id, operation, payload)
+                previous = await self.hass.async_add_executor_job(
+                    self.ledger.replay, request_id, operation, payload
+                )
                 if previous is not None:
                     if replay_guard is not None:
                         replay_guard(staged, previous.get("__access", []))
                     return deepcopy(previous.get("__result", previous))
             result = (
-                await self.hass.async_add_executor_job(apply, staged)
-                if executor
-                else apply(staged)
+                await self.hass.async_add_executor_job(apply, staged) if executor else apply(staged)
             )
             audience = result.pop("_event_users", [])
             public = result.pop("_event_public", False)
-            if request_id is not None:
-                ledger = OperationLedger.from_list(staged["ledger"])
-                retained = (
-                    {
-                        "__result": result,
-                        # Restore always rechecks administrative authorization;
-                        # retaining every replaced shared target is unnecessary
-                        # and would make its receipt grow with dataset size.
-                        "__access": [] if operation == "platform_restore"
-                        else access_metadata(staged, result),
-                    }
-                    if access_metadata
-                    else result
-                )
-                ledger.record(request_id, operation, payload, retained)
-                staged["ledger"] = ledger.to_list()
-            decoded = (
-                await self.hass.async_add_executor_job(self._decode_state, staged)
-                if executor
-                else self._decode_state(staged)
-            )
-            # MealLog exposes chronological order, whereas mutations may append
-            # backdated entries or move an existing entry's time. Persist that
-            # same canonical order before adopting the decoded model, so Store,
-            # backups and committed state remain identical even before noon.
-            staged["entries"] = [item.to_dict() for item in decoded[0].entries]
+
+            def prepare():
+                if request_id is not None:
+                    ledger = OperationLedger.from_list(staged["ledger"])
+                    retained = (
+                        {
+                            "__result": result,
+                            # Restore always rechecks administrative authorization;
+                            # retaining every replaced shared target is unnecessary
+                            # and would make its receipt grow with dataset size.
+                            "__access": []
+                            if operation == "platform_restore"
+                            else access_metadata(staged, result),
+                        }
+                        if access_metadata
+                        else result
+                    )
+                    ledger.record(request_id, operation, payload, retained)
+                    staged["ledger"] = ledger.to_list()
+                decoded = self._decode_state(staged)
+                # MealLog exposes chronological order, whereas mutations may append
+                # backdated entries or move an existing entry's time. Persist that
+                # same canonical order before adopting the decoded model, so Store,
+                # backups and committed state remain identical even before noon.
+                staged["entries"] = [item.to_dict() for item in decoded[0].entries]
+
+                return decoded
+
+            decoded = await self.hass.async_add_executor_job(prepare) if executor else prepare()
 
             async def commit() -> None:
                 # Check here, not before creating the task: scheduling it introduces
@@ -272,6 +286,8 @@ class MealTrackerCoordinator(PlatformCommands):
                     self.foods,
                     self.favorites,
                     self.daily_goals,
+                    self.profiles,
+                    self.timer_receipts,
                     self.kitchen,
                 ) = decoded
                 self.hass.bus.async_fire(
@@ -302,21 +318,56 @@ class MealTrackerCoordinator(PlatformCommands):
                 raise cancelled
             return deepcopy(result)
 
+    async def async_command(self, action, payload, *, actor=None):
+        from .household import PROFILE_ACTIONS, profile_command, profile_dispatch
+        from .platform_support import Actor
+
+        actor = actor if actor is not None else Actor(None, trusted_internal=True)
+        if action in PROFILE_ACTIONS:
+            return await profile_command(self, action, payload, actor)
+        if isinstance(payload, dict) and "profile_id" in payload:
+            return await profile_dispatch(self, action, payload, actor)
+        if action == "nutrition_report":
+            from .analytics import nutrition_report
+            from .platform_support import require_admin
+
+            require_admin(actor)
+            async with self._lock:
+                return await self.hass.async_add_executor_job(nutrition_report, self, payload)
+        return await super().async_command(action, payload, actor=actor)
+
     @callback
     def async_start(self) -> Callable[[], None]:
         self._closed = False
+        from .timer_notifications import TimerNotifications
+
+        timer_notifications = TimerNotifications(self)
+        timer_notifications.start()
 
         async def refresh(event):
             if not self._closed:
                 await self.async_record_goal()
+                from .household import profile_view
+                from .platform_support import Actor
+
+                for profile_id in list(self.profiles):
+                    if profile_id in self.profiles:
+                        view = profile_view(self, profile_id, Actor(None, trusted_internal=True))
+                        await view.async_record_goal()
+
+        async def source_changed(event):
+            if event.data.get("entity_id") in self.source_entities:
+                await refresh(event)
 
         unsubscribes = [
-            async_track_state_change_event(self.hass, self.source_entities, refresh),
+            # Profile source selections may change while the integration stays loaded.
+            self.hass.bus.async_listen("state_changed", source_changed),
             async_track_time_change(self.hass, refresh, hour=0, minute=0, second=0),
         ]
 
         def stop():
             self._closed = True
+            timer_notifications.stop()
             for unsubscribe in unsubscribes:
                 unsubscribe()
             provider = getattr(self, "_provider", None)
@@ -336,29 +387,36 @@ class MealTrackerCoordinator(PlatformCommands):
             return None
 
     def recommendation(self) -> NutritionRecommendation | None:
-        from homeassistant.util import dt as dt_util
-        from .profile import is_profile_complete
         from zoneinfo import ZoneInfo
+
+        from homeassistant.util import dt as dt_util
+
+        from .profile import is_profile_complete
 
         def normalized(entity_id, converter):
             reading = self._number(entity_id)
             try:
                 return converter(*reading) if reading is not None else None
-            except (TypeError, OverflowError, ValueError):
+            except (TypeError, OverflowError, ValueError, AttributeError):
                 return None
 
         weight = normalized(self.settings.get(CONF_WEIGHT_ENTITY), weight_to_kg)
         if is_profile_complete(self.settings, self.today()):
             from .weight_source import current_weight_kg
+
             weight = current_weight_kg(
-                self.hass.states.get(self.settings.get(CONF_WEIGHT_ENTITY) or ''),
+                self.hass.states.get(self.settings.get(CONF_WEIGHT_ENTITY) or ""),
                 dt_util.utcnow().astimezone(ZoneInfo(self.hass.config.time_zone)),
             )
-        active_calories = normalized(
-            self.settings.get(CONF_ACTIVE_CALORIES_ENTITY), energy_to_kcal
-        )
+        active_calories = normalized(self.settings.get(CONF_ACTIVE_CALORIES_ENTITY), energy_to_kcal)
         garmin_bmr = normalized(self.settings.get(CONF_BMR_ENTITY), energy_to_kcal)
         if is_profile_complete(self.settings, self.today()):
+            from .weight_source import current_bmr_kcal
+
+            garmin_bmr = current_bmr_kcal(
+                self.hass.states.get(self.settings.get(CONF_BMR_ENTITY) or ""),
+                dt_util.utcnow().astimezone(ZoneInfo(self.hass.config.time_zone)),
+            )
             active_state = self.hass.states.get(
                 self.settings.get(CONF_ACTIVE_CALORIES_ENTITY) or ""
             )
@@ -371,10 +429,7 @@ class MealTrackerCoordinator(PlatformCommands):
                         ZoneInfo(self.hass.config.time_zone)
                     ).date()
                     != self.today()
-                    or (
-                        dated is not None
-                        and str(dated)[:10] != self.today().isoformat()
-                    )
+                    or (dated is not None and str(dated)[:10] != self.today().isoformat())
                     or attrs.get("macromate_energy_role", "active") != "active"
                 ):
                     active_calories = None
@@ -399,9 +454,7 @@ class MealTrackerCoordinator(PlatformCommands):
                     CONF_CALORIE_ADJUSTMENT, DEFAULT_CALORIE_ADJUSTMENT
                 ),
                 kcal_per_kg=self.settings.get(CONF_KCAL_PER_KG, DEFAULT_KCAL_PER_KG),
-                protein_per_kg=self.settings.get(
-                    CONF_PROTEIN_PER_KG, DEFAULT_PROTEIN_PER_KG
-                ),
+                protein_per_kg=self.settings.get(CONF_PROTEIN_PER_KG, DEFAULT_PROTEIN_PER_KG),
                 fat_per_kg=self.settings.get(CONF_FAT_PER_KG, DEFAULT_FAT_PER_KG),
             )
         except (OverflowError, ValueError):
@@ -409,9 +462,7 @@ class MealTrackerCoordinator(PlatformCommands):
 
     async def _async_commit(self, action: str, entry_id: str | None = None) -> None:
         await self._store.async_save(self._state())
-        self.hass.bus.async_fire(
-            EVENT_UPDATED, {"action": action, "entry_id": entry_id}
-        )
+        self.hass.bus.async_fire(EVENT_UPDATED, {"action": action, "entry_id": entry_id})
         self.async_update_listeners()
 
     async def async_record_goal(self) -> None:
@@ -489,9 +540,7 @@ class MealTrackerCoordinator(PlatformCommands):
         """
 
         def apply(state):
-            current = next(
-                (row for row in state["entries"] if row["id"] == entry_id), None
-            )
+            current = next((row for row in state["entries"] if row["id"] == entry_id), None)
             if current is None:
                 raise KeyError(entry_id)
             nutrient_changes = {
@@ -500,28 +549,19 @@ class MealTrackerCoordinator(PlatformCommands):
                 if key in ("calories", "protein", "carbs", "fat")
             }
             if current.get("food_id") and any(
-                key in changes
-                for key in ("calories", "protein", "carbs", "fat", "nutrients")
+                key in changes for key in ("calories", "protein", "carbs", "fat", "nutrients")
             ):
-                raise ValueError(
-                    "food entry nutrition is a snapshot; edit its portion instead"
-                )
+                raise ValueError("food entry nutrition is a snapshot; edit its portion instead")
             if current.get("recipe_id") and any(
-                key in changes
-                for key in ("calories", "protein", "carbs", "fat", "nutrients")
+                key in changes for key in ("calories", "protein", "carbs", "fat", "nutrients")
             ):
-                raise ValueError(
-                    "recipe entry nutrition is a snapshot; edit its servings instead"
-                )
+                raise ValueError("recipe entry nutrition is a snapshot; edit its servings instead")
             updated = {**current, **changes, "id": entry_id}
             if nutrient_changes:
                 declared = dict(
                     current.get("nutrients")
                     if current.get("nutrients") is not None
-                    else {
-                        key: current[key]
-                        for key in ("calories", "protein", "carbs", "fat")
-                    }
+                    else {key: current[key] for key in ("calories", "protein", "carbs", "fat")}
                 )
                 for key, value in nutrient_changes.items():
                     if value is None:
@@ -534,8 +574,7 @@ class MealTrackerCoordinator(PlatformCommands):
                 updated["nutrients"] = declared
             replacement = MealEntry.from_dict(updated)
             state["entries"] = [
-                replacement.to_dict() if row["id"] == entry_id else row
-                for row in state["entries"]
+                replacement.to_dict() if row["id"] == entry_id else row for row in state["entries"]
             ]
             return {"entry": replacement.to_dict(), "entry_id": entry_id}
 
@@ -548,25 +587,19 @@ class MealTrackerCoordinator(PlatformCommands):
         def apply(state):
             if not any(row["id"] == entry_id for row in state["entries"]):
                 raise KeyError(entry_id)
-            state["entries"] = [
-                row for row in state["entries"] if row["id"] != entry_id
-            ]
+            state["entries"] = [row for row in state["entries"] if row["id"] != entry_id]
             return {"deleted_entry_id": entry_id}
 
         await self._transact("delete", {"entry_id": entry_id}, request_id, apply)
 
-    async def async_clear_date(
-        self, requested: str, request_id: str | None = None
-    ) -> int:
+    async def async_clear_date(self, requested: str, request_id: str | None = None) -> int:
         def apply(state):
             log = MealLog(MealEntry.from_dict(row) for row in state["entries"])
             removed = log.clear_date(requested, self.hass.config.time_zone)
             state["entries"] = [row.to_dict() for row in log.entries]
             return {"removed": removed}
 
-        result = await self._transact(
-            "clear_day", {"date": requested}, request_id, apply
-        )
+        result = await self._transact("clear_day", {"date": requested}, request_id, apply)
         return result["removed"]
 
     def summary(self, requested: date) -> DailySummary:

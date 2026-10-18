@@ -1,4 +1,6 @@
-# Combined release-candidate acceptance
+# Historical 0.3 release-candidate acceptance
+
+This records the previous 0.3 candidate. It is not an acceptance claim for later changes.
 
 This is source/build acceptance, not a production deployment or credential
 activation. No real Home Assistant instance or production token was used.

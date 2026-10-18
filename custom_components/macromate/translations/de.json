@@ -131,6 +131,10 @@
         "online": {
           "name": "Online",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -149,6 +153,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -171,6 +179,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -185,6 +197,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -200,6 +216,10 @@
         "date": {
           "name": "Date",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -230,6 +250,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -240,6 +264,10 @@
         "food_id": {
           "name": "Food id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -254,6 +282,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -264,6 +296,10 @@
         "food_id": {
           "name": "Food id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -370,6 +406,10 @@
         "date": {
           "name": "Date",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -408,6 +448,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -450,6 +494,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -464,6 +512,10 @@
         "online": {
           "name": "Online",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -643,6 +695,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -687,6 +743,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -1191,6 +1251,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -1209,6 +1273,10 @@
         "online": {
           "name": "Online",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -1239,6 +1307,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -1338,6 +1410,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
     },
@@ -1380,8 +1456,124 @@
         "request_id": {
           "name": "Request id",
           "description": "Das verbindliche JSON-Schema wird von macromate.describe bereitgestellt."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
         }
       }
+    },
+    "nutrition_report": {
+      "name": "Ernährungsbericht lesen",
+      "description": "Kalenderwoche oder Kalendermonat mit gespeicherten Zielen und gekennzeichneten unbekannten Werten auswerten.",
+      "fields": {
+        "period": {
+          "name": "Zeitraum",
+          "description": "week für Montag bis Sonntag, month für den Kalendermonat."
+        },
+        "date": {
+          "name": "Datum",
+          "description": "ISO-Datum innerhalb der gewünschten Kalenderwoche oder des Kalendermonats."
+        },
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
+        }
+      }
+    },
+    "profiles_list": {
+      "name": "Ernährungsprofile auflisten",
+      "description": "Nur Profile anzeigen, für die das angemeldete Konto Zugriff hat.",
+      "fields": {}
+    },
+    "profiles_get": {
+      "name": "Ernährungsprofil lesen",
+      "description": "Einstellungen eines zugänglichen Ernährungsprofils lesen.",
+      "fields": {
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
+        }
+      }
+    },
+    "profiles_create": {
+      "name": "Ernährungsprofil erstellen",
+      "description": "Ein separates Profil erstellen. Das bisherige Tagebuch wird nicht verschoben.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Anzeigename des Ernährungsprofils."
+        },
+        "owner_id": {
+          "name": "Besitzer",
+          "description": "ID eines aktiven Home-Assistant-Benutzers aus profiles_users."
+        },
+        "allowed_users": {
+          "name": "Freigegebene Benutzer",
+          "description": "Liste der Home-Assistant-Benutzer-IDs mit Zugriff auf dieses Profil."
+        },
+        "settings": {
+          "name": "Profileinstellungen",
+          "description": "Profil- und Zielwerte gemäß dem Schema von macromate.describe."
+        },
+        "request_id": {
+          "name": "Anfrage-ID",
+          "description": "Stabile ID für diese Änderung. Bei unklarem Schreibstatus dieselbe ID und identische Daten verwenden."
+        }
+      }
+    },
+    "profiles_update": {
+      "name": "Ernährungsprofil ändern",
+      "description": "Profil bearbeiten. Nur Administratoren dürfen Besitzer und Freigaben ändern.",
+      "fields": {
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Anzeigename des Ernährungsprofils."
+        },
+        "owner_id": {
+          "name": "Besitzer",
+          "description": "ID eines aktiven Home-Assistant-Benutzers aus profiles_users."
+        },
+        "allowed_users": {
+          "name": "Freigegebene Benutzer",
+          "description": "Liste der Home-Assistant-Benutzer-IDs mit Zugriff auf dieses Profil."
+        },
+        "settings": {
+          "name": "Profileinstellungen",
+          "description": "Profil- und Zielwerte gemäß dem Schema von macromate.describe."
+        },
+        "request_id": {
+          "name": "Anfrage-ID",
+          "description": "Stabile ID für diese Änderung. Bei unklarem Schreibstatus dieselbe ID und identische Daten verwenden."
+        }
+      }
+    },
+    "profiles_delete": {
+      "name": "Ernährungsprofil löschen",
+      "description": "Ein benanntes Profil einschließlich Tagebuch nach ausdrücklicher Bestätigung löschen.",
+      "fields": {
+        "profile_id": {
+          "name": "Ernährungsprofil",
+          "description": "Profil-ID aus profiles_list. Ohne ID gilt das bisherige Administrator-Tagebuch."
+        },
+        "confirm": {
+          "name": "Löschen bestätigen",
+          "description": "Muss ausdrücklich wahr sein, um dieses Profil vollständig zu löschen."
+        },
+        "request_id": {
+          "name": "Anfrage-ID",
+          "description": "Stabile ID für diese Änderung. Bei unklarem Schreibstatus dieselbe ID und identische Daten verwenden."
+        }
+      }
+    },
+    "profiles_users": {
+      "name": "Benutzer für Profilfreigaben auflisten",
+      "description": "Aktive Home-Assistant-Benutzer für die administrative Profilverwaltung lesen.",
+      "fields": {}
     }
   },
   "selector": {
@@ -1413,6 +1605,58 @@
         "low_carb": "Weniger Kohlenhydrate",
         "high_protein": "Mehr Protein",
         "low_fat": "Weniger Fett"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "calories": {
+        "name": "Kalorien gegessen"
+      },
+      "protein": {
+        "name": "Protein gegessen"
+      },
+      "carbs": {
+        "name": "Kohlenhydrate gegessen"
+      },
+      "fat": {
+        "name": "Fett gegessen"
+      },
+      "meal_count": {
+        "name": "Mahlzeiten heute"
+      },
+      "garmin_weight": {
+        "name": "Garmin Gewicht"
+      },
+      "recommended_bmr": {
+        "name": "Grundumsatz Empfehlung"
+      },
+      "garmin_active_calories": {
+        "name": "Garmin Aktivkalorien"
+      },
+      "calorie_target": {
+        "name": "Kalorienempfehlung heute"
+      },
+      "protein_target": {
+        "name": "Proteinempfehlung"
+      },
+      "carbs_target": {
+        "name": "Kohlenhydratempfehlung"
+      },
+      "fat_target": {
+        "name": "Fettempfehlung"
+      },
+      "remaining_calories": {
+        "name": "Kalorienbilanz"
+      },
+      "remaining_protein": {
+        "name": "Proteinbilanz"
+      },
+      "remaining_carbs": {
+        "name": "Kohlenhydratbilanz"
+      },
+      "remaining_fat": {
+        "name": "Fettbilanz"
       }
     }
   }

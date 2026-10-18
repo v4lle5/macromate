@@ -30,7 +30,7 @@ After the integration is loaded and Home Assistant has been restarted, MacroMate
 
 The view URL/path is just a normal name such as `macromate` — **never paste a `.js` resource URL into the view URL field**. The dashboard card is the only MacroMate UI entry point. The separate diary-only sidebar menu has been removed; internal card navigation is unchanged.
 
-The visual editor also offers **Compact summary (read-only)** for a small overview. Existing `mode: summary` cards keep their original behavior. Advanced users can still configure `type: custom:macromate-card` and `mode: summary` in YAML, but ordinary storage-dashboard setup does not require YAML, a resource URL, entity IDs or an extra bearer token.
+The visual editor also offers **Compact summary (read-only)** for a small overview. Set the optional **Dashboard path** for navigation to an existing view. With no path, **Open diary** expands the application inside the same card. Advanced users can still configure `type: custom:macromate-card` and `mode: summary` in YAML, but ordinary storage-dashboard setup does not require YAML, a resource URL, entity IDs or an extra bearer token.
 
 The default combined card is editable according to server permissions. The card fills the available space below HA's dashboard header, including narrow/mobile and short landscape views; content scrolls inside the app rather than forcing a 550px minimum height.
 
@@ -44,7 +44,7 @@ The top calorie overview shows **Active calories** separately from intake and th
 
 ## Permissions, data and connected workflows
 
-Private nutrition, recipes and planning require an administrator. Internal shopping is retired; historical records stay preserved but have no operational action endpoints. A read-only HA identity cannot mutate data. Dashboard placement does not grant access; the server enforces permissions for both UI and agents.
+The default nutrition diary, recipes and planning require an administrator. Named nutrition profiles are available only to their owner and explicitly shared users; administrators create profiles and manage their sharing. Internal shopping is retired; historical records stay preserved but have no operational action endpoints. A read-only HA identity cannot mutate data. Dashboard placement does not grant access; the server enforces permissions for both UI and agents.
 
 Adding a plan does not silently log calories. Recipe → diary logging is a separate confirmed portion operation; saved nutrition snapshots survive later source edits/deletion. Unknown nutrients stay unknown, not zero. Incomplete totals do not imply exact progress, and over-goal intake is distinct from calories remaining.
 
@@ -58,7 +58,7 @@ The local candidate has executable coverage for native authenticated HA HTTP/Web
 
 These are different evidence tiers, not interchangeable claims. The feature inventory is in `UNIFIED_FEATURE_MATRIX.json`; build commands and evidence boundaries are in `../frontend/unified-src/README.md`; agent CRUD/transfer contracts are in `AGENT_API.md`. Local tests are not a GitHub Actions result for an unpublished revision.
 
-Native Lovelace acceptance covers the actual served HA dashboard, visual card picker/save, panel view, desktop/mobile/landscape dimensions and view-removal cleanup. Native HA form-component input is separately submitted to HA's options-flow manager; this is not an end-to-end integration-settings dialog test. Physical cameras, iOS/Safari/WebKit, live OFF coverage and live Garmin devices remain unverified. Some nutrition summary wording/number formatting still follows German conventions in an English UI. The card is not a medical tool.
+Native Lovelace acceptance covers the actual served HA dashboard, visual card picker/save, panel view, desktop/mobile/landscape dimensions and view-removal cleanup. Native HA form-component input is separately submitted to HA's options-flow manager; this is not an end-to-end integration-settings dialog test. Physical cameras, iOS/Safari/WebKit, live OFF coverage and live Garmin devices remain unverified. The card is not a medical tool.
 
 ## Troubleshooting
 

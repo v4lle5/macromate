@@ -1,11 +1,13 @@
 """Serializable user profile; pure Python, independent of Home Assistant."""
+
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date
 import math
 import re
-from typing import Any, Mapping
+from collections.abc import Mapping
+from dataclasses import dataclass
+from datetime import date
+from typing import Any
 
 PROFILE_VERSION = 1
 ACTIVITY_LEVELS = {"low": 1.25, "moderate": 1.38, "high": 1.52, "very_high": 1.65}
@@ -47,8 +49,12 @@ def _choice(name: str, value: Any, choices) -> str:
 
 
 def _complete_months(birthday: date, current_date: date) -> int:
-    return ((current_date.year - birthday.year) * 12 + current_date.month
-            - birthday.month - (current_date.day < birthday.day))
+    return (
+        (current_date.year - birthday.year) * 12
+        + current_date.month
+        - birthday.month
+        - (current_date.day < birthday.day)
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,14 +71,27 @@ class Profile:
 
     @classmethod
     def from_settings(cls, settings: Mapping[str, Any], current_date: date) -> Profile:
-        required = ("profile_version", "formula_sex", "birthday", "height_cm", "weight_kg",
-                    "target_weight_kg", "goal", "weekly_pace_kg", "activity_level", "macro_plan")
+        required = (
+            "profile_version",
+            "formula_sex",
+            "birthday",
+            "height_cm",
+            "weight_kg",
+            "target_weight_kg",
+            "goal",
+            "weekly_pace_kg",
+            "activity_level",
+            "macro_plan",
+        )
         for key in required:
             if key not in settings:
                 raise ProfileValidationError(key, "profile_required")
         if type(current_date) is not date:
             raise ProfileValidationError("current_date")
-        if type(settings["profile_version"]) is not int or settings["profile_version"] != PROFILE_VERSION:
+        if (
+            type(settings["profile_version"]) is not int
+            or settings["profile_version"] != PROFILE_VERSION
+        ):
             raise ProfileValidationError("profile_version")
         raw_birthday = settings["birthday"]
         try:
@@ -89,8 +108,11 @@ class Profile:
         target = bounded_number("target_weight_kg", settings["target_weight_kg"], 30, 350)
         goal = _choice("goal", settings["goal"], ("lose", "maintain", "gain"))
         pace = bounded_number("weekly_pace_kg", settings["weekly_pace_kg"], 0, 1.5)
-        if ((goal == "lose" and target >= weight) or (goal == "gain" and target <= weight)
-                or (goal == "maintain" and target != weight)):
+        if (
+            (goal == "lose" and target >= weight)
+            or (goal == "gain" and target <= weight)
+            or (goal == "maintain" and target != weight)
+        ):
             raise ProfileValidationError("target_weight_kg", "goal_mismatch")
         if (goal == "maintain" and pace != 0) or (goal != "maintain" and pace == 0):
             raise ProfileValidationError("weekly_pace_kg", "goal_mismatch")
@@ -98,18 +120,26 @@ class Profile:
             formula_sex=_choice("formula_sex", settings["formula_sex"], ("female", "male")),
             birthday=birthday,
             height_cm=bounded_number("height_cm", settings["height_cm"], 100, 250),
-            weight_kg=weight, target_weight_kg=target, goal=goal, weekly_pace_kg=pace,
+            weight_kg=weight,
+            target_weight_kg=target,
+            goal=goal,
+            weekly_pace_kg=pace,
             activity_level=_choice("activity_level", settings["activity_level"], ACTIVITY_LEVELS),
             macro_plan=_choice("macro_plan", settings["macro_plan"], MACRO_PLANS),
         )
 
     def to_settings(self) -> dict[str, Any]:
         return {
-            "profile_version": PROFILE_VERSION, "formula_sex": self.formula_sex,
-            "birthday": self.birthday.isoformat(), "height_cm": self.height_cm,
-            "weight_kg": self.weight_kg, "target_weight_kg": self.target_weight_kg,
-            "goal": self.goal, "weekly_pace_kg": self.weekly_pace_kg,
-            "activity_level": self.activity_level, "macro_plan": self.macro_plan,
+            "profile_version": PROFILE_VERSION,
+            "formula_sex": self.formula_sex,
+            "birthday": self.birthday.isoformat(),
+            "height_cm": self.height_cm,
+            "weight_kg": self.weight_kg,
+            "target_weight_kg": self.target_weight_kg,
+            "goal": self.goal,
+            "weekly_pace_kg": self.weekly_pace_kg,
+            "activity_level": self.activity_level,
+            "macro_plan": self.macro_plan,
         }
 
 
@@ -145,7 +175,11 @@ def normalize_settings(settings: Mapping[str, Any], current_date: date) -> dict[
 def calculate_bmr(profile: Profile, current_date: date, weight_kg: float | None = None) -> float:
     """Evidence-derived kg/cm formula; age is complete calendar months / 12."""
     profile = Profile.from_settings(profile.to_settings(), current_date)
-    weight = profile.weight_kg if weight_kg is None else bounded_number("weight_kg", weight_kg, 30, 350)
+    weight = (
+        profile.weight_kg if weight_kg is None else bounded_number("weight_kg", weight_kg, 30, 350)
+    )
     age = _complete_months(profile.birthday, current_date) / 12
     offset = -161 if profile.formula_sex == "female" else 5
-    return bounded_number("bmr", 10 * weight + 6.25 * profile.height_cm - 5 * age + offset, 500, 5000)
+    return bounded_number(
+        "bmr", 10 * weight + 6.25 * profile.height_cm - 5 * age + offset, 500, 5000
+    )

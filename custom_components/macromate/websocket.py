@@ -1,23 +1,30 @@
 """Authenticated unified commands and filtered, data-free refresh subscription."""
 
 from __future__ import annotations
+
 from functools import wraps
+
 import voluptuous as vol
+from homeassistant.auth.const import GROUP_ID_READ_ONLY
 from homeassistant.components import websocket_api
 from homeassistant.core import callback
 from homeassistant.exceptions import Unauthorized
-from homeassistant.auth.const import GROUP_ID_READ_ONLY
+
 from .const import DOMAIN, EVENT_UPDATED
 from .food_provider import ProviderUnavailable
-from .platform_support import Actor, validate_json
 from .platform_api import ACTIONS
+from .platform_support import Actor, validate_json
 
 
-def require_user_action(user, action):
+def require_user_action(user, action, payload=None):
     if user is None or not user.is_active:
         raise Unauthorized()
     descriptor = ACTIONS[action]
     if descriptor["admin_only"] and not user.is_admin:
+        raise Unauthorized()
+    from .household import NUTRITION_COMMANDS
+
+    if action in NUTRITION_COMMANDS and not user.is_admin and not (payload or {}).get("profile_id"):
         raise Unauthorized()
     if (
         not descriptor["read_only"]
@@ -31,7 +38,7 @@ def authorized_command(func):
     @callback
     @wraps(func)
     def check(hass, connection, msg):
-        require_user_action(connection.user, msg["action"])
+        require_user_action(connection.user, msg["action"], msg.get("payload"))
         return func(hass, connection, msg)
 
     return check
@@ -54,20 +61,16 @@ async def command(hass, connection, msg):
     try:
         validate_json(msg["payload"], max_bytes=8388608)
         user = await hass.auth.async_get_user(connection.user.id)
-        require_user_action(user, msg["action"])
+        require_user_action(user, msg["action"], msg.get("payload"))
         actor = Actor(user.id, is_admin=user.is_admin)
         result = await entries[0].runtime_data.async_command(
             msg["action"], msg["payload"], actor=actor
         )
         validate_json(result, max_bytes=8388608)
     except KeyError:
-        connection.send_error(
-            msg["id"], "not_found", "Selected record no longer exists"
-        )
+        connection.send_error(msg["id"], "not_found", "Selected record no longer exists")
     except (ValueError, TypeError):
-        connection.send_error(
-            msg["id"], "invalid_request", "Check the submitted fields"
-        )
+        connection.send_error(msg["id"], "invalid_request", "Check the submitted fields")
     except (PermissionError, Unauthorized):
         connection.send_error(
             msg["id"],
@@ -75,9 +78,7 @@ async def command(hass, connection, msg):
             "Access denied or explicit remote consent required",
         )
     except (ProviderUnavailable, TimeoutError):
-        connection.send_error(
-            msg["id"], "provider_unavailable", "Remote provider unavailable"
-        )
+        connection.send_error(msg["id"], "provider_unavailable", "Remote provider unavailable")
     except OSError:
         connection.send_error(
             msg["id"],
@@ -101,9 +102,7 @@ async def subscribe(hass, connection, msg):
             user is not None
             and user.is_active
             and (
-                user.is_admin
-                or event.data.get("public")
-                or user.id in event.data.get("users", [])
+                user.is_admin or event.data.get("public") or user.id in event.data.get("users", [])
             )
         ):
             connection.send_event(msg["id"], {"event": "refresh"})

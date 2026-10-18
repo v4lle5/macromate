@@ -52,17 +52,25 @@ and an explicit preserve_permissions boolean, then full-restore-validate the
 result before durable commit/publication/ledger. This helper also checks admin;
 there are no recipe ACL extensions or public-media inheritance semantics.
 """
+
 from __future__ import annotations
 
-from copy import deepcopy
 import re
+from copy import deepcopy
 from urllib.parse import unquote, urlsplit
 from uuid import uuid4
 
 from .platform_support import Actor, empty_kitchen, require_admin, validate_json
 from .recipes import (
-    _ID, _PLAN_FIELDS, _PRESET_FIELDS, _RECIPE_FIELDS, _TIMER_FIELDS,
-    _epoch, _json_value, _object, _validate,
+    _ID,
+    _PLAN_FIELDS,
+    _PRESET_FIELDS,
+    _RECIPE_FIELDS,
+    _TIMER_FIELDS,
+    _epoch,
+    _json_value,
+    _object,
+    _validate,
 )
 
 RECIPES = "recipe_manager.recipes"
@@ -94,12 +102,17 @@ def _store_data(key, value):
     # Only the full, exact HA envelope is unwrapped; malformed envelopes fail
     # closed in the record validator instead of arbitrary-key probing.
     if isinstance(value, dict) and all(
-            isinstance(row, dict) and row.get("id") == rid for rid, row in value.items()):
+        isinstance(row, dict) and row.get("id") == rid for rid, row in value.items()
+    ):
         return value
     if isinstance(value, dict) and set(value) == {"version", "minor_version", "key", "data"}:
-        if (type(value["version"]) is not int or value["version"] != 1
-                or type(value["minor_version"]) is not int or value["minor_version"] != 1
-                or value["key"] != key):
+        if (
+            type(value["version"]) is not int
+            or value["version"] != 1
+            or type(value["minor_version"]) is not int
+            or value["minor_version"] != 1
+            or value["key"] != key
+        ):
             raise ValueError("unsupported legacy Store envelope")
         return value["data"]
     return value
@@ -114,8 +127,9 @@ def _recipe_aliases(raw):
     for old, current in (("title", "name"), ("favourite", "is_favourite")):
         if old in result:
             _validate(result[old], _RECIPE_FIELDS[current])
-            if current in result and (type(result[current]) is not type(result[old])
-                                      or result[current] != result[old]):
+            if current in result and (
+                type(result[current]) is not type(result[old]) or result[current] != result[old]
+            ):
                 raise ValueError("conflicting legacy recipe aliases")
             result[current] = result.pop(old)
     return result
@@ -125,8 +139,17 @@ def _recipe_defaults():
     # Same legitimate defaults as recipes._new_recipe, without generating a new
     # record identity and subsequently replacing it. Native schemas stay shared.
     value = dict.fromkeys(_RECIPE_FIELDS)
-    for key in ("ingredients", "instructions", "photos", "tags", "courses",
-                "categories", "collections", "cuisines", "instruction_groups"):
+    for key in (
+        "ingredients",
+        "instructions",
+        "photos",
+        "tags",
+        "courses",
+        "categories",
+        "collections",
+        "cuisines",
+        "instruction_groups",
+    ):
         value[key] = []
     value.update(is_favourite=False, nutrition_basis="unknown")
     return value
@@ -140,14 +163,21 @@ def _image_reference(reference, kitchen):
 
     if reference is None or reference == "":
         return "empty"
-    if not isinstance(reference, str) or len(reference) > 4096 or any(
-            ord(char) <= 32 or ord(char) == 127 for char in reference) or "\\" in reference:
+    if (
+        not isinstance(reference, str)
+        or len(reference) > 4096
+        or any(ord(char) <= 32 or ord(char) == 127 for char in reference)
+        or "\\" in reference
+    ):
         raise ValueError("malformed legacy image reference")
     for prefix in LOCAL_IMAGE_PREFIXES:
         if reference.startswith(prefix):
-            filename = reference[len(prefix):]
-            if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,249}", filename)
-                    or ".." in filename or "." not in filename):
+            filename = reference[len(prefix) :]
+            if (
+                not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,249}", filename)
+                or ".." in filename
+                or "." not in filename
+            ):
                 raise ValueError("malformed legacy local image reference")
             return "local"
     if reference.startswith(PREFIX):
@@ -161,14 +191,21 @@ def _image_reference(reference, kitchen):
     except ValueError:
         raise ValueError("malformed legacy remote image reference") from None
     decoded_path = unquote(parsed.path)
-    if (parsed.scheme not in ("http", "https") or not parsed.hostname
-            or parsed.username is not None or parsed.password is not None
-            or port is not None and not 1 <= port <= 65535
-            or "%" in parsed.netloc or parsed.fragment
-            or re.search(r"%(?![0-9A-Fa-f]{2})", reference)
-            or "%" in decoded_path or "\\" in decoded_path
-            or any(ord(char) < 32 or ord(char) == 127 for char in decoded_path)
-            or any(part in (".", "..") for part in decoded_path.split("/"))):
+    if (
+        parsed.scheme not in ("http", "https")
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or port is not None
+        and not 1 <= port <= 65535
+        or "%" in parsed.netloc
+        or parsed.fragment
+        or re.search(r"%(?![0-9A-Fa-f]{2})", reference)
+        or "%" in decoded_path
+        or "\\" in decoded_path
+        or any(ord(char) < 32 or ord(char) == 127 for char in decoded_path)
+        or any(part in (".", "..") for part in decoded_path.split("/"))
+    ):
         raise ValueError("unsupported legacy image reference")
     return "remote"  # Inert metadata, never automatically retrieved.
 
@@ -184,6 +221,7 @@ def _migrate_images(kitchen, recipe_ids, images, actor, result):
             raise ValueError("only supplied legacy local image bytes are accepted")
     for rid in recipe_ids:
         recipe = kitchen["recipes"][rid]
+
         def migrate(reference):
             if _image_reference(reference, kitchen) != "local":
                 return reference
@@ -198,14 +236,22 @@ def _migrate_images(kitchen, recipe_ids, images, actor, result):
                 result["media_ids"].append(mid)
                 result["image_map"][reference] = PREFIX + mid
             return result["image_map"][reference]
+
         recipe["image_url"] = migrate(recipe["image_url"])
         recipe["photos"] = [migrate(ref) for ref in recipe["photos"]]
     if set(images) != set(result["image_map"]):
         raise ValueError("unreferenced supplied legacy image")
 
 
-def import_legacy_recipes(state: dict, stores: dict, images: dict, actor: Actor,
-                          now: str, *, preserve_permissions: bool = False) -> dict:
+def import_legacy_recipes(
+    state: dict,
+    stores: dict,
+    images: dict,
+    actor: Actor,
+    now: str,
+    *,
+    preserve_permissions: bool = False,
+) -> dict:
     """Convert caller-supplied inert data; no HA, paths, files or network calls.
 
     Reject the entire bundle on corruption or ID collision. Only the provided
@@ -218,8 +264,9 @@ def import_legacy_recipes(state: dict, stores: dict, images: dict, actor: Actor,
     _epoch(now)
     if not isinstance(state, dict) or not isinstance(state.get("kitchen"), dict):
         raise ValueError("detached full root with kitchen required")
-    if (set(state["kitchen"]) != set(empty_kitchen())
-            or any(not isinstance(rows, dict) for rows in state["kitchen"].values())):
+    if set(state["kitchen"]) != set(empty_kitchen()) or any(
+        not isinstance(rows, dict) for rows in state["kitchen"].values()
+    ):
         raise ValueError("invalid detached kitchen collections")
     if not isinstance(stores, dict) or not stores or set(stores) - set(STORE_KEYS):
         raise ValueError("unsupported legacy Store key")
@@ -227,12 +274,23 @@ def import_legacy_recipes(state: dict, stores: dict, images: dict, actor: Actor,
     stores = {key: _store_data(key, value) for key, value in stores.items()}
     images = validate_json(images, max_bytes=67108864)
     kitchen = deepcopy(state["kitchen"])
-    result = {"source": "recipe_manager", "imported": True, "recipe_ids": [],
-              "meal_plan_ids": [], "timer_ids": [], "timer_preset_ids": [],
-              "media_ids": [], "image_map": {}, "tag_count": 0}
+    result = {
+        "source": "recipe_manager",
+        "imported": True,
+        "recipe_ids": [],
+        "meal_plan_ids": [],
+        "timer_ids": [],
+        "timer_preset_ids": [],
+        "media_ids": [],
+        "image_map": {},
+        "tag_count": 0,
+    }
     timers = stores.get(GLOBAL_TIMERS, {})
-    if (isinstance(timers, dict) and set(timers) == {"timers", "timer_presets"}
-            and isinstance(timers["timer_presets"], list)):
+    if (
+        isinstance(timers, dict)
+        and set(timers) == {"timers", "timer_presets"}
+        and isinstance(timers["timer_presets"], list)
+    ):
         # Explicit transfer extension for the card's rm_timer_presets array.
         # These are NOT claimed to be a separate native HA preset Store.
         presets = timers["timer_presets"]
@@ -250,8 +308,14 @@ def import_legacy_recipes(state: dict, stores: dict, images: dict, actor: Actor,
         # The pin defines this key but derives tags from recipes, without ever
         # writing a tags Store. Preserve an explicitly supplied auxiliary list
         # as inert private importer preferences; do not invent recipe tags.
-        _validate(stores[TAGS], {"type": "array", "maxItems": 10000,
-                               "items": {"type": "string", "minLength": 1, "maxLength": 300}})
+        _validate(
+            stores[TAGS],
+            {
+                "type": "array",
+                "maxItems": 10000,
+                "items": {"type": "string", "minLength": 1, "maxLength": 300},
+            },
+        )
         prefs = kitchen["preferences"].setdefault(actor.owner_id, {})
         if "legacy_recipe_manager_tags" in prefs:
             raise ValueError("legacy tags preference collision")
@@ -260,8 +324,13 @@ def import_legacy_recipes(state: dict, stores: dict, images: dict, actor: Actor,
     for store, bucket, fields, defaults, result_key in (
         (RECIPES, "recipes", _RECIPE_FIELDS, _recipe_defaults(), "recipe_ids"),
         (MEAL_PLANS, "meal_plan", _PLAN_FIELDS, {"servings": 1, "notes": None}, "meal_plan_ids"),
-        (GLOBAL_TIMERS, "timers", _TIMER_FIELDS,
-         {"running": True, "paused_remaining": None, "preset_id": None}, "timer_ids"),
+        (
+            GLOBAL_TIMERS,
+            "timers",
+            _TIMER_FIELDS,
+            {"running": True, "paused_remaining": None, "preset_id": None},
+            "timer_ids",
+        ),
     ):
         rows = stores.get(store, {})
         if not isinstance(rows, dict) or len(rows) > 10000:
@@ -274,6 +343,7 @@ def import_legacy_recipes(state: dict, stores: dict, images: dict, actor: Actor,
             record = _record(key, raw, fields, now, defaults)
             if bucket == "recipes":
                 from .recipes import validate_declared_nutrition
+
                 validate_declared_nutrition(record["declared_nutrition"])
                 if "nutrition_raw" not in raw:
                     record["nutrition_raw"] = deepcopy(record["nutrition"])
@@ -286,7 +356,12 @@ def import_legacy_recipes(state: dict, stores: dict, images: dict, actor: Actor,
         if timer["preset_id"] is not None and timer["preset_id"] not in kitchen["timer_presets"]:
             raise ValueError("missing legacy timer preset")
         remaining = timer["paused_remaining"]
-        if timer["running"] and remaining is not None or remaining is not None and remaining > timer["duration"]:
+        if (
+            timer["running"]
+            and remaining is not None
+            or remaining is not None
+            and remaining > timer["duration"]
+        ):
             raise ValueError("invalid legacy timer pause state")
     _migrate_images(kitchen, result["recipe_ids"], images, actor, result)
     state["kitchen"] = kitchen

@@ -14,30 +14,90 @@ Legacy quick MealEntry/async_add records can lack that map and survive schema
 untouched here. A snapshot entry cannot shed its map by claiming an old schema;
 all four primary numbers alone cannot preserve unknown/extended declarations.
 """
+
 from __future__ import annotations
 
 import math
 from collections.abc import Callable
+from copy import deepcopy
 from typing import Any
 
 from .foods import FoodProduct
 from .recipes import _NUTRIENT_NAMES
 
-_PRIMARY = ('calories', 'protein', 'carbs', 'fat')
-_RECIPE_ALIASES = {'carbohydrates': 'carbs', 'sugar': 'sugars'}
+_PRIMARY = ("calories", "protein", "carbs", "fat")
+_RECIPE_ALIASES = {"carbohydrates": "carbs"}
 _REL_TOL = 1e-12
 _ABS_TOL = 1e-9
 
 
+def normalize_legacy_recipe_sugar(data: dict[str, Any]) -> dict[str, Any]:
+    """Upgrade the old recipe-only `sugars` spelling without guessing values.
+
+    Historical label snapshots remain unchanged. Only a captured value that
+    exactly matches its snapshot portion may be renamed, including replay
+    receipts. Contradictory or ambiguous records are rejected.
+    """
+
+    def needs_upgrade(value):
+        if isinstance(value, list):
+            return any(needs_upgrade(child) for child in value)
+        if isinstance(value, dict):
+            if (
+                isinstance(value.get("recipe_snapshot"), dict)
+                and isinstance(value.get("nutrients"), dict)
+                and "sugars" in value["nutrients"]
+            ):
+                return True
+            return any(needs_upgrade(child) for child in value.values())
+        return False
+
+    if not needs_upgrade(data):
+        return data
+    result = deepcopy(data)
+
+    def visit(value):
+        if isinstance(value, list):
+            for child in value:
+                visit(child)
+        elif isinstance(value, dict):
+            snapshot = value.get("recipe_snapshot")
+            nutrients = value.get("nutrients")
+            if isinstance(snapshot, dict) and isinstance(nutrients, dict) and "sugars" in nutrients:
+                declarations = snapshot.get("declared_nutrition", {})
+                sugar = declarations.get("sugar")
+                servings = value.get("recipe_servings")
+                denominator = (
+                    snapshot.get("servings")
+                    if snapshot.get("nutrition_basis") == "per_recipe"
+                    else 1
+                )
+                if (
+                    "sugar" in nutrients
+                    or type(sugar) not in (int, float)
+                    or type(servings) not in (int, float)
+                    or type(denominator) not in (int, float)
+                    or denominator <= 0
+                    or not _same(nutrients["sugars"], round(sugar * servings / denominator, 6))
+                ):
+                    raise ValueError("ambiguous historical recipe sugar")
+                nutrients["sugar"] = nutrients.pop("sugars")
+            for child in value.values():
+                visit(child)
+
+    visit(result)
+    return result
+
+
 def _number(value: Any) -> float:
     if type(value) not in (int, float):
-        raise ValueError('historical nutrient must be numeric, not boolean')
+        raise ValueError("historical nutrient must be numeric, not boolean")
     try:
         number = float(value)
     except (OverflowError, ValueError):
-        raise ValueError('historical nutrient must be finite') from None
+        raise ValueError("historical nutrient must be finite") from None
     if not math.isfinite(number) or number < 0:
-        raise ValueError('historical nutrient must be finite and nonnegative')
+        raise ValueError("historical nutrient must be finite and nonnegative")
     return number
 
 
@@ -51,22 +111,23 @@ def _validate_recipe_aliases(snapshot: dict) -> None:
     Equivalent aliases denote one declaration, never additive nutrition. The
     authoritative scaler determines the persisted canonical spelling and rounding.
     """
-    declarations = snapshot['declared_nutrition']
+    declarations = snapshot["declared_nutrition"]
     known: dict[str, float] = {}
     for key, raw in declarations.items():
         if key not in _NUTRIENT_NAMES:
-            raise ValueError('unknown historical recipe nutrient')
+            raise ValueError("unknown historical recipe nutrient")
         if raw is None:
             continue
         canonical = _RECIPE_ALIASES.get(key, key)
         value = _number(raw)
         if canonical in known and known[canonical] != value:
-            raise ValueError('conflicting historical recipe nutrient aliases')
+            raise ValueError("conflicting historical recipe nutrient aliases")
         known[canonical] = value
 
 
 def validate_history_consistency(
-    data: dict[str, Any], *,
+    data: dict[str, Any],
+    *,
     recipe_nutrients: Callable[[dict[str, Any], float], dict[str, float]],
 ) -> None:
     """Validate captured snapshot -> recorded portion -> map and primary fields.
@@ -76,38 +137,40 @@ def validate_history_consistency(
     recipe_nutrients callback MUST be platform_api.recipe_nutrients: injecting it
     avoids importing the HA transport here and prevents a second scaling policy.
     """
-    for row in data.get('entries', []):
-        food_snapshot = row.get('food_snapshot')
-        recipe_snapshot = row.get('recipe_snapshot')
+    for row in data.get("entries", []):
+        food_snapshot = row.get("food_snapshot")
+        recipe_snapshot = row.get("recipe_snapshot")
         if food_snapshot is None and recipe_snapshot is None:
             continue  # Includes authentic legacy missing-map quick entries.
         if food_snapshot is not None and recipe_snapshot is not None:
-            raise ValueError('historical entry cannot be both food and recipe')
+            raise ValueError("historical entry cannot be both food and recipe")
         if food_snapshot is not None:
             food = FoodProduct.from_dict(food_snapshot)
-            amount = _number(row['amount'])
+            amount = _number(row["amount"])
             if amount <= 0:
-                raise ValueError('historical food requires positive amount')
-            if row.get('serving_id') is not None or row.get('quantity') is not None:
-                selected = food.portion_amount(serving_id=row.get('serving_id'), quantity=row.get('quantity'))
+                raise ValueError("historical food requires positive amount")
+            if row.get("serving_id") is not None or row.get("quantity") is not None:
+                selected = food.portion_amount(
+                    serving_id=row.get("serving_id"), quantity=row.get("quantity")
+                )
                 if not math.isclose(amount, selected, rel_tol=_REL_TOL, abs_tol=0):
-                    raise ValueError('historical serving conflicts with amount')
+                    raise ValueError("historical serving conflicts with amount")
             expected = food.scaled(amount)
         else:
             if not isinstance(recipe_snapshot, dict):
-                raise ValueError('historical recipe snapshot must be an object')
+                raise ValueError("historical recipe snapshot must be an object")
             _validate_recipe_aliases(recipe_snapshot)
-            expected = recipe_nutrients(recipe_snapshot, row['recipe_servings'])
-        recorded = row.get('nutrients')
+            expected = recipe_nutrients(recipe_snapshot, row["recipe_servings"])
+        recorded = row.get("nutrients")
         if not isinstance(recorded, dict) or set(recorded) != set(expected):
-            raise ValueError('historical nutrient declarations differ from snapshot portion')
+            raise ValueError("historical nutrient declarations differ from snapshot portion")
         for key, value in expected.items():
             if not _same(recorded[key], value):
-                raise ValueError('historical nutrient differs from snapshot portion: ' + key)
+                raise ValueError("historical nutrient differs from snapshot portion: " + key)
         for key in _PRIMARY:
             if key in expected:
                 matches = _same(row[key], expected[key])
             else:
                 matches = _number(row[key]) == 0
             if not matches:
-                raise ValueError('historical primary field differs from snapshot portion: ' + key)
+                raise ValueError("historical primary field differs from snapshot portion: " + key)

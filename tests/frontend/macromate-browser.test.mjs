@@ -5,7 +5,8 @@ import {readFile,writeFile,mkdtemp,rm,mkdir} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import {resolve,extname} from 'node:path';
 import {createRequire} from 'node:module';
-const require=createRequire((process.env.FRONTEND_DEPS || '/home/valentin/.hermes/profiles/darlene/cache/scratch/macromate-frontend-deps')+'/package.json');
+if (!process.env.FRONTEND_DEPS) throw Error('Set FRONTEND_DEPS to the pinned browser dependencies.');
+const require=createRequire(resolve(process.env.FRONTEND_DEPS,'package.json'));
 const {chromium,firefox,webkit}=require('playwright');
 let server,browser,base;
 const pageErrors=[];
@@ -374,10 +375,12 @@ test('actual getUserMedia video frames from Chromium virtual camera decode EAN a
   await page.waitForFunction(()=>window.calls.some(c=>c.action==='barcode'&&c.payload.barcode==='4006381333931'),{},{timeout:15000});
   assert.equal(await page.evaluate(()=>window.actualStream.getTracks().every(t=>t.readyState==='ended')),true);
   assert.deepEqual(errors,[]);
-  await mkdir('tests/frontend/evidence',{recursive:true});
-  await page.screenshot({path:'tests/frontend/evidence/macromate-mobile.png',fullPage:true});
+  const evidence=process.env.MACROMATE_EVIDENCE_DIR||process.env.TMPDIR;
+  assert.ok(evidence,'Set a private TMPDIR or MACROMATE_EVIDENCE_DIR.');
+  await mkdir(evidence,{recursive:true});
+  await page.screenshot({path:resolve(evidence,'macromate-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1280,height:900});
-  await page.screenshot({path:'tests/frontend/evidence/macromate-desktop.png',fullPage:true});
+  await page.screenshot({path:resolve(evidence,'macromate-desktop.png'),fullPage:true});
  }finally{await cameraBrowser?.close();await rm(directory,{recursive:true,force:true});}
 });
 

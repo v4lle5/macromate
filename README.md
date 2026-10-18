@@ -22,9 +22,10 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 - Recipe library, taxonomy, ratings/favorites, manual editing, consented imports and private normalized images.
 - Weekly planning; logging recipe portions to the diary is a separate action with an immutable nutrition snapshot.
 - Internal shopping UI, backend services/WebSocket actions, discovery, settings and recipe/plan transfers have been removed. Use Bring! separately; MacroMate does not connect to it. Existing shopping data is retained, not deleted or migrated.
-- Cooking timers/presets and complete local agent CRUD through the same authenticated, validated command model as the card.
+- Cooking timers/presets, server-side Home Assistant notifications, and complete local agent CRUD through the same authenticated, validated command model as the card.
+- Separate nutrition profiles with explicit Home Assistant ownership/sharing, plus ISO-week and calendar-month reports.
 
-No bundled inference model, fasting tracker, photo-based food recognition or analytics. Agents need no cloud model, browser automation or extra MCP server to use the API. See the [local agent guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md). This development branch is not automatically published or installed.
+No bundled inference model, fasting tracker or photo-based food recognition. Agents need no cloud model, browser automation or extra MCP server to use the API. See the [local agent guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md). This development branch is not automatically published or installed.
 
 ## Installation
 
@@ -58,6 +59,16 @@ The visual editor also offers the original read-only **Compact summary**. Existi
 
 Full setup and troubleshooting: [Dashboard card](docs/DASHBOARD_CARD.md). Optional advanced YAML: [example](examples/macromate-dashboard.yaml).
 
+## People, reports and notifications
+
+The Nutrition view has a profile selector. The existing diary remains the administrator-only **Default profile**. Administrators can **Add person**, choose its Home Assistant owner, and optionally share it with other active users. Each person has separate goals, diary, foods, favorites and retry history. A profile owner may edit its name and settings; only administrators change ownership/sharing or delete a profile. Home Assistant read-only accounts cannot write, including to a shared profile. Recipes/planning and global timers remain administrator-managed household features.
+
+**Reports → Week / Month** shows an ISO week or calendar month for the selected date/profile. Unlogged days are excluded from averages, incomplete nutrients remain marked, and historical targets come only from recorded goal snapshots. Reports are local calculations, with no analytics service or telemetry.
+
+Global timers run on Home Assistant even when every browser is closed. Expiry creates a native persistent notification and the `macromate_timer_finished` event. Event data contains `timer_id` and a deterministic `event_id`; use the latter to deduplicate automations across crash recovery. Notifications replay through a durable outbox and reuse the same native notification ID. Local browser-only timers still require that browser to remain open; use a global timer for server notifications.
+
+The compact card's optional `navigation_path`, for example `/lovelace/nutrition`, opens your chosen local dashboard. Without it, **Open diary** opens the full application inside the same card. No hardcoded sidebar route is required.
+
 ## Profile, goals and Garmin
 
 Setup collects birth date, physiological formula sex, height, current/target weight, loss/maintenance/gain intent, weekly pace, activity category and a named macro plan. Enter birth dates directly as `DD.MM.YYYY` (`TT.MM.JJJJ` in German), for example `23.07.1990`; ISO `1990-07-23` remains accepted, and persisted dates remain ISO. Weekly pace is a **positive magnitude**, e.g. `0,5` or `0.5` kg/week; loss/gain chooses the direction and maintenance uses `0`. MacroMate supports adults and bounded values only; support bounds are not medical recommendations.
@@ -90,7 +101,7 @@ Barcodes are preserved as strings, including leading zeros. MacroMate requires A
 
 ## Home Assistant actions
 
-Private nutrition, recipes/planning and administrative actions require an administrator when a user context is present. Retired shopping records are inaccessible through the command API; read-only HA users cannot mutate current domains. Actors come from native authenticated service/WebSocket contexts, never payload role flags. Userless internal automations are trusted: do not expose them through untrusted scripts/webhooks. Discover the current canonical registry with `macromate.describe`; the legacy nutrition services below remain supported aliases.
+The default nutrition diary, recipes/planning and administrative actions require an administrator when a user context is present. Named nutrition profiles accept their owner and explicitly shared users through the same server-side checks. Retired shopping records are inaccessible through the command API; read-only HA users cannot mutate current domains. Actors come from native authenticated service/WebSocket contexts, never payload role flags. Userless internal automations are trusted: do not expose them through untrusted scripts/webhooks. Discover the current canonical registry with `macromate.describe`; the legacy nutrition services below remain supported aliases.
 
 Read actions require response data:
 
@@ -165,7 +176,7 @@ Meals, products, favorites, dated goals and ledger share an atomically written S
 
 A stable `request_id` replays the original result only for identical retained operation/payload. Changed data or another operation with that ID is rejected. Create retries after deletion do not resurrect entries. The FIFO ledger retains **1000 accepted operations**; evicted IDs have no retry guarantee. Direct ledger hashes distinguish JSON `1` from `1.0`; normal API numeric fields are normalized.
 
-The panel never automatically retries writes. Unclear transport/storage status keeps the original payload/ID for explicit retry. Pending requests exist only in panel memory: after closing/reloading during an uncertain write, inspect the diary before submitting again. Removing MacroMate through HA deletes its local dataset.
+The panel never automatically retries writes. Unclear transport/storage status keeps the original payload/ID for explicit retry. Pending requests exist only in panel memory: after closing/reloading during an uncertain write, inspect the diary before submitting again. Removing MacroMate through HA deletes its local dataset and delegated credentials. Credential creation/revocation use the same durable, atomic failure handling as diary data; a failed write is never acknowledged as a completed revocation.
 
 Authorized views subscribe to filtered native refresh events and coalesce bursts. Refresh preserves selected dates, draft/focused forms and uncertain writes; safe list metadata can refresh without replacing a dirty recipe editor. The nutrition view retains its bounded fallback for missed events and HA-local date changes. Removal or identity changes release subscriptions and private state. No background provider search or automatic write retry is performed.
 
@@ -196,6 +207,9 @@ Detailed diary entries are not exposed in sensor attributes. Daily intake, goal 
 - No live HA instance was changed; no local build is automatically published. HACS/hassfest CI is distinct from local runtime acceptance.
 
 ## Development checks
+
+Use Python 3.14.2 and install `requirements-dev.txt`, then run `python tools/check.py --python-only` for lint, format, both Python suites and the enforced 85% branch-coverage minimum. The command creates private test scratch and checks historical Git fixtures before running. Browser/build setup and the complete command are documented in [CONTRIBUTING.md](CONTRIBUTING.md). `python tools/benchmark_storage.py` measures a synthetic large diary without real data.
+
 
 ```sh
 python3 -m unittest discover -s tests -v

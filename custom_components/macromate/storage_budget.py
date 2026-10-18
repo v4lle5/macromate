@@ -6,6 +6,7 @@ operation history, always shares the original 64 MiB budget. Only canonical,
 small administrative restore receipts are removed from the charged projection;
 they remain in the very same root, atomic Store and backup.
 """
+
 from __future__ import annotations
 
 import json
@@ -27,12 +28,14 @@ MAX_TRANSFER_BYTES = MAX_STORAGE_BYTES + 8192
 # record syntax includes two quotes around the ID. Thus replacing the empty
 # ID by 257 worst-case characters is a conservative per-record upper bound.
 _RECEIPT_SKELETON = {
-    "request_id": "", "operation": "platform_restore", "payload_hash": "0" * 64,
+    "request_id": "",
+    "operation": "platform_restore",
+    "payload_hash": "0" * 64,
     "result": {"__result": {"restored": True, "schema_version": 3}, "__access": []},
 }
-MAX_CANONICAL_RECEIPT_BYTES = len(
-    json.dumps(_RECEIPT_SKELETON, ensure_ascii=False).encode("utf-8")
-) + 257 * 6
+MAX_CANONICAL_RECEIPT_BYTES = (
+    len(json.dumps(_RECEIPT_SKELETON, ensure_ascii=False).encode("utf-8")) + 257 * 6
+)
 # Removing a receipt removes at most its record bytes + the ', ' delimiter.
 # Empty/full-ledger boundary removes two fewer delimiter bytes, never more.
 assert MAX_CANONICAL_RECEIPT_BYTES <= MAX_RESTORE_RECEIPT_BYTES
@@ -44,10 +47,13 @@ def _scoped_id(value: Any) -> bool:
         return False
     # IDs may themselves contain colons; accept only a possible bounded split.
     return any(
-        1 <= index <= 128 and 1 <= len(value) - index - 1 <= 128
-        and value[:index].strip() and value[index + 1:].strip()
-        and not any(ord(char) < 32 for char in value[index + 1:])
-        for index, char in enumerate(value) if char == ":"
+        1 <= index <= 128
+        and 1 <= len(value) - index - 1 <= 128
+        and value[:index].strip()
+        and value[index + 1 :].strip()
+        and not any(ord(char) < 32 for char in value[index + 1 :])
+        for index, char in enumerate(value)
+        if char == ":"
     )
 
 
@@ -64,11 +70,19 @@ def _is_restore_receipt(row: Any) -> bool:
     if not isinstance(result, dict) or set(result) != {"__result", "__access"}:
         return False
     public = result["__result"]
-    if (not isinstance(public, dict) or set(public) != {"restored", "schema_version"}
-            or public["restored"] is not True or type(public["schema_version"]) is not int
-            or public["schema_version"] != 3 or result["__access"] != []):
+    if (
+        not isinstance(public, dict)
+        or set(public) != {"restored", "schema_version"}
+        or public["restored"] is not True
+        or type(public["schema_version"]) is not int
+        or public["schema_version"] != 3
+        or result["__access"] != []
+    ):
         return False
-    return len(json.dumps(row, ensure_ascii=False, allow_nan=False).encode("utf-8")) <= MAX_RESTORE_RECEIPT_BYTES
+    return (
+        len(json.dumps(row, ensure_ascii=False, allow_nan=False).encode("utf-8"))
+        <= MAX_RESTORE_RECEIPT_BYTES
+    )
 
 
 def validate_storage_root(value: Any) -> dict[str, Any]:
@@ -87,6 +101,9 @@ def validate_storage_root(value: Any) -> dict[str, Any]:
         raise ValueError("storage operation ledger exceeds retention limit")
     charged_ledger = [row for row in ledger if not _is_restore_receipt(row)]
     charged = {**root, "ledger": charged_ledger} if "ledger" in root else root
-    if len(json.dumps(charged, ensure_ascii=False, allow_nan=False).encode("utf-8")) > MAX_DATA_BYTES:
+    if (
+        len(json.dumps(charged, ensure_ascii=False, allow_nan=False).encode("utf-8"))
+        > MAX_DATA_BYTES
+    ):
         raise ValueError("storage charged dataset exceeds the byte limit")
     return root

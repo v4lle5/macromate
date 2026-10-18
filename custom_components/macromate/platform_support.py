@@ -1,12 +1,13 @@
 """Pure identity and validation helpers shared by MacroMate kitchen domains."""
+
 from __future__ import annotations
 
-from dataclasses import dataclass
-from copy import deepcopy
-from datetime import date, datetime, timezone
 import json
 import math
 import re
+from copy import deepcopy
+from dataclasses import dataclass
+from datetime import UTC, date, datetime
 
 
 @dataclass(frozen=True, slots=True)
@@ -14,12 +15,17 @@ class Actor:
     user_id: str | None
     is_admin: bool = False
     trusted_internal: bool = False
+    nutrition_profile_id: str | None = None
 
     def __post_init__(self):
-        if self.user_id is not None and (not isinstance(self.user_id, str) or not self.user_id or len(self.user_id) > 128):
+        if self.user_id is not None and (
+            not isinstance(self.user_id, str) or not self.user_id or len(self.user_id) > 128
+        ):
             raise ValueError("invalid actor identity")
         if type(self.is_admin) is not bool or type(self.trusted_internal) is not bool:
             raise ValueError("actor authorization flags must be booleans")
+        if self.nutrition_profile_id is not None:
+            identifier(self.nutrition_profile_id, "nutrition_profile_id")
 
     @property
     def owner_id(self) -> str:
@@ -31,19 +37,30 @@ def require_admin(actor: Actor) -> None:
         raise PermissionError("administrator access required")
 
 
+def require_nutrition(actor: Actor) -> None:
+    """A profile capability is attached only after server-side ownership checks."""
+    if actor.nutrition_profile_id is None:
+        require_admin(actor)
+
+
 def can_access(record: dict, actor: Actor) -> bool:
     if actor.is_admin or actor.trusted_internal:
         return True
     if actor.user_id is None:
         return False
-    return (("owner_id" in record and record["owner_id"] is None) or record.get("owner_id") == actor.user_id
-            or actor.user_id in record.get("allowed_users", []))
+    return (
+        ("owner_id" in record and record["owner_id"] is None)
+        or record.get("owner_id") == actor.user_id
+        or actor.user_id in record.get("allowed_users", [])
+    )
 
 
 def require_access(record: dict, actor: Actor, owner_only: bool = False) -> None:
     if not can_access(record, actor):
         raise PermissionError("object access denied")
-    if owner_only and not (actor.is_admin or actor.trusted_internal or record.get("owner_id") == actor.user_id):
+    if owner_only and not (
+        actor.is_admin or actor.trusted_internal or record.get("owner_id") == actor.user_id
+    ):
         raise PermissionError("object owner access required")
 
 
@@ -86,6 +103,7 @@ def validate_json(value, *, max_bytes=8388608):
                 check(child, depth + 1)
         elif item is not None and type(item) not in (str, int, float, bool):
             raise ValueError("invalid JSON data")
+
     try:
         check(value)
         raw = json.dumps(value, ensure_ascii=False, allow_nan=False).encode("utf-8")
@@ -97,13 +115,28 @@ def validate_json(value, *, max_bytes=8388608):
 
 
 def utc_timestamp():
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def empty_kitchen():
-    return {key: {} for key in ("recipes", "meal_plan", "timers", "timer_presets", "shopping_lists",
-                               "shopping_items", "products", "categories", "loyalty_cards", "regions",
-                               "active_lists", "preferences", "media")}
+    return {
+        key: {}
+        for key in (
+            "recipes",
+            "meal_plan",
+            "timers",
+            "timer_presets",
+            "shopping_lists",
+            "shopping_items",
+            "products",
+            "categories",
+            "loyalty_cards",
+            "regions",
+            "active_lists",
+            "preferences",
+            "media",
+        )
+    }
 
 
 def validate_payload(payload, schema, *, max_bytes=8 * 1024 * 1024):
@@ -134,17 +167,31 @@ def validate_payload(payload, schema, *, max_bytes=8 * 1024 * 1024):
                 except ValueError:
                     continue
                 matches += 1
-            if (keyword == "anyOf" and matches == 0 or keyword == "oneOf" and matches != 1
-                    or keyword == "allOf" and matches != len(rule[keyword])):
+            if (
+                keyword == "anyOf"
+                and matches == 0
+                or keyword == "oneOf"
+                and matches != 1
+                or keyword == "allOf"
+                and matches != len(rule[keyword])
+            ):
                 raise ValueError("invalid action payload combination")
         types = rule.get("type")
         choices = types if isinstance(types, list) else [types] if types is not None else []
-        kinds = {"null": item is None, "boolean": type(item) is bool, "integer": type(item) is int,
-                 "number": type(item) in (int, float), "string": isinstance(item, str),
-                 "array": isinstance(item, list), "object": isinstance(item, dict)}
+        kinds = {
+            "null": item is None,
+            "boolean": type(item) is bool,
+            "integer": type(item) is int,
+            "number": type(item) in (int, float),
+            "string": isinstance(item, str),
+            "array": isinstance(item, list),
+            "object": isinstance(item, dict),
+        }
         if choices and not any(kinds.get(kind, False) for kind in choices):
             raise ValueError("invalid action payload type")
-        if "enum" in rule and not any(type(item) is type(option) and item == option for option in rule["enum"]):
+        if "enum" in rule and not any(
+            type(item) is type(option) and item == option for option in rule["enum"]
+        ):
             raise ValueError("invalid action choice")
         if isinstance(item, dict):
             props = rule.get("properties", {})
@@ -177,10 +224,19 @@ def validate_payload(payload, schema, *, max_bytes=8 * 1024 * 1024):
                 if date.fromisoformat(item).isoformat() != item:
                     raise ValueError("date must be YYYY-MM-DD")
         elif type(item) in (int, float):
-            if "minimum" in rule and item < rule["minimum"] or "maximum" in rule and item > rule["maximum"]:
+            if (
+                "minimum" in rule
+                and item < rule["minimum"]
+                or "maximum" in rule
+                and item > rule["maximum"]
+            ):
                 raise ValueError("action number outside supported range")
-            if ("exclusiveMinimum" in rule and item <= rule["exclusiveMinimum"]
-                    or "exclusiveMaximum" in rule and item >= rule["exclusiveMaximum"]):
+            if (
+                "exclusiveMinimum" in rule
+                and item <= rule["exclusiveMinimum"]
+                or "exclusiveMaximum" in rule
+                and item >= rule["exclusiveMaximum"]
+            ):
                 raise ValueError("action number outside supported range")
 
     check(value, schema)

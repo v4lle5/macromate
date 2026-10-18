@@ -2,23 +2,22 @@
 
 from __future__ import annotations
 
+import math
+from contextvars import ContextVar
 from dataclasses import asdict
 from datetime import date, datetime, time
 from uuid import uuid4
 from zoneinfo import ZoneInfo
-import math
 
 import voluptuous as vol
 from homeassistant.util import dt as dt_util
-from .foods import FoodProduct, NUTRIENT_UNITS, validate_barcode
-from .food_provider import ATTRIBUTION, OpenFoodFactsProvider
-from .models import MEAL_TYPES, NUTRIENTS, MealEntry
-from .platform_support import Actor, require_admin
-from contextvars import ContextVar
 
-COMMAND_ACTOR: ContextVar[Actor | None] = ContextVar(
-    "macromate_diary_actor", default=None
-)
+from .food_provider import ATTRIBUTION, OpenFoodFactsProvider
+from .foods import NUTRIENT_UNITS, FoodProduct, validate_barcode
+from .models import MEAL_TYPES, NUTRIENTS, MealEntry
+from .platform_support import Actor, require_nutrition
+
+COMMAND_ACTOR: ContextVar[Actor | None] = ContextVar("macromate_diary_actor", default=None)
 
 
 _TEXT = vol.All(str, vol.Length(min=1, max=300))
@@ -69,9 +68,7 @@ class DiaryCommands:
         foods = self.foods if state is None else state["foods"]
         value = {
             **foods[food_id],
-            "favorite": (self.favorites if state is None else state["favorites"]).get(
-                food_id
-            ),
+            "favorite": (self.favorites if state is None else state["favorites"]).get(food_id),
         }
         return FoodProduct.from_dict(value)
 
@@ -117,9 +114,7 @@ class DiaryCommands:
             for key, number in nutrition.items():
                 totals[key] = totals.get(key, 0.0) + number
             missing.update(set(NUTRIENT_UNITS) - set(nutrition))
-        return {key: round(number, 4) for key, number in totals.items()}, sorted(
-            missing
-        )
+        return {key: round(number, 4) for key, number in totals.items()}, sorted(missing)
 
     def diary_data(self, requested=None):
         day = self.today() if requested is None else _day(requested)
@@ -143,9 +138,7 @@ class DiaryCommands:
         if recommendation is not None:
             recommendation = dict(recommendation)
             if "fallback_reasons" in recommendation:
-                recommendation["fallback_reasons"] = list(
-                    recommendation["fallback_reasons"]
-                )
+                recommendation["fallback_reasons"] = list(recommendation["fallback_reasons"])
             recommendation["calorie_balance"] = (
                 recommendation["calorie_target"] - totals["calories"]
             )
@@ -159,11 +152,7 @@ class DiaryCommands:
             "goal_status": (
                 recommendation.get("goal_status", "active")
                 if recommendation
-                else (
-                    "profile_required"
-                    if day == self.today()
-                    else "historical_goal_unknown"
-                )
+                else ("profile_required" if day == self.today() else "historical_goal_unknown")
             ),
             "nutrition_missing": missing,
             "nutrient_units": dict(NUTRIENT_UNITS),
@@ -183,7 +172,7 @@ class DiaryCommands:
         # Native transports supply their server-derived identity. Existing
         # in-process automation calls retain their previous trusted execution.
         actor = actor if actor is not None else Actor(None, trusted_internal=True)
-        require_admin(actor)
+        require_nutrition(actor)
         schemas = {
             "diary": {vol.Optional("date"): str},
             "log_meal": {
@@ -297,9 +286,7 @@ class DiaryCommands:
                     for food in foods
                     if all(
                         word
-                        in " ".join(
-                            (food.name, food.producer or "", *food.barcodes)
-                        ).casefold()
+                        in " ".join((food.name, food.producer or "", *food.barcodes)).casefold()
                         for word in words
                     )
                 ]
@@ -310,9 +297,7 @@ class DiaryCommands:
                     foods = [food for food in foods if food.is_custom]
                 elif selected == "recent":
                     order = dict.fromkeys(
-                        item.food_id
-                        for item in reversed(self.log.entries)
-                        if item.food_id
+                        item.food_id for item in reversed(self.log.entries) if item.food_id
                     )
                     foods = sorted(
                         (food for food in foods if food.food_id in order),
@@ -378,11 +363,7 @@ class DiaryCommands:
 
             def apply_copy(state):
                 original = next(
-                    (
-                        row
-                        for row in state["entries"]
-                        if row["id"] == values["entry_id"]
-                    ),
+                    (row for row in state["entries"] if row["id"] == values["entry_id"]),
                     None,
                 )
                 if original is None:
@@ -391,9 +372,7 @@ class DiaryCommands:
                     {
                         **original,
                         "id": uuid4().hex,
-                        "eaten_at": self._entry_time(
-                            {"date": values["date"]}
-                        ).isoformat(),
+                        "eaten_at": self._entry_time({"date": values["date"]}).isoformat(),
                         "meal_type": values.get("meal_type", original["meal_type"]),
                     }
                 )
@@ -483,11 +462,7 @@ class DiaryCommands:
 
             def apply(state):
                 original = next(
-                    (
-                        row
-                        for row in state["entries"]
-                        if row["id"] == values["entry_id"]
-                    ),
+                    (row for row in state["entries"] if row["id"] == values["entry_id"]),
                     None,
                 )
                 if original is None:
@@ -495,9 +470,7 @@ class DiaryCommands:
                 if not original.get("food_snapshot"):
                     raise ValueError("entry is not a food entry")
                 food = FoodProduct.from_dict(original["food_snapshot"])
-                has_portion = any(
-                    key in values for key in ("amount", "serving_id", "quantity")
-                )
+                has_portion = any(key in values for key in ("amount", "serving_id", "quantity"))
                 amount = (
                     food.portion_amount(
                         values.get("amount"),
@@ -515,14 +488,10 @@ class DiaryCommands:
                         "nutrients": nutrition,
                         "amount": amount,
                         "serving_id": (
-                            values.get("serving_id")
-                            if has_portion
-                            else original.get("serving_id")
+                            values.get("serving_id") if has_portion else original.get("serving_id")
                         ),
                         "quantity": (
-                            values.get("quantity")
-                            if has_portion
-                            else original.get("quantity")
+                            values.get("quantity") if has_portion else original.get("quantity")
                         ),
                         "meal_type": values.get("meal_type", original["meal_type"]),
                     }

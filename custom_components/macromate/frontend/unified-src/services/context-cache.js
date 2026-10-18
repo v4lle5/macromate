@@ -1,6 +1,86 @@
 // Bounded actor-scoped UI cache, never a cache of recipes, diary or media.
-const key=(api,kind)=>`macromate:ui:${api.context.user}:${kind}`;
-function read(storage,name){try{const value=storage.getItem(name);return value&&value.length<=131072?JSON.parse(value):null;}catch{return null;}}
-export function loadUI(api){if(!api.current()||!api.context.admin)return {};const state=read(sessionStorage,key(api,'view'))||{},timers=read(localStorage,key(api,'timers'));const now=Date.now();return {view:typeof state.view==='string'?state.view:null,recipeId:typeof state.recipeId==='string'?state.recipeId:null,recentIds:Array.isArray(state.recentIds)?state.recentIds.filter(id=>typeof id==='string'&&id.length<=128).slice(0,200):[],timers:Array.isArray(timers)?timers.slice(0,100).filter(t=>t&&typeof t.id==='string'&&typeof t.label==='string'&&t.label.length<=300&&Number.isFinite(t.total)&&t.total>0&&t.total<=604800&&Number.isFinite(t.remaining)&&Number.isFinite(t.savedAt)).map(t=>({id:t.id,label:t.label,total:t.total,remaining:Math.max(0,t.remaining-(t.running?Math.max(0,Math.floor((now-t.savedAt)/1000)):0)),running:t.running===true,presetId:t.presetId||null})).filter(t=>t.remaining>0):[]};}
-export function saveUI(api,state,timers){if(!api?.current()||!api.context.admin)return;try{sessionStorage.setItem(key(api,'view'),JSON.stringify(state));localStorage.setItem(key(api,'timers'),JSON.stringify(timers.filter(t=>!t.global).slice(0,100).map(t=>({id:t.id,label:t.label,total:t.total,remaining:t.remaining,running:t.running===true,presetId:t.presetId||null,savedAt:Date.now()}))));}catch{}}
-export function clearUI(user){if(!user)return;try{sessionStorage.removeItem(`macromate:ui:${user}:view`);localStorage.removeItem(`macromate:ui:${user}:timers`);}catch{}}
+const key = (api, kind) => `macromate:ui:${api.context.user}:${kind}`;
+function read(storage, name) {
+  try {
+    const value = storage.getItem(name);
+    return value && value.length <= 131072 ? JSON.parse(value) : null;
+  } catch {
+    return null;
+  }
+}
+export function loadUI(api) {
+  if (!api.current() || !api.context.admin) return {};
+  const state = read(sessionStorage, key(api, "view")) || {},
+    timers = read(localStorage, key(api, "timers"));
+  const now = Date.now();
+  return {
+    view: typeof state.view === "string" ? state.view : null,
+    recipeId: typeof state.recipeId === "string" ? state.recipeId : null,
+    recentIds: Array.isArray(state.recentIds)
+      ? state.recentIds
+          .filter((id) => typeof id === "string" && id.length <= 128)
+          .slice(0, 200)
+      : [],
+    timers: Array.isArray(timers)
+      ? timers
+          .slice(0, 100)
+          .filter(
+            (t) =>
+              t &&
+              typeof t.id === "string" &&
+              typeof t.label === "string" &&
+              t.label.length <= 300 &&
+              Number.isFinite(t.total) &&
+              t.total > 0 &&
+              t.total <= 604800 &&
+              Number.isFinite(t.remaining) &&
+              Number.isFinite(t.savedAt),
+          )
+          .map((t) => ({
+            id: t.id,
+            label: t.label,
+            total: t.total,
+            remaining: Math.max(
+              0,
+              t.remaining -
+                (t.running
+                  ? Math.max(0, Math.floor((now - t.savedAt) / 1000))
+                  : 0),
+            ),
+            running: t.running === true,
+            presetId: t.presetId || null,
+          }))
+          .filter((t) => t.remaining > 0)
+      : [],
+  };
+}
+export function saveUI(api, state, timers) {
+  if (!api?.current() || !api.context.admin) return;
+  try {
+    sessionStorage.setItem(key(api, "view"), JSON.stringify(state));
+    localStorage.setItem(
+      key(api, "timers"),
+      JSON.stringify(
+        timers
+          .filter((t) => !t.global)
+          .slice(0, 100)
+          .map((t) => ({
+            id: t.id,
+            label: t.label,
+            total: t.total,
+            remaining: t.remaining,
+            running: t.running === true,
+            presetId: t.presetId || null,
+            savedAt: Date.now(),
+          })),
+      ),
+    );
+  } catch {}
+}
+export function clearUI(user) {
+  if (!user) return;
+  try {
+    sessionStorage.removeItem(`macromate:ui:${user}:view`);
+    localStorage.removeItem(`macromate:ui:${user}:timers`);
+  } catch {}
+}

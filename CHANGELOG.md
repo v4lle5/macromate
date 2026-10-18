@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0
+
+- Enforce durable atomic credential writes and erase delegation on integration removal.
+- Correct recipe sugar totals, including validated migration of old snapshots and replay receipts.
+- Publish missing wearable measurements as unavailable and translate HA sensor names.
+- Add owned/shared nutrition profiles with isolated diaries, goals, foods and retry history.
+- Add ISO-week and calendar-month reports with explicit unknown/partial values.
+- Deliver global timer notifications through Home Assistant and a durable replayable outbox.
+- Configure compact-card navigation or expand the app in place.
+- Split recipe editing/styles into modules, format source and replace nutrition DOM rewriting with message keys.
+- Move transaction preparation and serialization off the HA loop; add a synthetic storage benchmark.
+- Add a reproducible development command and enforce Ruff/format/85% branch coverage in CI.
+
+
 ## Unreleased
 
 - Added private CI test scratch, the optional HTTP ordering declaration, complete service descriptions, and the MIT license in both the repository and installable component.

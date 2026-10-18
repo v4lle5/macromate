@@ -242,14 +242,53 @@ try{
  await test('native-member-private-denial-context-clear',async()=>{
   await connect(1);
   await page.waitForFunction(()=>!document.querySelector('macromate-card').shadowRoot.textContent.includes('Native quick diary'));
-  assert.equal(await page.locator('mm-nutrition').count(),0);assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0);
+  assert.equal(await page.locator('mm-nutrition .calorie-ring').count(),0);assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0);
   assert.equal(await page.getByText('Synthetic private photo',{exact:true}).count(),0);
   return {private_dom_cleared:true,shopping_ui_removed:true,private_backend_denied:true};
  });
  await test('native-reader-denials',async()=>{
   await connect(2);await assert.rejects(()=>native('diary',{}));await assert.rejects(()=>native('recipes_get_all',{}));
   await assert.rejects(()=>native('shopping_lists_get_all',{}));
-  assert.equal(await page.locator('mm-nutrition').count(),0);return {reader_not_admin:true,private_denied:true};
+  assert.equal(await page.locator('mm-nutrition .calorie-ring').count(),0);return {reader_not_admin:true,private_denied:true};
+ });
+ await test('native-household-profile-ui-owner-report-and-revocation',async()=>{
+  await connect(0);
+  await view('Nutrition');
+  let pane=page.locator('mm-nutrition');
+  await pane.getByRole('button',{name:'Add person',exact:true}).click();
+  const dialog=pane.getByRole('dialog');
+  await dialog.locator('input[name=profile_name]').fill('Synthetic household person');
+  await dialog.getByLabel('Owner',{exact:true}).selectOption(cfg.accounts[1].user.id);
+  await dialog.locator('input[name=birthday]').fill('1990-07-23');
+  await dialog.locator('input[name=height_cm]').fill('180');
+  await dialog.locator('input[name=weight_kg]').fill('80');
+  await dialog.locator('input[name=target_weight_kg]').fill('80');
+  await dialog.getByRole('button',{name:'Save',exact:true}).click();
+  await dialog.waitFor({state:'detached'});
+  const profileId=await pane.locator('select[name=nutrition_profile]').inputValue();
+  assert.notEqual(profileId,'default');
+  await connect(1);pane=page.locator('mm-nutrition');
+  await pane.locator('[data-testid=diary]').waitFor();
+  assert.equal(await pane.locator('select[name=nutrition_profile]').inputValue(),profileId);
+  await pane.locator('input[type=search]').fill('Person-specific diary entry');
+  await pane.getByRole('button',{name:'Quick entry',exact:true}).click();
+  await pane.getByRole('dialog').locator('input[name=calories]').fill('321');
+  await pane.getByRole('dialog').getByRole('button',{name:'Save',exact:true}).click();
+  await pane.locator('.entry').getByText('Person-specific diary entry',{exact:true}).waitFor();
+  await pane.getByText('Reports',{exact:true}).click();
+  await pane.getByRole('button',{name:'Week',exact:true}).click();
+  await pane.locator('[data-testid=nutrition-report] table').waitFor();
+  assert.match(await pane.locator('[data-testid=nutrition-report]').innerText(),/321/);
+  const stored=await store('household-person-entry');
+  assert.ok(stored.profiles[profileId].data.entries.some(row=>row.name==='Person-specific diary entry'));
+  assert.ok(!stored.entries.some(row=>row.name==='Person-specific diary entry'));
+  const outsider=await agent('profiles_list',{},2);
+  assert.equal(outsider.profiles.length,0);
+  await agent('profiles_update',{profile_id:profileId,owner_id:cfg.accounts[0].user.id,allowed_users:[],request_id:'household-revoke'});
+  await pane.locator('.entry').getByText('Person-specific diary entry',{exact:true}).waitFor({state:'hidden'});
+  await assert.rejects(()=>native('diary',{profile_id:profileId}));
+  await connect(0);
+  return {profile_created_in_ui:true,owner_native_ui_write:true,calendar_report:true,default_diary_unchanged:true,revocation_clears_private_dom:true};
  });
  await test('native-lovelace-panel-view-auto-module-layout-and-cleanup',async()=>{
   const dashboard=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'reduce'});
@@ -283,8 +322,8 @@ try{
   const settingsDiagnostic=await dashboard.locator('macromate-card').evaluate(c=>({pending:c.api.pending,error:c.application._error,settings:c.application._settings}));
   await writeFile(resolve(cfg.output,'settings-diagnostic.json'),JSON.stringify({state:settingsDiagnostic,errors:dashboardErrors},null,2));
   assert.equal(settingsDiagnostic.pending,null,'Native settings save must be acknowledged: '+JSON.stringify(settingsDiagnostic));
-  assert.equal(await settingsPane.locator('option[value=neon]').textContent(),'🍇 Lila & Cyan');
-  assert.equal(await settingsPane.locator('.section-label').first().textContent(),'Sprache & Einheiten');
+  assert.equal((await settingsPane.locator('option[value=neon]').textContent()).trim(),'🍇 Lila & Cyan');
+  assert.equal((await settingsPane.locator('.section-label').first().textContent()).trim(),'Sprache & Einheiten');
   await settingsPane.getByRole('button',{name:'Metrisch',exact:true}).click();
   await dashboard.waitForTimeout(500);
   await settingsPane.locator('select').nth(1).selectOption('neon');
@@ -317,7 +356,7 @@ try{
   const settingsWire=await dashboard.evaluate(()=>window.settingsWire);assert.equal(settingsWire.length,2);assert.deepEqual(settingsWire[0],settingsWire[1]);
   assert.equal((await store('native-settings-explicit-replay')).kitchen.preferences[cfg.accounts[0].user.id].ui.recipe_settings.theme,'ocean');
   assert.equal(await settingsPane.locator('option[value=glass-wave]').count(),1,'Glass Wave is an opt-in choice alongside the existing themes');
-  assert.equal(await settingsPane.locator('option[value=glass-wave]').textContent(),'Glass Wave');
+  assert.equal((await settingsPane.locator('option[value=glass-wave]').textContent()).trim(),'Glass Wave');
   await settingsPane.locator('select').nth(1).selectOption('glass-wave');
   await dashboard.waitForTimeout(400);
   assert.equal((await agent('preferences_get')).preferences.recipe_settings.theme,'glass-wave');

@@ -1,19 +1,23 @@
 """Private in-Store media; no public files or automatic remote retrieval."""
 
 from __future__ import annotations
+
 import base64
 import re
+
 from .platform_support import Actor, can_access
 from .storage_budget import MAX_TRANSFER_BYTES
 
 
 def register_views(hass):
     """Register authenticated views once, including bounded full-state transfer."""
+    import json
+
     from aiohttp import web
     from homeassistant.components.http import HomeAssistantView
     from homeassistant.components.http.const import KEY_HASS_USER
+
     from .const import DOMAIN
-    import json
 
     runtime = hass.data.setdefault(DOMAIN, {})
     if runtime.get("private_views_registered") or not getattr(hass, "http", None):
@@ -60,13 +64,11 @@ def register_views(hass):
             async with coord._lock:
                 data = coord._state()
             body = await hass.async_add_executor_job(
-                lambda: json.dumps(
-                    {"data": data}, ensure_ascii=False, allow_nan=False
-                ).encode("utf-8")
+                lambda: json.dumps({"data": data}, ensure_ascii=False, allow_nan=False).encode(
+                    "utf-8"
+                )
             )
-            return web.Response(
-                body=body, content_type="application/json", headers=headers
-            )
+            return web.Response(body=body, content_type="application/json", headers=headers)
 
     class RestoreView(HomeAssistantView):
         url = "/api/macromate/restore"
@@ -98,9 +100,7 @@ def register_views(hass):
                         ),
                     )
                 )
-                result = await coordinator().async_command(
-                    "platform_restore", payload, actor=actor
-                )
+                result = await coordinator().async_command("platform_restore", payload, actor=actor)
             except (ValueError, TypeError, KeyError):
                 raise web.HTTPBadRequest(text="Invalid restore data") from None
             except OSError:
@@ -129,18 +129,27 @@ def register_views(hass):
                         value[key] = child
                     return value
 
-                payload = validate_json(json.loads(
-                    raw, object_pairs_hook=pairs,
-                    parse_constant=lambda value: (_ for _ in ()).throw(ValueError("nonfinite JSON")),
-                ), max_bytes=MAX_TRANSFER_BYTES)
+                payload = validate_json(
+                    json.loads(
+                        raw,
+                        object_pairs_hook=pairs,
+                        parse_constant=lambda value: (_ for _ in ()).throw(
+                            ValueError("nonfinite JSON")
+                        ),
+                    ),
+                    max_bytes=MAX_TRANSFER_BYTES,
+                )
                 required = {"source", "stores", "preserve_permissions", "confirm", "request_id"}
-                if (not isinstance(payload, dict) or required - set(payload)
-                        or set(payload) - (required | {"images", "country"})
-                        or payload["source"] not in ("recipe_manager", "shopping_list_manager")
-                        or not isinstance(payload["stores"], dict)
-                        or not isinstance(payload.get("images", {}), dict)
-                        or type(payload["preserve_permissions"]) is not bool
-                        or payload["confirm"] is not True):
+                if (
+                    not isinstance(payload, dict)
+                    or required - set(payload)
+                    or set(payload) - (required | {"images", "country"})
+                    or payload["source"] not in ("recipe_manager", "shopping_list_manager")
+                    or not isinstance(payload["stores"], dict)
+                    or not isinstance(payload.get("images", {}), dict)
+                    or type(payload["preserve_permissions"]) is not bool
+                    or payload["confirm"] is not True
+                ):
                     raise ValueError("invalid legacy import envelope")
                 identifier(payload["request_id"], "request_id")
                 if payload["source"] == "shopping_list_manager":
@@ -193,9 +202,7 @@ def media_bytes(kitchen, mid, actor):
                 continue
             referenced = True
             if bucket == "shopping_items":
-                allowed |= can_access(
-                    kitchen["shopping_lists"].get(row["list_id"], {}), actor
-                )
+                allowed |= can_access(kitchen["shopping_lists"].get(row["list_id"], {}), actor)
             elif bucket != "recipes":
                 allowed |= can_access(row, actor)
     if not referenced:

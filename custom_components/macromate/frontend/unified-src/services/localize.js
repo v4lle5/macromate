@@ -3,8 +3,8 @@
  * Locale modules under src/locales/ and src/locale-codes.js are generated
  * by `npx lit-localize build` (see lit-localize.json) — do not hand-edit them.
  */
-import { configureLocalization } from '@lit/localize';
-import { sourceLocale, targetLocales, allLocales } from '../locale-codes.js';
+import { configureLocalization } from "@lit/localize";
+import { sourceLocale, targetLocales, allLocales } from "../locale-codes.js";
 
 export { sourceLocale, targetLocales, allLocales };
 
@@ -14,7 +14,15 @@ const { getLocale, setLocale } = configureLocalization({
   // Path is relative to the built bundle's own location (repo root / HA
   // www/ dir), not this source file's location — the build emits
   // recipe-manager-card.js and locales/*.js as siblings (see rollup.config.js).
-  loadLocale: locale => ({de:()=>import("../locales/de.js"),es:()=>import("../locales/es.js"),fr:()=>import("../locales/fr.js"),it:()=>import("../locales/it.js"),nl:()=>import("../locales/nl.js"),pt:()=>import("../locales/pt.js")})[locale](),
+  loadLocale: (locale) =>
+    ({
+      de: () => import("../locales/de.js"),
+      es: () => import("../locales/es.js"),
+      fr: () => import("../locales/fr.js"),
+      it: () => import("../locales/it.js"),
+      nl: () => import("../locales/nl.js"),
+      pt: () => import("../locales/pt.js"),
+    })[locale](),
 });
 
 export { getLocale };

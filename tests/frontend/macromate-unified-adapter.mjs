@@ -18,7 +18,7 @@ fail=false;await api.retry();assert.deepEqual(sent.at(-1),first);assert.equal(ap
 api.dispose();await assert.rejects(api.call('diary'),e=>e.code==='context_changed');
 const member=new MacroMateAPI({...hass,user:{id:'member',is_admin:false}});
 await assert.rejects(member.call('diary'),e=>e.code==='unauthorized');
-await member.call('shopping_lists_get_all');await member.call('preferences_get');
+await assert.rejects(member.call('shopping_lists_get_all'),e=>e.code==='unauthorized');await member.call('preferences_get');await member.call('diary',{profile_id:'explicit-profile'});
 await assert.rejects(member.call('recipes_get_all'),e=>e.code==='unauthorized');
 const descriptions=new MacroMateAPI({...hass,callWS:async()=>({actions:{recipes_update:{schema:{properties:{image_url:{type:['string','null']}}},read_only:false,admin_only:true}}})});const discovery=await descriptions.call('describe');assert.deepEqual(discovery.actions.recipes_update.schema.properties.image_url,{type:['string','null']},'Capability discovery preserves schemas instead of treating media field definitions as photos');
 const legacy=new MacroMateAPI(hass);const facade=legacy.facade();fail=true;const legacyPayload={name:'Legacy nutrition',request_id:crypto.randomUUID()};await assert.rejects(facade.callWS({type:'macromate/command',action:'recipes_add',payload:legacyPayload}));fail=false;await facade.callWS({type:'macromate/command',action:'recipes_add',payload:legacyPayload});assert.equal(legacy.pending,null,'Existing nutrition client explicit retry reuses the centralized pending mutation');
