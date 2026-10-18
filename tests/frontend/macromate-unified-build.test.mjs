@@ -18,6 +18,8 @@ async function checkout(destination) {
   await mkdir(join(destination, 'tests'), {recursive: true});
   await cp(join(root, 'frontend'), join(destination, 'frontend'), {recursive: true});
   await cp(join(root, 'tests/frontend'), join(destination, 'tests/frontend'), {recursive: true});
+  await mkdir(join(destination, 'tests/ha'), {recursive: true});
+  await cp(join(root, 'tests/ha/native_delivery_server.py'), join(destination, 'tests/ha/native_delivery_server.py'));
 }
 async function inventory(checkoutRoot) {
   const files = {};
@@ -33,6 +35,14 @@ async function inventory(checkoutRoot) {
     }
   }
   await visit('frontend/unified');
+  // Delivery reproducibility includes every retained immutable graph, not only
+  // the latest esbuild chunks. Neither checkout relocation nor rebuilding may
+  // drop history, change old bytes, or produce path-dependent release IDs.
+  await visit('frontend/releases');
+  for (const name of ['delivery-manifest.json', 'retained-releases.json', 'build-info.js', 'macromate-card.js']) {
+    const path = `frontend/${name}`;
+    files[path] = createHash('sha256').update(await readFile(join(checkoutRoot, path))).digest('hex');
+  }
   const path = 'frontend/unified-src/source-manifest.json';
   files[path] = createHash('sha256').update(await readFile(join(checkoutRoot, path))).digest('hex');
   return Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b)));
