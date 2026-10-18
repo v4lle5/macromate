@@ -50,6 +50,7 @@ await writeFile(resolve(output,'build-manifest.json'),JSON.stringify(manifest,nu
 await import('./macromate-delivery-build.mjs');
 const sourcePaths=[];const visitSource=async dir=>{for(const entry of await readdir(dir,{withFileTypes:true})){const full=resolve(dir,entry.name);if(entry.isDirectory()){if(!['unified','node_modules','releases'].includes(entry.name))await visitSource(full);}else if(entry.name!=='source-manifest.json')sourcePaths.push(full);}};await visitSource(resolve(root,'frontend'));
 for(const entry of await readdir(resolve(root,'tests/frontend')))if(/^macromate-(unified-|delivery|loader|upgrade)/.test(entry))sourcePaths.push(resolve(root,'tests/frontend',entry));
+sourcePaths.push(resolve(root,'tests/ha/native_delivery_server.py'));
 const files=[];for(const full of sourcePaths.sort()){const data=await readFile(full);files.push({path:relative(root,full),bytes:data.length,sha256:createHash('sha256').update(data).digest('hex')});}
 const sourceManifest={schema_version:1,scope:'Complete development frontend and unified test/build inputs; generated outputs are in unified/build-manifest.json',upstream:manifest.source,files};
 await writeFile(resolve(root,'frontend/unified-src/source-manifest.json'),JSON.stringify(sourceManifest,null,2)+'\n');
