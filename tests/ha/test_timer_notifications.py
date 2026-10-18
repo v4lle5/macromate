@@ -144,3 +144,29 @@ class TimerNotificationTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(len(deadlines), 2)
             self.assertEqual(manager.scheduled[timer['id']][0], fingerprint(self.coord.kitchen['timers'][timer['id']]))
             manager.stop()
+
+    async def test_cancel_during_notification_setup_suppresses_obsolete_alert(self):
+        timer = await self.timer()
+        manager = TimerNotifications(self.coord)
+        manager.active = True
+        entered = asyncio.Event()
+        resume = asyncio.Event()
+
+        async def delayed_setup(*_args):
+            entered.set()
+            await resume.wait()
+            return True
+
+        with patch('homeassistant.setup.async_setup_component', delayed_setup), \
+             patch.object(persistent_notification, 'async_create') as notify:
+            delivery = asyncio.create_task(manager.expire(timer['id'], fingerprint(timer)))
+            try:
+                await asyncio.wait_for(entered.wait(), 3)
+                await self.coord.async_command('global_timers_update', {
+                    'timer_id': timer['id'], 'running': False,
+                })
+            finally:
+                resume.set()
+            results = await asyncio.gather(delivery, return_exceptions=True)
+            notify.assert_not_called()
+            self.assertEqual(results, [None])

@@ -155,6 +155,9 @@ class TimerNotifications:
             raise OSError("native notification component unavailable")
         if not self.active:
             return
+        timer = self.coord.kitchen["timers"].get(key)
+        if timer is None or not timer["running"] or fingerprint(timer) != digest:
+            return
         # A stable native notification ID makes outbox replay after a crash
         # replace the same notification rather than create duplicate alerts.
         persistent_notification.async_create(

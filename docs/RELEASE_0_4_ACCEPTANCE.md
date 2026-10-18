@@ -10,7 +10,7 @@ All data, accounts, camera frames and HTTP servers were disposable test fixtures
 | Ruff lint and Python formatting | Pass |
 | Pinned Prettier, 45 mutable JS/CSS sources | Pass |
 | General Python suite | 287 passed |
-| Native HA Python suite | 192 passed |
+| Native HA Python suite | 193 passed |
 | Branch coverage, all integration Python and tools | 88%; required minimum 85% |
 | Complete Node test glob | 100 passed |
 | Unified build, adapters, connected workflows and upgrade suite | Pass |
@@ -29,7 +29,8 @@ Additional regression tests exercise low-level credential disk failures,
 read-only/stopping storage, credential deletion, legacy recipe sugar migration,
 unavailable wearable readings, source freshness, concurrent default/person
 writes, profile reload/restore validation, and server timer scheduling, outbox
-replay, retry and unload cancellation without an open browser.
+replay, retry and unload cancellation without an open browser. Cancellation
+during notification-component startup suppresses obsolete alerts.
 
 ## Synthetic storage comparison
 
