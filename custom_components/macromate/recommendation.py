@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
-import math
-from typing import Any, Mapping
+from typing import Any
 
 _WEIGHT_FACTORS = {
     "kg": 1.0,
@@ -123,9 +124,7 @@ def build_recommendation(
     minimum_macro_calories = _finite(
         "mandatory macro calories", protein * 4 + fat * 9, minimum=0, maximum=50000
     )
-    raw_target = _finite(
-        "calorie target", bmr + active + adjustment, minimum=-10000, maximum=50000
-    )
+    raw_target = _finite("calorie target", bmr + active + adjustment, minimum=-10000, maximum=50000)
     calorie_target = max(0.0, raw_target, minimum_macro_calories)
     carbs = _finite(
         "carbs",
@@ -181,26 +180,39 @@ def build_profile_recommendation(
     active = usable(active_calories, "active_calories", 0, 20000)
     weight = profile.weight_kg if live_weight is None else live_weight
     bmr = calculate_bmr(profile, current_date, weight) if live_bmr is None else live_bmr
-    reached = ((profile.goal == "lose" and weight <= profile.target_weight_kg)
-               or (profile.goal == "gain" and weight >= profile.target_weight_kg))
+    reached = (profile.goal == "lose" and weight <= profile.target_weight_kg) or (
+        profile.goal == "gain" and weight >= profile.target_weight_kg
+    )
     # Crossing-stop is MacroMate's policy; the reference proves only equality-stop.
     adjusting = profile.goal != "maintain" and not reached
-    adjustment = 750 * profile.weekly_pace_kg * (-1 if profile.goal == "lose" else 1) if adjusting else 0
+    adjustment = (
+        750 * profile.weekly_pace_kg * (-1 if profile.goal == "lose" else 1) if adjusting else 0
+    )
     budget = bmr * ACTIVITY_LEVELS[profile.activity_level] if active is None else bmr + active
-    target = max(budget + adjustment, calculate_bmr(profile, current_date, profile.target_weight_kg)) if adjusting else budget
+    target = (
+        max(budget + adjustment, calculate_bmr(profile, current_date, profile.target_weight_kg))
+        if adjusting
+        else budget
+    )
     # The reference's supported goal interval is validation, not medical advice or clamping.
     target = bounded_number("calorie_target", target, 500, 5000)
     carbs_share, fat_share, protein_share = MACRO_PLANS[profile.macro_plan]
     return NutritionRecommendation(
-        weight_kg=weight, bmr=bmr, bmr_source="profile_formula" if live_bmr is None else "garmin",
+        weight_kg=weight,
+        bmr=bmr,
+        bmr_source="profile_formula" if live_bmr is None else "garmin",
         active_calories=0 if active is None else active,
-        calorie_adjustment=adjustment, calorie_target=target,
-        protein=target * protein_share / 4.1, carbs=target * carbs_share / 4.1,
+        calorie_adjustment=adjustment,
+        calorie_target=target,
+        protein=target * protein_share / 4.1,
+        carbs=target * carbs_share / 4.1,
         fat=target * fat_share / 9.3,
         budget_source="profile_pal" if active is None else "bmr_plus_active",
         weight_source="profile" if live_weight is None else "garmin",
         source_status="fallback" if reasons else ("estimated" if active is None else "wearable"),
         fallback_reasons=tuple(reasons),
-        goal_status="maintaining" if profile.goal == "maintain" else ("target_reached" if reached else "active"),
+        goal_status="maintaining"
+        if profile.goal == "maintain"
+        else ("target_reached" if reached else "active"),
         profile_version=1,
     )

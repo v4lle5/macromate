@@ -15,36 +15,52 @@ Cached/exported records retain source_url and ODbL-1.0 / DbCL-1.0. Callers MUST
 show ATTRIBUTION with online and locally cached OFF results. Database reuse is
 subject to ODbL attribution/share-alike; individual contents are DbCL licensed.
 """
+
 from __future__ import annotations
 
+import asyncio
 import math
 import re
-import asyncio
 import time
 from collections import OrderedDict, deque
+from collections.abc import Mapping
 from types import MappingProxyType
-from typing import Any, Mapping
+from typing import Any
 
-from .foods import FoodProduct, NUTRIENT_UNITS, _number, validate_barcode
+from .foods import NUTRIENT_UNITS, FoodProduct, _number, validate_barcode
 
 ORIGIN = "https://world.openfoodfacts.org"
-ATTRIBUTION = MappingProxyType({
-    "name": "Open Food Facts", "url": ORIGIN,
-    "text": "Food data: Open Food Facts contributors — ODbL 1.0 (database), DbCL 1.0 (contents).",
-    "database_license": "ODbL-1.0", "contents_license": "DbCL-1.0",
-    "database_license_url": "https://opendatacommons.org/licenses/odbl/1.0/",
-    "contents_license_url": "https://opendatacommons.org/licenses/dbcl/1.0/",
-})
+ATTRIBUTION = MappingProxyType(
+    {
+        "name": "Open Food Facts",
+        "url": ORIGIN,
+        "text": (
+            "Food data: Open Food Facts contributors — ODbL 1.0 (database), DbCL 1.0 (contents)."
+        ),
+        "database_license": "ODbL-1.0",
+        "contents_license": "DbCL-1.0",
+        "database_license_url": "https://opendatacommons.org/licenses/odbl/1.0/",
+        "contents_license_url": "https://opendatacommons.org/licenses/dbcl/1.0/",
+    }
+)
 
 # Canonical domain name -> OFF nutrient name. OFF mass values are grams.
 OFF_NUTRIENTS = {
     key: key.replace("_", "-") for key in NUTRIENT_UNITS if key not in ("alcohol", "water")
 }
-OFF_NUTRIENTS.update({
-    "calories": "energy-kcal", "protein": "proteins", "carbs": "carbohydrates",
-    "sugar": "sugars", "added_sugar": "added-sugars", "vitamin_b11": "folates",
-    "vitamin_b3": "vitamin-pp", "vitamin_b5": "pantothenic-acid", "vitamin_b7": "vitamin-b7",
-})
+OFF_NUTRIENTS.update(
+    {
+        "calories": "energy-kcal",
+        "protein": "proteins",
+        "carbs": "carbohydrates",
+        "sugar": "sugars",
+        "added_sugar": "added-sugars",
+        "vitamin_b11": "folates",
+        "vitamin_b3": "vitamin-pp",
+        "vitamin_b5": "pantothenic-acid",
+        "vitamin_b7": "vitamin-b7",
+    }
+)
 
 
 def _off_number(value: Any) -> float:
@@ -63,7 +79,11 @@ def _canonical_value(canonical: str, value: Any) -> float:
 
 def _v3_nutrition(value: Mapping[str, Any]) -> tuple[str, dict[str, float]]:
     data = value["nutrition"]["aggregated_set"]
-    if not isinstance(data, Mapping) or data.get("preparation") != "as_sold" or data.get("per") not in ("100g", "100ml"):
+    if (
+        not isinstance(data, Mapping)
+        or data.get("preparation") != "as_sold"
+        or data.get("per") not in ("100g", "100ml")
+    ):
         raise ValueError("unsupported provider nutrition basis")
     raw = data["nutrients"]
     if not isinstance(raw, Mapping):
@@ -79,8 +99,11 @@ def _v3_nutrition(value: Mapping[str, Any]) -> tuple[str, dict[str, float]]:
         if entry.get("modifier") or entry.get("source") == "estimate":
             return None
         # unit describes input, not value; normalized value always g for mass.
-        allowed = (None, "kcal", "kJ", "kj") if off_name.startswith("energy-") else (
-            None, "g", "mg", "ug", "µg", "μg", "mcg", "kg")
+        allowed = (
+            (None, "kcal", "kJ", "kj")
+            if off_name.startswith("energy-")
+            else (None, "g", "mg", "ug", "µg", "μg", "mcg", "kg")
+        )
         if entry.get("unit") not in allowed:
             return None
         return entry.get("value")  # explicitly NOT value_computed
@@ -102,7 +125,9 @@ def _legacy_nutrition(value: Mapping[str, Any]) -> tuple[str, dict[str, float]]:
     # skip known volume products until fetched through the v3.6 barcode API.
     if value.get("nutrition_data_per", "100g") not in ("100g", "serving"):
         raise ValueError("unsupported provider nutrition basis")
-    if value.get("product_quantity_unit") in ("ml", "cl", "l") or value.get("serving_quantity_unit") in ("ml", "cl", "l"):
+    if value.get("product_quantity_unit") in ("ml", "cl", "l") or value.get(
+        "serving_quantity_unit"
+    ) in ("ml", "cl", "l"):
         raise ValueError("legacy volume basis is ambiguous")
     raw = value.get("nutriments", {})
     if not isinstance(raw, Mapping):
@@ -116,7 +141,11 @@ def _legacy_nutrition(value: Mapping[str, Any]) -> tuple[str, dict[str, float]]:
             if raw.get(off_name + "_unit") in ("iu", "IU", "%", "% dv", "dv"):
                 continue
             nutrients[canonical] = _canonical_value(canonical, number)
-    if "calories" not in nutrients and raw.get("energy-kj_100g") is not None and not raw.get("energy-kj_modifier"):
+    if (
+        "calories" not in nutrients
+        and raw.get("energy-kj_100g") is not None
+        and not raw.get("energy-kj_modifier")
+    ):
         nutrients["calories"] = _off_number(raw["energy-kj_100g"]) / 4.184
     return "g", nutrients
 
@@ -138,15 +167,18 @@ def _servings(value: Mapping[str, Any], base_unit: str) -> list[dict[str, Any]]:
         amount = _off_number(quantity)
         if amount <= 0 or value.get("serving_quantity_unit", unit) != unit:
             return []
-        if "serving_quantity" in value and not math.isclose(_off_number(value["serving_quantity"]), amount, rel_tol=1e-9):
+        if "serving_quantity" in value and not math.isclose(
+            _off_number(value["serving_quantity"]), amount, rel_tol=1e-9
+        ):
             return []
     except ValueError:
         return []
     return [{"serving_id": "off-serving", "label": label, "amount": amount}]
 
 
-def map_open_food_facts_product(value: Mapping[str, Any], *,
-                                expected_barcode: str | None = None) -> FoodProduct:
+def map_open_food_facts_product(
+    value: Mapping[str, Any], *, expected_barcode: str | None = None
+) -> FoodProduct:
     """Validate OFF product JSON and map declared, as-sold nutrition only.
 
     Unknown nutrient names are ignored for forward compatibility. Invalid known
@@ -159,14 +191,23 @@ def map_open_food_facts_product(value: Mapping[str, Any], *,
         code = validate_barcode(value["code"])
         if expected_barcode is not None and code != validate_barcode(expected_barcode):
             raise ValueError("provider returned a different barcode")
-        base_unit, nutrients = _v3_nutrition(value) if "nutrition" in value else _legacy_nutrition(value)
-        return FoodProduct.from_dict({
-            "food_id": "off:" + code, "name": value["product_name"], "producer": value.get("brands") or None,
-            "base_unit": base_unit, "nutrients_per_100": nutrients, "barcodes": [code],
-            "servings": _servings(value, base_unit),
-            "source": "open_food_facts", "source_url": ORIGIN + "/product/" + code,
-            "license": "ODbL-1.0 / DbCL-1.0",
-        })
+        base_unit, nutrients = (
+            _v3_nutrition(value) if "nutrition" in value else _legacy_nutrition(value)
+        )
+        return FoodProduct.from_dict(
+            {
+                "food_id": "off:" + code,
+                "name": value["product_name"],
+                "producer": value.get("brands") or None,
+                "base_unit": base_unit,
+                "nutrients_per_100": nutrients,
+                "barcodes": [code],
+                "servings": _servings(value, base_unit),
+                "source": "open_food_facts",
+                "source_url": ORIGIN + "/product/" + code,
+                "license": "ODbL-1.0 / DbCL-1.0",
+            }
+        )
     except (ValueError, KeyError, TypeError, OverflowError):
         raise ValueError("invalid or unsupported Open Food Facts product") from None
 
@@ -183,8 +224,12 @@ class ProviderRateLimited(ProviderUnavailable):
     """Local quota/cooldown blocked a request; no retry is scheduled."""
 
 
-FIELDS = "code,product_name,brands,nutrition,nutriments,nutrition_data_per,no_nutrition_data,serving_size,serving_quantity,serving_quantity_unit,product_quantity_unit"
-USER_AGENT = "MacroMate/0.2 (https://github.com/v4lle5/macromate)"
+FIELDS = (
+    "code,product_name,brands,nutrition,nutriments,nutrition_data_per,"
+    "no_nutrition_data,serving_size,serving_quantity,"
+    "serving_quantity_unit,product_quantity_unit"
+)
+USER_AGENT = "MacroMate/0.4 (https://github.com/v4lle5/macromate)"
 
 
 class OpenFoodFactsProvider:
@@ -198,6 +243,7 @@ class OpenFoodFactsProvider:
     public IP still share OFF's upstream quota. No automatic sleeps or retries.
     Cache: 128 LRU records; product 1h, search/miss 5min. Memory only.
     """
+
     def __init__(self, session: Any, *, enabled: bool = False, monotonic=time.monotonic):
         self._session = session
         self._clock = monotonic
@@ -222,11 +268,13 @@ class OpenFoodFactsProvider:
         if not self._enabled:
             raise ProviderConsentRequired("Open Food Facts access is disabled")
 
-    async def _get_json(self, path: str, params: Mapping[str, str], *,
-                        allow_not_found: bool = False) -> dict[str, Any] | None:
-        import aiohttp
+    async def _get_json(
+        self, path: str, params: Mapping[str, str], *, allow_not_found: bool = False
+    ) -> dict[str, Any] | None:
         import asyncio
         import json
+
+        import aiohttp
 
         def finite_float(text: str) -> float:
             number = float(text)
@@ -239,34 +287,57 @@ class OpenFoodFactsProvider:
 
         try:
             async with asyncio.timeout(10):
-                async with self._session.get(ORIGIN + path, params=dict(params),
-                                             headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
-                                             allow_redirects=False,
-                                             timeout=aiohttp.ClientTimeout(total=10, connect=5, sock_read=5)) as response:
+                async with self._session.get(
+                    ORIGIN + path,
+                    params=dict(params),
+                    headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
+                    allow_redirects=False,
+                    timeout=aiohttp.ClientTimeout(total=10, connect=5, sock_read=5),
+                ) as response:
                     if response.status == 404 and allow_not_found:
                         return None
                     if response.status == 429:
                         retry_after = response.headers.get("Retry-After", "60")
-                        delay = min(3600, max(60, int(retry_after))) if re.fullmatch(r"[0-9]{1,9}", retry_after) else 3600
+                        delay = (
+                            min(3600, max(60, int(retry_after)))
+                            if re.fullmatch(r"[0-9]{1,9}", retry_after)
+                            else 3600
+                        )
                         self._cooldown_until = self._clock() + delay
                     if response.status != 200:
                         raise ValueError("provider HTTP failure")
-                    content_type = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+                    content_type = (
+                        response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+                    )
                     if content_type != "application/json" and not content_type.endswith("+json"):
                         raise ValueError("provider content type")
                     length = response.headers.get("Content-Length")
-                    if length is not None and (not length.isascii() or not length.isdigit() or int(length) > 1_048_576):
+                    if length is not None and (
+                        not length.isascii() or not length.isdigit() or int(length) > 1_048_576
+                    ):
                         raise ValueError("provider response size")
                     body = bytearray()
                     async for chunk in response.content.iter_chunked(16384):
                         if len(body) + len(chunk) > 1_048_576:
                             raise ValueError("provider response size")
                         body.extend(chunk)
-                    data = json.loads(body.decode("utf-8"), parse_float=finite_float, parse_constant=invalid_constant)
+                    data = json.loads(
+                        body.decode("utf-8"),
+                        parse_float=finite_float,
+                        parse_constant=invalid_constant,
+                    )
                     if not isinstance(data, dict):
                         raise ValueError("provider JSON object required")
                     return data
-        except (aiohttp.ClientError, TimeoutError, OSError, ValueError, UnicodeError, RecursionError, OverflowError):
+        except (
+            aiohttp.ClientError,
+            TimeoutError,
+            OSError,
+            ValueError,
+            UnicodeError,
+            RecursionError,
+            OverflowError,
+        ):
             raise ProviderUnavailable("Open Food Facts request failed") from None
 
     async def _cached(self, kind: str, key: tuple, load: Any) -> Any:
@@ -295,7 +366,9 @@ class OpenFoodFactsProvider:
                 self._cache.popitem(last=False)
             return result
 
-    async def async_search(self, query: str, *, submitted: bool = False, limit: int = 20) -> list[FoodProduct]:
+    async def async_search(
+        self, query: str, *, submitted: bool = False, limit: int = 20
+    ) -> list[FoodProduct]:
         """Explicitly submitted text only. One page, no paging/retries/hydration.
 
         Uses legacy CGI, not deprecated v2 structured search. Malformed products
@@ -305,15 +378,31 @@ class OpenFoodFactsProvider:
         self._require_consent()
         if submitted is not True:
             raise ValueError("online search must be explicitly submitted")
-        if not isinstance(query, str) or not query.strip() or len(query) > 200 or any(ord(char) < 32 for char in query):
+        if (
+            not isinstance(query, str)
+            or not query.strip()
+            or len(query) > 200
+            or any(ord(char) < 32 for char in query)
+        ):
             raise ValueError("query must be nonempty text of at most 200 characters")
         if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 20:
             raise ValueError("limit must be an integer from 1 to 20")
-        return list(await self._cached("search", (query, limit), lambda: self._search(query, limit)))
+        return list(
+            await self._cached("search", (query, limit), lambda: self._search(query, limit))
+        )
 
     async def _search(self, query: str, limit: int) -> tuple[FoodProduct, ...]:
-        data = await self._get_json("/cgi/search.pl", {"search_terms": query, "action": "process", "json": "1",
-                                                    "page_size": str(limit), "page": "1", "fields": FIELDS})
+        data = await self._get_json(
+            "/cgi/search.pl",
+            {
+                "search_terms": query,
+                "action": "process",
+                "json": "1",
+                "page_size": str(limit),
+                "page": "1",
+                "fields": FIELDS,
+            },
+        )
         if data is None or not isinstance(data.get("products"), list):
             raise ProviderUnavailable("Open Food Facts returned invalid search results") from None
         results = {}
@@ -334,7 +423,9 @@ class OpenFoodFactsProvider:
         return await self._cached("product", (code,), lambda: self._lookup(code))
 
     async def _lookup(self, code: str) -> FoodProduct | None:
-        data = await self._get_json("/api/v3.6/product/" + code, {"fields": FIELDS}, allow_not_found=True)
+        data = await self._get_json(
+            "/api/v3.6/product/" + code, {"fields": FIELDS}, allow_not_found=True
+        )
         if data is None:
             return None
         try:

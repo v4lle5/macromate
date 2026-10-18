@@ -131,6 +131,10 @@
         "online": {
           "name": "Online",
           "description": "See the authoritative JSON schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -149,6 +153,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -171,6 +179,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -185,6 +197,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -200,6 +216,10 @@
         "date": {
           "name": "Date",
           "description": "See the authoritative JSON schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -230,6 +250,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -240,6 +264,10 @@
         "food_id": {
           "name": "Food id",
           "description": "See the authoritative JSON schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -254,6 +282,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -264,6 +296,10 @@
         "food_id": {
           "name": "Food id",
           "description": "See the authoritative JSON schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -370,6 +406,10 @@
         "date": {
           "name": "Date",
           "description": "See the authoritative JSON schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -408,6 +448,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -450,6 +494,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -464,6 +512,10 @@
         "online": {
           "name": "Online",
           "description": "See the authoritative JSON schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -643,6 +695,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -687,6 +743,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -1191,6 +1251,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -1209,6 +1273,10 @@
         "online": {
           "name": "Online",
           "description": "See the authoritative JSON schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -1239,6 +1307,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -1338,6 +1410,10 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
     },
@@ -1380,8 +1456,124 @@
         "request_id": {
           "name": "Request id",
           "description": "Stable retry ID; keep the exact action and payload after an uncertain write."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
         }
       }
+    },
+    "nutrition_report": {
+      "name": "Nutrition report",
+      "description": "Read an ISO week or calendar month report without inventing historical goals.",
+      "fields": {
+        "period": {
+          "name": "Period",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "date": {
+          "name": "Date",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
+        }
+      }
+    },
+    "profiles_list": {
+      "name": "Profiles list",
+      "description": "List only accessible nutrition profiles.",
+      "fields": {}
+    },
+    "profiles_get": {
+      "name": "Profiles get",
+      "description": "Read an accessible nutrition profile configuration.",
+      "fields": {
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
+        }
+      }
+    },
+    "profiles_create": {
+      "name": "Profiles create",
+      "description": "Create a separate nutrition profile without moving the existing diary.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "owner_id": {
+          "name": "Owner id",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "allowed_users": {
+          "name": "Allowed users",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "settings": {
+          "name": "Settings",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "See the command schema returned by macromate.describe."
+        }
+      }
+    },
+    "profiles_update": {
+      "name": "Profiles update",
+      "description": "Update a profile; only administrators may change its ownership or sharing.",
+      "fields": {
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
+        },
+        "name": {
+          "name": "Name",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "owner_id": {
+          "name": "Owner id",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "allowed_users": {
+          "name": "Allowed users",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "settings": {
+          "name": "Settings",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "See the command schema returned by macromate.describe."
+        }
+      }
+    },
+    "profiles_delete": {
+      "name": "Profiles delete",
+      "description": "Delete one named profile after explicit confirmation.",
+      "fields": {
+        "profile_id": {
+          "name": "Nutrition profile",
+          "description": "Profile ID from profiles_list. Omit for the existing administrator diary."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "See the command schema returned by macromate.describe."
+        },
+        "request_id": {
+          "name": "Request id",
+          "description": "See the command schema returned by macromate.describe."
+        }
+      }
+    },
+    "profiles_users": {
+      "name": "Profiles users",
+      "description": "List active Home Assistant users for administrator-managed profile sharing.",
+      "fields": {}
     }
   },
   "selector": {
@@ -1413,6 +1605,58 @@
         "low_carb": "Lower carbohydrate",
         "high_protein": "Higher protein",
         "low_fat": "Lower fat"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "calories": {
+        "name": "Calories consumed"
+      },
+      "protein": {
+        "name": "Protein consumed"
+      },
+      "carbs": {
+        "name": "Carbohydrates consumed"
+      },
+      "fat": {
+        "name": "Fat consumed"
+      },
+      "meal_count": {
+        "name": "Meals today"
+      },
+      "garmin_weight": {
+        "name": "Wearable weight"
+      },
+      "recommended_bmr": {
+        "name": "Recommended basal metabolic rate"
+      },
+      "garmin_active_calories": {
+        "name": "Wearable active calories"
+      },
+      "calorie_target": {
+        "name": "Daily calorie target"
+      },
+      "protein_target": {
+        "name": "Protein target"
+      },
+      "carbs_target": {
+        "name": "Carbohydrate target"
+      },
+      "fat_target": {
+        "name": "Fat target"
+      },
+      "remaining_calories": {
+        "name": "Calorie balance"
+      },
+      "remaining_protein": {
+        "name": "Protein balance"
+      },
+      "remaining_carbs": {
+        "name": "Carbohydrate balance"
+      },
+      "remaining_fat": {
+        "name": "Fat balance"
       }
     }
   }

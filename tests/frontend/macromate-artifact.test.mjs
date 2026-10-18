@@ -12,7 +12,7 @@ test('shipped decoder has pinned identity, legal files and a scoped reproducible
  assert.ok(Object.keys(inputs).every(p=>p.startsWith('@zxing/library/')||p.startsWith('ts-custom-error/')||p==='frontend/vendor/zxing-entry.js'));
  for(const name of ['ZXING-LICENSE.txt','TS-CUSTOM-ERROR-LICENSE.txt','zxing-0.21.3.js.LEGAL.txt'])assert.ok((await readFile('frontend/vendor/'+name)).length>100);
  const deps=JSON.parse(await readFile('tests/frontend/deps.package.json'));
- assert.deepEqual(deps.dependencies,{'@zxing/library':'0.21.3','bwip-js':'4.7.0',esbuild:'0.25.11',playwright:'1.56.1'});
+ assert.deepEqual(deps.dependencies,{'@zxing/library':'0.21.3','bwip-js':'4.7.0',esbuild:'0.25.11',playwright:'1.56.1',prettier:'3.6.2'});
  const lock=JSON.parse(await readFile('tests/frontend/deps.package-lock.json'));
  assert.equal(lock.packages['node_modules/@zxing/library'].version,'0.21.3');
  assert.ok(lock.packages['node_modules/@zxing/library'].integrity.startsWith('sha512-'));

@@ -22,38 +22,48 @@ let sentinel = null;
 let acquisition = null;
 
 export function isWakeLockSupported() {
-  return typeof navigator !== 'undefined' && 'wakeLock' in navigator;
+  return typeof navigator !== "undefined" && "wakeLock" in navigator;
 }
 
 function notify() {
   const active = !!sentinel;
-  listeners.forEach(fn => fn(active));
+  listeners.forEach((fn) => fn(active));
 }
 
 async function acquireSentinel() {
   if (acquisition) return acquisition;
   if (!isWakeLockSupported() || sentinel) return;
-  if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+  if (typeof document !== "undefined" && document.visibilityState !== "visible")
+    return;
   acquisition = (async () => {
-  try {
-    const acquired = await navigator.wakeLock.request('screen');
-    if (!reasons.size || document.visibilityState !== 'visible') { await acquired.release(); return; }
-    sentinel = acquired;
-    sentinel.addEventListener('release', () => {
-      sentinel = null;
+    try {
+      const acquired = await navigator.wakeLock.request("screen");
+      if (!reasons.size || document.visibilityState !== "visible") {
+        await acquired.release();
+        return;
+      }
+      sentinel = acquired;
+      sentinel.addEventListener("release", () => {
+        sentinel = null;
+        notify();
+      });
       notify();
-    });
-    notify();
-  } catch (err) {
-    console.warn('[RM] Wake Lock request failed:', err);
-  } finally { acquisition = null; }
+    } catch (err) {
+      console.warn("[RM] Wake Lock request failed:", err);
+    } finally {
+      acquisition = null;
+    }
   })();
   return acquisition;
 }
 
 async function releaseSentinel() {
   if (!sentinel) return;
-  try { await sentinel.release(); } catch { /* ignore */ }
+  try {
+    await sentinel.release();
+  } catch {
+    /* ignore */
+  }
   sentinel = null;
   notify();
 }
@@ -63,9 +73,10 @@ async function sync() {
   else await releaseSentinel();
 }
 
-if (typeof document !== 'undefined') {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && reasons.size > 0) acquireSentinel();
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && reasons.size > 0)
+      acquireSentinel();
   });
 }
 

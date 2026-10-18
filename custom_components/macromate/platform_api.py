@@ -1,30 +1,39 @@
 """Unified registry and staged kitchen runtime shared by native transports."""
 
 from __future__ import annotations
+
+import math
 from copy import deepcopy
+from uuid import uuid4
+
+from .household import NUTRITION_COMMANDS
+from .household import descriptors as profile_descriptors
+from .models import MEAL_TYPES, NUTRIENTS, MealEntry
 from .platform_support import (
     Actor,
-    require_admin,
     require_access,
-    validate_payload,
+    require_admin,
+    require_nutrition,
     utc_timestamp,
+    validate_payload,
 )
-from .recipes import RECIPE_ACTIONS, recipe_command, recipe_authorize, validate_declared_nutrition
-from .storage_budget import (
-    MAX_DATA_BYTES, MAX_RESTORE_METADATA_BYTES, MAX_RESTORE_RECEIPT_BYTES,
-    MAX_RESTORE_RECEIPTS, MAX_STORAGE_BYTES, MAX_TRANSFER_BYTES, validate_storage_root,
-)
+from .recipes import RECIPE_ACTIONS, recipe_authorize, recipe_command, validate_declared_nutrition
 from .runtime_api import DiaryCommands
-from .models import MealEntry, NUTRIENTS, MEAL_TYPES
-from uuid import uuid4
-import re
-import math
+from .storage_budget import (
+    MAX_DATA_BYTES,
+    MAX_RESTORE_METADATA_BYTES,
+    MAX_RESTORE_RECEIPT_BYTES,
+    MAX_RESTORE_RECEIPTS,
+    MAX_STORAGE_BYTES,
+    MAX_TRANSFER_BYTES,
+    validate_storage_root,
+)
 
 SERVINGS = {"type": "number", "exclusiveMinimum": 0, "maximum": 100000}
 MEAL = {"type": "string", "enum": list(MEAL_TYPES)}
 DAY = {"type": "string", "format": "date"}
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 LEGACY_SERVICES = {
     "list_meals": "diary",
     "log_meal": "log_meal",
@@ -92,17 +101,24 @@ ACTIONS = {
         admin=False,
     ),
     "legacy_import": descriptor(
-        "Atomically import explicitly supplied standalone legacy stores and images; never read server files or fetch URLs.",
+        (
+            "Atomically import explicitly supplied standalone legacy stores "
+            "and images; never read server files or fetch URLs."
+        ),
         {
             "source": {"const": "recipe_manager"},
             "stores": {
-                "type": "object", "minProperties": 1, "maxProperties": 8,
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 8,
                 "additionalProperties": {"type": ["object", "array"]},
             },
             "images": {
-                "type": "object", "maxProperties": 1000,
+                "type": "object",
+                "maxProperties": 1000,
                 "additionalProperties": {
-                    "type": "string", "minLength": 4,
+                    "type": "string",
+                    "minLength": 4,
                     "maxLength": 4 * ((8 * 1024 * 1024 + 2) // 3) + 64,
                 },
             },
@@ -121,7 +137,8 @@ ACTIONS = {
 # Only recipe migration remains operational; historical shopping is restored
 # exclusively as inert data in a complete administrative backup.
 ACTIONS["legacy_import"]["schema"]["properties"]["request_id"] = {
-    **ID, "pattern": r"^[^\x00-\x1f]*[^\s\x00-\x1f][^\x00-\x1f]*$",
+    **ID,
+    "pattern": r"^[^\x00-\x1f]*[^\s\x00-\x1f][^\x00-\x1f]*$",
 }
 
 CROSS_ACTIONS = {
@@ -143,15 +160,13 @@ def recipe_nutrients(recipe, servings):
         or nutrition.get("calories") is None
         or basis not in ("per_recipe", "per_serving")
     ):
-        raise ValueError(
-            "recipe requires declared calories and a known nutrition basis"
-        )
+        raise ValueError("recipe requires declared calories and a known nutrition basis")
     validate_declared_nutrition(nutrition)
     denominator = recipe.get("servings") if basis == "per_recipe" else 1
     if type(denominator) not in (int, float) or denominator <= 0:
         raise ValueError("per-recipe nutrition requires a positive recipe yield")
     values = {}
-    aliases = {"carbohydrates": "carbs", "sugar": "sugars"}
+    aliases = {"carbohydrates": "carbs"}
     for key, value in nutrition.items():
         if value is None:
             continue
@@ -205,17 +220,12 @@ NUTRITION_ACTIONS = {
             "name": {**TEXT, "maxLength": 120},
             "meal_type": MEAL,
             "calories": NUM,
-            **{
-                k: {**NUM, "type": ["number", "null"]}
-                for k in ("protein", "carbs", "fat")
-            },
+            **{k: {**NUM, "type": ["number", "null"]} for k in ("protein", "carbs", "fat")},
             "eaten_at": TEXT,
         },
         ["entry_id"],
     ),
-    "delete_meal": descriptor(
-        "Delete an exact diary entry.", {"entry_id": ID}, ["entry_id"]
-    ),
+    "delete_meal": descriptor("Delete an exact diary entry.", {"entry_id": ID}, ["entry_id"]),
     "copy_meal": descriptor(
         "Copy a recorded snapshot to an explicit date.",
         {"entry_id": ID, "date": DAY, "meal_type": MEAL},
@@ -249,6 +259,17 @@ NUTRITION_ACTIONS = {
 }
 ACTIONS.update(NUTRITION_ACTIONS)
 
+ACTIONS["nutrition_report"] = descriptor(
+    "Read an ISO week or calendar month report without inventing historical goals.",
+    {"period": {"enum": ["week", "month"]}, "date": DAY},
+    read=True,
+    admin=False,
+)
+ACTIONS.update(profile_descriptors(descriptor, ID))
+for _action in NUTRITION_COMMANDS:
+    ACTIONS[_action]["schema"]["properties"]["profile_id"] = ID
+    ACTIONS[_action]["admin_only"] = False
+
 LIMITS = {
     "root_state_bytes": MAX_STORAGE_BYTES,
     "root_data_budget_bytes": MAX_DATA_BYTES,
@@ -256,7 +277,12 @@ LIMITS = {
     "restore_metadata_reserve_bytes": MAX_RESTORE_METADATA_BYTES,
     "restore_receipt_bytes": MAX_RESTORE_RECEIPT_BYTES,
     "restore_receipt_entries": MAX_RESTORE_RECEIPTS,
-    "root_budget_policy": "Only exact bounded administrative restore receipts are uncharged; ordinary data and other operation history share the original 64 MiB budget. All history remains in the same atomic Store and backup.",
+    "root_budget_policy": (
+        "Only exact bounded administrative restore receipts are "
+        "uncharged; ordinary data and other operation history share the "
+        "original 64 MiB budget. All history remains in the same atomic "
+        "Store and backup."
+    ),
     "command_payload_bytes": 8388608,
     "snapshot_bytes": 2097152,
     "replay_entries": 1000,
@@ -272,17 +298,25 @@ LIMITS = {
     "backup_http_response_bytes": MAX_STORAGE_BYTES + 10,
     "legacy_import_route": "/api/macromate/legacy-import",
     "legacy_import_http_request_bytes": MAX_TRANSFER_BYTES,
-    "large_transfer": "The native WS frame cap includes its envelope. Large backups and legacy imports require the dedicated authenticated HTTP routes; generic clients retain their smaller limits.",
+    "large_transfer": (
+        "The native WS frame cap includes its envelope. Large backups and "
+        "legacy imports require the dedicated authenticated HTTP routes; "
+        "generic clients retain their smaller limits."
+    ),
 }
 
 
 class PlatformCommands(DiaryCommands):
     def _validate_restore(self, data):
-        from .foods import FoodProduct, ServingDefinition
+        from .restore_consistency import normalize_legacy_recipe_sugar
+
+        data = normalize_legacy_recipe_sugar(data)
         # Dormant historical schemas/catalog references only, never dispatch.
         from . import shopping
-        from .platform_support import empty_kitchen, identifier, validate_json
-        from .recipes import _ID as recipe_id_schema, _epoch
+        from .foods import FoodProduct, ServingDefinition
+        from .platform_support import empty_kitchen, identifier
+        from .recipes import _ID as recipe_id_schema
+        from .recipes import _epoch
 
         def persisted_schema(action):
             # Native persisted records are complete models, not create patches.
@@ -295,8 +329,10 @@ class PlatformCommands(DiaryCommands):
                 updated_at={"type": "string", "minLength": 1, "maxLength": 64},
             )
             return {
-                "type": "object", "properties": props,
-                "required": list(props), "additionalProperties": False,
+                "type": "object",
+                "properties": props,
+                "required": list(props),
+                "additionalProperties": False,
             }
 
         recipe_schema = persisted_schema("recipes_add")
@@ -312,7 +348,9 @@ class PlatformCommands(DiaryCommands):
                 validate_payload(row[key], {"type": "number", "minimum": 0})
             for key in ("amount", "quantity", "recipe_servings"):
                 if row.get(key) is not None:
-                    validate_payload(row[key], {"type": "number", "exclusiveMinimum": 0, "maximum": 100000})
+                    validate_payload(
+                        row[key], {"type": "number", "exclusiveMinimum": 0, "maximum": 100000}
+                    )
             for key in ("food_id", "serving_id", "recipe_id"):
                 if row.get(key) is not None:
                     identifier(row[key], key)
@@ -330,12 +368,19 @@ class PlatformCommands(DiaryCommands):
                     raise ValueError("food snapshot identity or base unit mismatch")
                 fields = ServingDefinition.__dataclass_fields__
                 for serving in snapshot["servings"]:
-                    validate_payload(serving, {
-                        "type": "object", "properties": {key: {} for key in fields},
-                        "required": list(fields), "additionalProperties": False,
-                    })
+                    validate_payload(
+                        serving,
+                        {
+                            "type": "object",
+                            "properties": {key: {} for key in fields},
+                            "required": list(fields),
+                            "additionalProperties": False,
+                        },
+                    )
                 if row.get("serving_id") is not None or row.get("quantity") is not None:
-                    amount = food.portion_amount(serving_id=row.get("serving_id"), quantity=row.get("quantity"))
+                    amount = food.portion_amount(
+                        serving_id=row.get("serving_id"), quantity=row.get("quantity")
+                    )
                     if not math.isclose(amount, row["amount"], rel_tol=1e-12):
                         raise ValueError("food snapshot serving conflicts with amount")
                 nutrition = food.scaled(row["amount"])
@@ -393,6 +438,7 @@ class PlatformCommands(DiaryCommands):
                     validate_payload(record, shopping.USAGE_RECORD)
                     if record["last_used"] is not None:
                         from .recipes import _epoch
+
                         _epoch(record["last_used"])
             # Other user preference extensions are inert JSON, retained for
             # additive compatibility. Only the reserved shopping settings have
@@ -423,10 +469,18 @@ class PlatformCommands(DiaryCommands):
                 if bucket == "meal_plan" and row["recipe_id"] not in kitchen["recipes"]:
                     raise ValueError("missing planned recipe")
                 if bucket == "timers":
-                    if row["preset_id"] is not None and row["preset_id"] not in kitchen["timer_presets"]:
+                    if (
+                        row["preset_id"] is not None
+                        and row["preset_id"] not in kitchen["timer_presets"]
+                    ):
                         raise ValueError("missing timer preset")
                     remaining = row["paused_remaining"]
-                    if row["running"] and remaining is not None or remaining is not None and remaining > row["duration"]:
+                    if (
+                        row["running"]
+                        and remaining is not None
+                        or remaining is not None
+                        and remaining > row["duration"]
+                    ):
                         raise ValueError("invalid timer pause state")
         schemas = {
             "shopping_lists": shopping.LIST_RECORD,
@@ -440,11 +494,78 @@ class PlatformCommands(DiaryCommands):
         # shopping imports. Import-optional metadata (e.g. product timestamps,
         # item order_index, region currency) must remain optional here.
         required = {
-            "shopping_lists": {"id", "name", "icon", "owner_id", "allowed_users", "created_at", "updated_at", "item_order", "category_order", "ha_todo_entity_id"},
-            "shopping_items": {"id", "list_id", "name", "category_id", "product_id", "quantity", "unit", "note", "price", "currency", "image_url", "barcode", "checked", "checked_at", "created_at", "updated_at", "estimated_total"},
-            "products": {"id", "owner_id", "allowed_users", "name", "category_id", "aliases", "default_unit", "default_quantity", "price", "currency", "nutrition", "region", "source", "custom"},
-            "categories": {"id", "owner_id", "allowed_users", "name", "icon", "color", "sort_order", "region", "system"},
-            "loyalty_cards": {"id", "owner_id", "allowed_users", "name", "number", "barcode", "barcode_type", "logo", "notes", "color", "created_at", "updated_at"},
+            "shopping_lists": {
+                "id",
+                "name",
+                "icon",
+                "owner_id",
+                "allowed_users",
+                "created_at",
+                "updated_at",
+                "item_order",
+                "category_order",
+                "ha_todo_entity_id",
+            },
+            "shopping_items": {
+                "id",
+                "list_id",
+                "name",
+                "category_id",
+                "product_id",
+                "quantity",
+                "unit",
+                "note",
+                "price",
+                "currency",
+                "image_url",
+                "barcode",
+                "checked",
+                "checked_at",
+                "created_at",
+                "updated_at",
+                "estimated_total",
+            },
+            "products": {
+                "id",
+                "owner_id",
+                "allowed_users",
+                "name",
+                "category_id",
+                "aliases",
+                "default_unit",
+                "default_quantity",
+                "price",
+                "currency",
+                "nutrition",
+                "region",
+                "source",
+                "custom",
+            },
+            "categories": {
+                "id",
+                "owner_id",
+                "allowed_users",
+                "name",
+                "icon",
+                "color",
+                "sort_order",
+                "region",
+                "system",
+            },
+            "loyalty_cards": {
+                "id",
+                "owner_id",
+                "allowed_users",
+                "name",
+                "number",
+                "barcode",
+                "barcode_type",
+                "logo",
+                "notes",
+                "color",
+                "created_at",
+                "updated_at",
+            },
             "regions": {"id", "code", "name", "owner_id", "allowed_users"},
         }
         for bucket, schema in schemas.items():
@@ -457,7 +578,7 @@ class PlatformCommands(DiaryCommands):
                     "owner_id" not in row or "allowed_users" not in row
                 ):
                     raise ValueError("explicit object ACL required")
-                for owner in ([row["owner_id"]] if row.get("owner_id") is not None else []):
+                for owner in [row["owner_id"]] if row.get("owner_id") is not None else []:
                     identifier(owner, "owner_id")
                 if bucket == "products" and row["source"] == "catalog":
                     if not isinstance(row["owner_id"], str):
@@ -474,22 +595,24 @@ class PlatformCommands(DiaryCommands):
                     raise ValueError("shopping identity mismatch")
                 if bucket == "regions" and (row["id"] != row["code"] or key in shopping.COUNTRIES):
                     raise ValueError("region identity mismatch")
-                if (
-                    bucket == "shopping_items"
-                    and row["list_id"] not in kitchen["shopping_lists"]
-                ):
+                if bucket == "shopping_items" and row["list_id"] not in kitchen["shopping_lists"]:
                     raise ValueError("missing item parent")
         known_categories = set(kitchen["categories"])
         for country in ("NZ", "BE"):
             known_categories.update(
-                row["id"] for row in shopping._categories(empty_kitchen(), country, Actor(None, trusted_internal=True))
+                row["id"]
+                for row in shopping._categories(
+                    empty_kitchen(), country, Actor(None, trusted_internal=True)
+                )
             )
         for bucket in ("products", "shopping_items"):
             for row in kitchen[bucket].values():
                 if row["category_id"] not in known_categories:
                     raise ValueError("missing shopping category")
                 if bucket == "shopping_items":
-                    total = None if row["price"] is None else round(row["quantity"] * row["price"], 10)
+                    total = (
+                        None if row["price"] is None else round(row["quantity"] * row["price"], 10)
+                    )
                     if row["estimated_total"] != total:
                         raise ValueError("invalid item price total")
                 # Missing product references are legitimate historical snapshots
@@ -498,9 +621,7 @@ class PlatformCommands(DiaryCommands):
             if any(cid not in known_categories for cid in row["category_order"]):
                 raise ValueError("missing ordered category")
             if set(row.get("item_order", [])) != {
-                i["id"]
-                for i in kitchen["shopping_items"].values()
-                if i["list_id"] == lid
+                i["id"] for i in kitchen["shopping_items"].values() if i["list_id"] == lid
             }:
                 raise ValueError("invalid list item order")
         for owner, lid in kitchen["active_lists"].items():
@@ -510,26 +631,36 @@ class PlatformCommands(DiaryCommands):
             # Native membership revocation can leave a stale active selection.
             # It is inert UI state, not an ACL grant; retain it without repair.
         from .kitchen_network import normalize_image
-        from .private_media import media_id, PREFIX
+        from .private_media import PREFIX, media_id
 
         for mid, record in kitchen["media"].items():
-            if media_id(mid) != mid or set(record) != {"data", "content_type", "owner_id", "allowed_users"}:
+            if media_id(mid) != mid or set(record) != {
+                "data",
+                "content_type",
+                "owner_id",
+                "allowed_users",
+            }:
                 raise ValueError("invalid media identity or fields")
             validate_payload(
                 {k: v for k, v in record.items() if k != "data"},
                 {
-                    "type": "object", "properties": {
+                    "type": "object",
+                    "properties": {
                         "content_type": {"const": "image/webp"},
                         "owner_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
                         "allowed_users": shopping.IDS,
-                    }, "additionalProperties": False,
+                    },
+                    "additionalProperties": False,
                 },
             )
             if record["owner_id"] is not None:
                 identifier(record["owner_id"], "owner_id")
             # Require already-normalized private media, never turn hostile or
             # mislabeled source bytes into a different accepted backup record.
-            if normalize_image(record["data"]) != {"data": record["data"], "content_type": record["content_type"]}:
+            if normalize_image(record["data"]) != {
+                "data": record["data"],
+                "content_type": record["content_type"],
+            }:
                 raise ValueError("private media must already be normalized WebP")
         for bucket in ("recipes", "products", "shopping_items", "loyalty_cards"):
             for row in kitchen[bucket].values():
@@ -541,25 +672,38 @@ class PlatformCommands(DiaryCommands):
         from .restore_consistency import validate_history_consistency
 
         validate_history_consistency(data, recipe_nutrients=recipe_nutrients)
+        for profile in data.get("profiles", {}).values():
+            # Validate historical snapshots, references and nutrition models in
+            # every partition, without mixing them into the default diary.
+            self._validate_restore({"schema": 3, **profile["data"]})
         # Persist exactly the root shape adoption/export will expose. Optional
         # legacy collections must consume ordinary budget BEFORE Save, not appear
         # for the first time in _state() after a sparse boundary-size restore.
-        return validate_storage_root({
-            **data, "schema": 3,
-            "entries": [entry.to_dict() for entry in decoded[0].entries],
-            "ledger": decoded[1].to_list(),
-            "foods": data.get("foods", {}), "favorites": data.get("favorites", {}),
-            "daily_goals": data.get("daily_goals", {}), "kitchen": kitchen,
-        })
+        return validate_storage_root(
+            {
+                **data,
+                "schema": 3,
+                "entries": [entry.to_dict() for entry in decoded[0].entries],
+                "ledger": decoded[1].to_list(),
+                "foods": data.get("foods", {}),
+                "favorites": data.get("favorites", {}),
+                "daily_goals": data.get("daily_goals", {}),
+                "kitchen": kitchen,
+            }
+        )
 
     def _cross_command(self, state, action, values, actor, prepared=None):
         if action == "legacy_import":
             # The coordinator owns this detached stage and executor. Importers
             # never open source files, fetch URLs, publish or persist anything.
             from .legacy_recipes import import_legacy_recipes
+
             result = import_legacy_recipes(
-                state, values["stores"], values.get("images", {}),
-                actor, utc_timestamp(),
+                state,
+                values["stores"],
+                values.get("images", {}),
+                actor,
+                utc_timestamp(),
                 preserve_permissions=values["preserve_permissions"],
             )
             # Validate the complete resulting persisted model, not just an
@@ -628,8 +772,7 @@ class PlatformCommands(DiaryCommands):
                 }
             )
             state["entries"] = [
-                item.to_dict() if row["id"] == item.id else row
-                for row in state["entries"]
+                item.to_dict() if row["id"] == item.id else row for row in state["entries"]
             ]
             return self._entry_result(item)
         raise ValueError("unknown cross-domain action")
@@ -638,13 +781,9 @@ class PlatformCommands(DiaryCommands):
         from . import kitchen_network as network
 
         if action == "platform_restore":
-            return await self.hass.async_add_executor_job(
-                self._validate_restore, values["data"]
-            )
+            return await self.hass.async_add_executor_job(self._validate_restore, values["data"])
         if action == "recipes_scrape":
-            recipe = await network.fetch_recipe(
-                values["url"], enabled=values["enabled"]
-            )
+            recipe = await network.fetch_recipe(values["url"], enabled=values["enabled"])
             return {"recipe": self._clean_recipe_media(recipe, {})}
         if action == "recipe_keeper_import":
             if "html_content" in values:
@@ -677,12 +816,10 @@ class PlatformCommands(DiaryCommands):
         from .private_media import PREFIX
 
         value = deepcopy(recipe)
-        numeric_fields = ACTIONS["recipes_add"]["schema"]["properties"][
-            "declared_nutrition"
-        ]["properties"]
-        if value.get("declared_nutrition") is None and isinstance(
-            value.get("nutrition"), dict
-        ):
+        numeric_fields = ACTIONS["recipes_add"]["schema"]["properties"]["declared_nutrition"][
+            "properties"
+        ]
+        if value.get("declared_nutrition") is None and isinstance(value.get("nutrition"), dict):
             value["declared_nutrition"] = {
                 key: number
                 for key, number in value["nutrition"].items()
@@ -693,9 +830,7 @@ class PlatformCommands(DiaryCommands):
             "photos": deepcopy(value.get("photos", [])),
         }
         refs = [value.get("image_url"), *value.get("photos", [])]
-        local = list(
-            dict.fromkeys(PREFIX + mapping[ref] for ref in refs if ref in mapping)
-        )
+        local = list(dict.fromkeys(PREFIX + mapping[ref] for ref in refs if ref in mapping))
         value["photos"] = local
         value["image_url"] = local[0] if local else None
         if any(original.values()):
@@ -726,14 +861,12 @@ class PlatformCommands(DiaryCommands):
             for recipe in prepared["recipes"]:
                 filename = recipe.get("_image_filename")
                 clean = self._clean_recipe_media(recipe, mapping)
-                result = recipe_command(
-                    kitchen, "recipes_add", clean, actor, utc_timestamp()
-                )["recipe"]
+                result = recipe_command(kitchen, "recipes_add", clean, actor, utc_timestamp())[
+                    "recipe"
+                ]
                 ids.append(result["id"])
                 if filename and not result.get("image_url"):
-                    images.append(
-                        {"recipe_id": result["id"], "image_filename": filename}
-                    )
+                    images.append({"recipe_id": result["id"], "image_filename": filename})
             return {
                 "imported": len(ids),
                 "failed": 0,
@@ -745,20 +878,16 @@ class PlatformCommands(DiaryCommands):
         if action.startswith("recipes_"):
             if action == "recipes_add":
                 clean = {
-                    k: v
-                    for k, v in values.items()
-                    if k not in ("download_image", "request_id")
+                    k: v for k, v in values.items() if k not in ("download_image", "request_id")
                 }
                 clean["image_url"], clean["photos"] = url, [url]
-                result = recipe_command(
-                    kitchen, "recipes_add", clean, actor, utc_timestamp()
-                )
+                result = recipe_command(kitchen, "recipes_add", clean, actor, utc_timestamp())
                 return result
             recipe = kitchen["recipes"][values["recipe_id"]]
             recipe["image_url"] = url
             recipe["photos"] = list(dict.fromkeys([*recipe.get("photos", []), url]))
             recipe["updated_at"] = utc_timestamp()
-            return {'image_url':url,'local_url':url,'media_id':mid,'recipe_id':recipe['id']}
+            return {"image_url": url, "local_url": url, "media_id": mid, "recipe_id": recipe["id"]}
         raise ValueError("unknown media operation")
 
     async def async_command(self, action, payload, *, actor=None):
@@ -766,8 +895,6 @@ class PlatformCommands(DiaryCommands):
         if action not in ACTIONS:
             return await super().async_command(action, payload, actor=actor)
         if action == "platform_restore":
-            from .platform_support import validate_json
-
             if not isinstance(payload, dict) or "data" not in payload:
                 raise ValueError("complete restore data required")
             envelope = validate_payload({**payload, "data": {}}, ACTIONS[action]["schema"])
@@ -777,13 +904,18 @@ class PlatformCommands(DiaryCommands):
             values = {**envelope, "data": data}
             import json
 
-            if len(json.dumps(values, ensure_ascii=False, allow_nan=False).encode("utf-8")) > MAX_TRANSFER_BYTES:
+            if (
+                len(json.dumps(values, ensure_ascii=False, allow_nan=False).encode("utf-8"))
+                > MAX_TRANSFER_BYTES
+            ):
                 raise ValueError("JSON payload is too large")
         elif action == "legacy_import":
             # Only this explicit administrator bulk operation uses the finite
             # transfer budget. Ordinary command validation retains its 8 MiB cap.
             require_admin(actor)
-            values = validate_payload(payload, ACTIONS[action]["schema"], max_bytes=MAX_TRANSFER_BYTES)
+            values = validate_payload(
+                payload, ACTIONS[action]["schema"], max_bytes=MAX_TRANSFER_BYTES
+            )
             values.setdefault("images", {})
         else:
             values = validate_payload(payload, ACTIONS[action]["schema"])
@@ -801,10 +933,18 @@ class PlatformCommands(DiaryCommands):
                 "limits": deepcopy(LIMITS),
             }
         if action in CROSS_ACTIONS:
-            command = lambda kitchen, action, values, actor, now: None
-            authorize = lambda kitchen, action, values, actor, allow_missing=False: (
-                None if action.startswith("preferences_") else require_admin(actor)
-            )
+
+            def command(kitchen, action, values, actor, now):
+                return None
+
+            def authorize(kitchen, action, values, actor, allow_missing=False):
+                return (
+                    None
+                    if action.startswith("preferences_")
+                    else require_nutrition(actor)
+                    if action in NUTRITION_COMMANDS
+                    else require_admin(actor)
+                )
         else:
             command, authorize = recipe_command, recipe_authorize
         network_action = (
@@ -823,9 +963,7 @@ class PlatformCommands(DiaryCommands):
                 if action == "preferences_get":
                     return {
                         "preferences": deepcopy(
-                            self.kitchen["preferences"]
-                            .get(actor.owner_id, {})
-                            .get("ui", {})
+                            self.kitchen["preferences"].get(actor.owner_id, {}).get("ui", {})
                         )
                     }
                 result = await self.hass.async_add_executor_job(
@@ -857,7 +995,7 @@ class PlatformCommands(DiaryCommands):
             authorize(state["kitchen"], action, values, actor, allow_missing=True)
             if action == "platform_restore":
                 return  # Administrative replacement media is validated in preprocessing.
-            from .private_media import media_id, media_bytes
+            from .private_media import media_bytes, media_id
 
             def check_references(value):
                 if isinstance(value, list):
@@ -947,11 +1085,7 @@ class PlatformCommands(DiaryCommands):
             async with self._lock:
                 current = self._state()
                 await self.hass.async_add_executor_job(guard, current)
-                previous = (
-                    self.ledger.replay(scoped_id, action, fingerprint)
-                    if scoped_id
-                    else None
-                )
+                previous = self.ledger.replay(scoped_id, action, fingerprint) if scoped_id else None
                 if previous is not None:
                     replay_guard(current, previous.get("__access", []))
                     return deepcopy(previous.get("__result", previous))

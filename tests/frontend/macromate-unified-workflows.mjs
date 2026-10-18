@@ -95,7 +95,7 @@ try {
  });
  await test('keyboard-focus-and-member-context-reset',async()=>{
   await view('grid');await page.keyboard.press('Tab');const focus=await page.evaluate(()=>{let n=document.activeElement;while(n?.shadowRoot?.activeElement)n=n.shadowRoot.activeElement;return {tag:n?.tagName,text:n?.textContent?.trim(),outline:n?getComputedStyle(n).outlineStyle:null};});assert.ok(focus.tag);assert.notEqual(focus.tag,'BODY');
-  await page.evaluate(()=>{hass.user.is_admin=false;card.hass=hass;});await page.waitForTimeout(150);assert.equal(await page.getByText('Garden Bowl',{exact:true}).count(),0);assert.equal(await page.locator('mm-nutrition').count(),0);assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0);return {focus,inPlacePermissionChange:'private DOM removed'};
+  await page.evaluate(()=>{hass.user.is_admin=false;card.hass=hass;});await page.waitForTimeout(150);assert.equal(await page.getByText('Garden Bowl',{exact:true}).count(),0);assert.equal(await page.locator('mm-nutrition').count(),1);assert.equal(await page.locator('mm-nutrition .entry').count(),0);await page.locator('mm-nutrition').getByText('No nutrition profile is shared with this account.',{exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0);return {focus,inPlacePermissionChange:'private DOM removed'};
  });
  await test('no-unhandled-errors-external-requests-or-xss',async()=>{assert.deepEqual(errors,[]);assert.deepEqual(external,[]);assert.equal(await page.evaluate(()=>window.xss),undefined);return {errors,external,xss:false};});
 } finally {

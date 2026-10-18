@@ -11,44 +11,66 @@ export class RecipeManagerAPI {
 
   subscribe(callback) {
     return this.hass.connection.subscribeMessage(callback, {
-      type: 'recipe_manager/subscribe',
+      type: "recipe_manager/subscribe",
     });
   }
 
   // -- Recipes --------------------------------------------------------------
 
   async getAllRecipes() {
-    return this.hass.callWS({ type: 'recipe_manager/recipes/get_all' });
+    return this.hass.callWS({ type: "recipe_manager/recipes/get_all" });
   }
 
   async getRecipe(recipeId) {
-    return this.hass.callWS({ type: 'recipe_manager/recipes/get', recipe_id: recipeId });
+    return this.hass.callWS({
+      type: "recipe_manager/recipes/get",
+      recipe_id: recipeId,
+    });
   }
 
   async scrapeRecipe(url, enabled = false) {
-    return this.hass.callWS({ type: 'recipe_manager/recipes/scrape', url, enabled });
+    return this.hass.callWS({
+      type: "recipe_manager/recipes/scrape",
+      url,
+      enabled,
+    });
   }
 
   async addRecipe(data) {
-    return this.hass.callWS({ type: 'recipe_manager/recipes/add', ...data });
+    return this.hass.callWS({ type: "recipe_manager/recipes/add", ...data });
   }
 
   async updateRecipe(recipeId, data) {
-    return this.hass.callWS({ type: 'recipe_manager/recipes/update', recipe_id: recipeId, ...data });
+    return this.hass.callWS({
+      type: "recipe_manager/recipes/update",
+      recipe_id: recipeId,
+      ...data,
+    });
   }
 
   async deleteRecipe(recipeId) {
-    return this.hass.callWS({ type: 'recipe_manager/recipes/delete', recipe_id: recipeId });
+    return this.hass.callWS({
+      type: "recipe_manager/recipes/delete",
+      recipe_id: recipeId,
+    });
   }
 
   async toggleFavourite(recipeId) {
-    return this.hass.callWS({ type: 'recipe_manager/recipes/toggle_favourite', recipe_id: recipeId });
+    return this.hass.callWS({
+      type: "recipe_manager/recipes/toggle_favourite",
+      recipe_id: recipeId,
+    });
   }
 
   async downloadRecipeImage(recipeId, imageUrl) {
-    if(!window.confirm('Allow MacroMate to download and privately normalize this remote image?'))throw {code:'invalid_request'};
+    if (
+      !window.confirm(
+        "Allow MacroMate to download and privately normalize this remote image?",
+      )
+    )
+      throw { code: "invalid_request" };
     return this.hass.callWS({
-      type: 'recipe_manager/recipes/download_image',
+      type: "recipe_manager/recipes/download_image",
       recipe_id: recipeId,
       image_url: imageUrl,
       enabled: true,
@@ -58,20 +80,20 @@ export class RecipeManagerAPI {
   // -- Tags -----------------------------------------------------------------
 
   async getTags() {
-    return this.hass.callWS({ type: 'recipe_manager/tags/get_all' });
+    return this.hass.callWS({ type: "recipe_manager/tags/get_all" });
   }
 
   // -- Meal Plan ------------------------------------------------------------
 
   async getMealPlan(weekStart) {
-    const msg = { type: 'recipe_manager/meal_plan/get' };
+    const msg = { type: "recipe_manager/meal_plan/get" };
     if (weekStart) msg.week_start = weekStart;
     return this.hass.callWS(msg);
   }
 
   async addToMealPlan(recipeId, date, mealType, servings = 1, notes = null) {
     const msg = {
-      type: 'recipe_manager/meal_plan/add',
+      type: "recipe_manager/meal_plan/add",
       recipe_id: recipeId,
       date,
       meal_type: mealType,
@@ -82,29 +104,46 @@ export class RecipeManagerAPI {
   }
 
   async removeFromMealPlan(entryId) {
-    return this.hass.callWS({ type: 'recipe_manager/meal_plan/remove', entry_id: entryId });
+    return this.hass.callWS({
+      type: "recipe_manager/meal_plan/remove",
+      entry_id: entryId,
+    });
   }
 
   async clearMealPlanWeek(weekStart) {
-    return this.hass.callWS({ type: 'recipe_manager/meal_plan/clear', week_start: weekStart, confirm: true });
+    return this.hass.callWS({
+      type: "recipe_manager/meal_plan/clear",
+      week_start: weekStart,
+      confirm: true,
+    });
   }
 
   // -- Global Timers --------------------------------------------------------
 
   async getGlobalTimers() {
-    return this.hass.callWS({ type: 'recipe_manager/global_timers/get' });
+    return this.hass.callWS({ type: "recipe_manager/global_timers/get" });
   }
 
   async addGlobalTimer(data) {
-    return this.hass.callWS({ type: 'recipe_manager/global_timers/add', ...data });
+    return this.hass.callWS({
+      type: "recipe_manager/global_timers/add",
+      ...data,
+    });
   }
 
   async updateGlobalTimer(timerId, data) {
-    return this.hass.callWS({ type: 'recipe_manager/global_timers/update', timer_id: timerId, ...data });
+    return this.hass.callWS({
+      type: "recipe_manager/global_timers/update",
+      timer_id: timerId,
+      ...data,
+    });
   }
 
   async deleteGlobalTimer(timerId) {
-    return this.hass.callWS({ type: 'recipe_manager/global_timers/delete', timer_id: timerId });
+    return this.hass.callWS({
+      type: "recipe_manager/global_timers/delete",
+      timer_id: timerId,
+    });
   }
 
   // -- Import ---------------------------------------------------------------
@@ -117,7 +156,7 @@ export class RecipeManagerAPI {
    */
   async importRecipeKeeper(htmlContent) {
     return this.hass.callWS({
-      type: 'recipe_manager/import/recipe_keeper',
+      type: "recipe_manager/import/recipe_keeper",
       html_content: htmlContent,
     });
   }
@@ -128,7 +167,7 @@ export class RecipeManagerAPI {
    */
   async uploadRecipeImage(recipeId, imageData) {
     return this.hass.callWS({
-      type: 'recipe_manager/recipes/upload_image',
+      type: "recipe_manager/recipes/upload_image",
       recipe_id: recipeId,
       image_data: imageData,
     });

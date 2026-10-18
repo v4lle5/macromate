@@ -22,12 +22,16 @@ combined source remains required before production activation.
 
 ## Data and identity boundary — important
 
-The existing pinned MacroMate code treats recipes, meal plans and the diary as
-**global administrator-only data**, not per-person private datasets. This facade
-delegates selected operations on those same global datasets. It does **not**
-introduce private recipe/diary partitions or pretend that a record belongs to an
-agent. If person-private recipes/diaries are required, activation is blocked until
-the coordinator gains a reviewed ACL model and migrations.
+Recipes and meal plans remain shared administrator data. Native nutrition now
+also supports separate named profiles with owner/sharing ACLs, alongside the
+existing administrator-only default diary. This facade acts with the issuing
+administrator's authority. A `diary.read` grant includes accessible profile
+metadata and, when `profile_id` is supplied, that person's diary and reports;
+diary write scopes can similarly target named profiles. Omitting `profile_id`
+continues to address the default diary. These credentials are **not restricted
+to one person**. Do not issue an administrator's diary grant to an agent that
+should see only one household member. Profile-bound delegated credentials are
+not part of this release.
 
 A credential records its issuing administrator's literal HA user ID. Every
 request freshly resolves that user and requires an active, non-system HA
@@ -41,8 +45,8 @@ commit, matching the native command boundary.
 
 Only after the exact action/scope gate passes is `Actor(issuer_id, is_admin=True)`
 passed to the existing coordinator. `trusted_internal` is never enabled. This
-preserves the current global-domain semantics without changing native HA user
-ACLs. No caller-supplied actor, role, owner, allowed-user or scope field is
+preserves administrator authority without bypassing native command checks.
+No caller-supplied actor, role, owner, allowed-user or scope field is
 accepted. Shopping data, including private other-user records, is entirely
 outside this facade. The internal shopping subsystem is retired from native
 actions and clients too; dormant historical data is retained for full private
@@ -94,7 +98,7 @@ All listed requirements must be present; these are not prefix/wildcard grants.
 | `meal_plan_add` | `mealplan.create` and `recipes.read` |
 | `meal_plan_update` | `mealplan.update`, `mealplan.read` and `recipes.read` |
 | `meal_plan_remove` | `mealplan.delete` |
-| `diary` | `diary.read` |
+| `diary`, `nutrition_report`, `profiles_list` | `diary.read` |
 | `log_meal` | `diary.create` |
 | `copy_meal` | `diary.create` and `diary.read` |
 | `update_meal` | `diary.update` and `diary.read` |
@@ -126,7 +130,8 @@ delete permission even if the recipe currently has no planned entries. Bulk
 
 **Everything else is denied**: all shopping operations/scopes (including imports
 and recipe/plan-to-shopping), HA service control, other HA integrations, admin,
-configuration, user/permission changes, raw files, SQL/shell, backup, restore,
+configuration, profile creation/settings/sharing/deletion, user/permission
+changes, raw files, SQL/shell, backup, restore,
 export, imports, scraping, media upload/download, online food access, food catalog
 management, timers and preferences. `download_image=true` is refused on recipe
 creation. Inert image/source URLs are not fetched by the allowed commands.
@@ -153,6 +158,9 @@ registration, for agent discovery.
 - Cancellation joins started credential writes and delegated commands before
   releasing the credential lock. Failed credential saves do not publish their
   new in-memory authorization state.
+- Credential persistence observes low-level HA write failures. Read-only or
+  stopping storage cannot acknowledge a grant or revocation as durable. Removing
+  the integration entry removes its independent credential Store as well.
 - Strict JSON rejects duplicate keys, nonfinite numbers, excessive nesting,
   non-object bodies and unknown schema fields. Body limit is 256 KiB, independent
   of HA's generic limit. Query strings, encoded bodies and wrong content types

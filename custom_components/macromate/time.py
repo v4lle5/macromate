@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 
@@ -18,7 +18,7 @@ def localize_wall_time(value: datetime, timezone_name: str) -> datetime:
     valid: list[datetime] = []
     for fold in (0, 1):
         candidate = value.replace(tzinfo=zone, fold=fold)
-        roundtrip = candidate.astimezone(timezone.utc).astimezone(zone).replace(tzinfo=None)
+        roundtrip = candidate.astimezone(UTC).astimezone(zone).replace(tzinfo=None)
         if roundtrip == value:
             valid.append(candidate)
     if not valid:

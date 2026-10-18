@@ -86,9 +86,12 @@ def service_url(
     base_url: str, service: str, *, response: bool, trusted_lan_http: bool = False
 ) -> str:
     """Build a URL from a credential-free origin, never an arbitrary URL."""
-    if (not isinstance(base_url, str) or not base_url
-            or any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in base_url)
-            or any(char in base_url for char in "\\%@?#")):
+    if (
+        not isinstance(base_url, str)
+        or not base_url
+        or any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in base_url)
+        or any(char in base_url for char in "\\%@?#")
+    ):
         raise ValueError("HA_URL must be a valid origin without credentials, query or fragment")
     try:
         origin = urlsplit(base_url)
@@ -96,24 +99,34 @@ def service_url(
         port = origin.port
     except ValueError:
         raise ValueError("HA_URL must be a valid origin") from None
-    if (not host or origin.username is not None or origin.password is not None
-            or origin.path not in ("", "/") or origin.netloc.endswith(":")
-            or (port is not None and not 1 <= port <= 65535)):
+    if (
+        not host
+        or origin.username is not None
+        or origin.password is not None
+        or origin.path not in ("", "/")
+        or origin.netloc.endswith(":")
+        or (port is not None and not 1 <= port <= 65535)
+    ):
         raise ValueError("HA_URL must be a valid origin without credentials or a path")
     if ":" in host:
         try:
             ipaddress.IPv6Address(host)
         except ValueError:
             raise ValueError("HA_URL has an invalid host") from None
-    elif (host.endswith("..") or len(host.removesuffix(".")) > 253
-          or not all(re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?", label)
-                     for label in host.removesuffix(".").split("."))):
-        raise ValueError("HA_URL has an invalid host")
-    if origin.scheme != "https" and not (
-        trusted_lan_http and origin.scheme == "http"
+    elif (
+        host.endswith("..")
+        or len(host.removesuffix(".")) > 253
+        or not all(
+            re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?", label)
+            for label in host.removesuffix(".").split(".")
+        )
     ):
+        raise ValueError("HA_URL has an invalid host")
+    if origin.scheme != "https" and not (trusted_lan_http and origin.scheme == "http"):
         raise ValueError("HA_URL must use HTTPS; HTTP requires explicit trusted-LAN opt-in")
-    if isinstance(service, str) and (service.startswith("shopping_") or service in ("recipe_to_shopping", "plan_to_shopping")):
+    if isinstance(service, str) and (
+        service.startswith("shopping_") or service in ("recipe_to_shopping", "plan_to_shopping")
+    ):
         raise ValueError("internal shopping actions have been retired")
     if not isinstance(service, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", service):
         raise ValueError("service must be a valid action name")
@@ -122,7 +135,12 @@ def service_url(
 
 
 def call_service(
-    base_url: str, token: str, service: str, data: dict, *, response: bool = True,
+    base_url: str,
+    token: str,
+    service: str,
+    data: dict,
+    *,
+    response: bool = True,
     trusted_lan_http: bool = False,
 ) -> dict:
     """Call any named action once; preserve JSON data and unwrap HA's envelope.
@@ -133,7 +151,9 @@ def call_service(
     """
     url = service_url(base_url, service, response=response, trusted_lan_http=trusted_lan_http)
     if not isinstance(token, str) or not re.fullmatch(r"[\x21-\x7e]+", token):
-        raise ValueError("HA_TOKEN must be a nonempty token without whitespace or control characters")
+        raise ValueError(
+            "HA_TOKEN must be a nonempty token without whitespace or control characters"
+        )
     if not isinstance(data, dict):
         raise ValueError("service payload must be a JSON object")
     try:
@@ -163,8 +183,12 @@ def call_service(
                 raise RuntimeError("Home Assistant response exceeds the byte limit")
             if expected is not None and (expected < 0 or len(raw) != expected):
                 raise HTTPException("invalid response length")
-            body = json.loads(raw, parse_constant=_reject_constant, parse_float=_finite_float,
-                              object_pairs_hook=_unique_object)
+            body = json.loads(
+                raw,
+                parse_constant=_reject_constant,
+                parse_float=_finite_float,
+                object_pairs_hook=_unique_object,
+            )
             # Reject unpaired surrogates before Python consumers or stdout see them.
             json.dumps(body, allow_nan=False, ensure_ascii=False).encode("utf-8")
     except HTTPError as err:
@@ -195,22 +219,31 @@ class _SafeArgumentParser(argparse.ArgumentParser):
 
 def parser() -> argparse.ArgumentParser:
     result = _SafeArgumentParser(description="Manage MacroMate through Home Assistant")
-    result.add_argument("--trusted-lan-http", action="store_true",
-                        help="Allow plaintext HTTP only on an explicitly trusted LAN")
+    result.add_argument(
+        "--trusted-lan-http",
+        action="store_true",
+        help="Allow plaintext HTTP only on an explicitly trusted LAN",
+    )
     sub = result.add_subparsers(dest="command", required=True)
     sub.add_parser("describe", help="Discover all action schemas, permissions and server limits")
 
     generic = sub.add_parser("call", help="Call any discovered MacroMate action with JSON stdin")
     generic.add_argument("service")
-    generic.add_argument("--json-file", default="-", metavar="PATH",
-                         help="Read bounded UTF-8 JSON from PATH; '-' (default) means stdin")
+    generic.add_argument(
+        "--json-file",
+        default="-",
+        metavar="PATH",
+        help="Read bounded UTF-8 JSON from PATH; '-' (default) means stdin",
+    )
 
     listing = sub.add_parser("list", help="List meals and today's recommendation")
     listing.add_argument("--date")
 
     add = sub.add_parser("add", help="Add one meal")
     add.add_argument("--name", required=True)
-    add.add_argument("--meal-type", required=True, choices=("breakfast", "lunch", "dinner", "snack"))
+    add.add_argument(
+        "--meal-type", required=True, choices=("breakfast", "lunch", "dinner", "snack")
+    )
     add.add_argument("--calories", type=float, required=True)
     add.add_argument("--protein", type=float)
     add.add_argument("--carbs", type=float)
@@ -218,7 +251,9 @@ def parser() -> argparse.ArgumentParser:
     when = add.add_mutually_exclusive_group()
     when.add_argument("--eaten-at")
     when.add_argument("--date", help="Explicit HA-local diary date (YYYY-MM-DD)")
-    add.add_argument("--request-id", help="Stable idempotency ID; reuse only for the same logical add")
+    add.add_argument(
+        "--request-id", help="Stable idempotency ID; reuse only for the same logical add"
+    )
 
     update = sub.add_parser("update", help="Correct an existing meal")
     update.add_argument("entry_id")
@@ -240,10 +275,16 @@ def parser() -> argparse.ArgumentParser:
 
     clear = sub.add_parser("clear-day", help="Delete all meals on a date")
     clear.add_argument("--date", required=True)
-    clear.add_argument("--confirm", action="store_true", required=True,
-                       help="Confirm deletion of every entry on this explicit date")
+    clear.add_argument(
+        "--confirm",
+        action="store_true",
+        required=True,
+        help="Confirm deletion of every entry on this explicit date",
+    )
     for mutation in (update, delete, clear, copy):
-        mutation.add_argument("--request-id", help="Stable ID; reuse only for the same logical operation")
+        mutation.add_argument(
+            "--request-id", help="Stable ID; reuse only for the same logical operation"
+        )
     return result
 
 
@@ -260,8 +301,12 @@ def read_payload(path: str = "-") -> dict:
     if len(raw) > MAX_REQUEST_BYTES:
         raise ValueError("service payload exceeds the request byte limit")
     try:
-        data = json.loads(raw.decode("utf-8"), parse_constant=_reject_constant,
-                          parse_float=_finite_float, object_pairs_hook=_unique_object)
+        data = json.loads(
+            raw.decode("utf-8"),
+            parse_constant=_reject_constant,
+            parse_float=_finite_float,
+            object_pairs_hook=_unique_object,
+        )
     except (ValueError, RecursionError):
         raise ValueError("service payload must be valid finite UTF-8 JSON") from None
     if not isinstance(data, dict):
@@ -302,8 +347,9 @@ def main() -> int:
         return 2
     try:
         service, data = _payload(args)
-        result = call_service(base_url, token, service, data,
-                              trusted_lan_http=args.trusted_lan_http)
+        result = call_service(
+            base_url, token, service, data, trusted_lan_http=args.trusted_lan_http
+        )
     except (RuntimeError, ValueError) as err:
         print(str(err), file=sys.stderr)
         return 1

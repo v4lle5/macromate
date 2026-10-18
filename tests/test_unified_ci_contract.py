@@ -25,6 +25,9 @@ class UnifiedCIContractTests(unittest.TestCase):
             with self.subTest(job=name):
                 commands = re.findall(r"python -m pip install ([^\n]+)", job(name))
                 installed = {argument for command in commands for argument in shlex.split(command)}
+                if "requirements-dev.txt" in installed:
+                    installed.update(line.strip() for line in (ROOT / "requirements-dev.txt").read_text().splitlines()
+                                     if line.strip() and not line.startswith("#"))
                 self.assertTrue(set(requirements) <= installed,
                                 f"{name} must install manifest requirements, not depend on a developer's venv")
                 self.assertIn("homeassistant==2026.10.1", installed)

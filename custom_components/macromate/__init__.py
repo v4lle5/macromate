@@ -7,7 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from .const import DOMAIN, PLATFORMS
-from .migration import async_migrate_entry  # HA discovers this public lifecycle hook.
+from .migration import (
+    async_migrate_entry as async_migrate_entry,  # HA discovers this public lifecycle hook.
+)
 
 SERVICE_ACTIONS = {
     "list_meals": "diary",
@@ -33,6 +35,7 @@ def _settings(entry) -> dict[str, Any]:
 
 def _parse_datetime(hass, value: str | datetime | None):
     from homeassistant.util import dt as dt_util
+
     from .time import localize_wall_time
 
     if value is None:
@@ -49,9 +52,10 @@ async def async_setup(hass, config) -> bool:
     from homeassistant.core import SupportsResponse
     from homeassistant.exceptions import ServiceValidationError
     from homeassistant.helpers.service import async_register_admin_service
+
     from .food_provider import ProviderUnavailable
-    from .platform_support import Actor, validate_json
     from .platform_api import ACTIONS
+    from .platform_support import Actor, validate_json
     from .websocket import async_register, require_user_action
 
     service_actions = {**SERVICE_ACTIONS, **{name: name for name in ACTIONS}}
@@ -76,16 +80,14 @@ async def async_setup(hass, config) -> bool:
                     user = await hass.auth.async_get_user(call.context.user_id)
                     if user is None or not user.is_active:
                         raise PermissionError("authenticated active user required")
-                    require_user_action(user, action)
+                    require_user_action(user, action, call.data)
                     actor = Actor(user.id, is_admin=user.is_admin)
                 result = await entries[0].runtime_data.async_command(
                     action, dict(call.data), actor=actor
                 )
                 validate_json(result, max_bytes=8388608)
             except KeyError as err:
-                raise ServiceValidationError(
-                    "Eintrag oder Lebensmittel nicht gefunden"
-                ) from err
+                raise ServiceValidationError("Eintrag oder Lebensmittel nicht gefunden") from err
             except (ValueError, TypeError) as err:
                 raise ServiceValidationError(str(err)[:240]) from err
             except PermissionError as err:
@@ -93,9 +95,7 @@ async def async_setup(hass, config) -> bool:
                     "Kein Zugriff auf diese MacroMate-Aktion oder fehlende Online-Freigabe"
                 ) from err
             except ProviderUnavailable as err:
-                raise ServiceValidationError(
-                    "Open Food Facts derzeit nicht erreichbar"
-                ) from err
+                raise ServiceValidationError("Open Food Facts derzeit nicht erreichbar") from err
             except OSError as err:
                 raise ServiceValidationError(
                     "Speichern fehlgeschlagen; dieselbe request_id beibehalten und Status prüfen"
@@ -108,19 +108,13 @@ async def async_setup(hass, config) -> bool:
         options = {
             "schema": vol.Schema(dict),
             "supports_response": (
-                SupportsResponse.ONLY
-                if ACTIONS[action]["read_only"]
-                else SupportsResponse.OPTIONAL
+                SupportsResponse.ONLY if ACTIONS[action]["read_only"] else SupportsResponse.OPTIONAL
             ),
         }
         if ACTIONS[action]["admin_only"]:
-            async_register_admin_service(
-                hass, DOMAIN, service, handler_for(action), **options
-            )
+            async_register_admin_service(hass, DOMAIN, service, handler_for(action), **options)
         else:
-            hass.services.async_register(
-                DOMAIN, service, handler_for(action), **options
-            )
+            hass.services.async_register(DOMAIN, service, handler_for(action), **options)
     return True
 
 
@@ -133,11 +127,7 @@ async def _async_assets(hass) -> None:
     runtime = hass.data.setdefault(DOMAIN, {})
     if not runtime.get("assets_registered"):
         await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    "/macromate-assets", str(Path(__file__).parent / "frontend"), False
-                )
-            ]
+            [StaticPathConfig("/macromate-assets", str(Path(__file__).parent / "frontend"), False)]
         )
         runtime["assets_registered"] = True
 
@@ -155,7 +145,9 @@ async def _async_card_resource(hass) -> None:
     import json
 
     delivery = await hass.async_add_executor_job(
-        lambda: json.loads((Path(__file__).parent / "frontend" / "delivery-manifest.json").read_text())
+        lambda: json.loads(
+            (Path(__file__).parent / "frontend" / "delivery-manifest.json").read_text()
+        )
     )
     url = delivery["entry"]
     if modules is not None and url not in modules.urls:
@@ -195,6 +187,12 @@ async def async_unload_entry(hass, entry) -> bool:
 async def async_remove_entry(hass, entry) -> None:
     """The user removing this integration also removes its private local dataset."""
     from homeassistant.helpers.storage import Store
+
     from .const import STORE_KEY, STORE_VERSION
 
+    credentials = hass.data.get(DOMAIN, {}).get("agent_credentials")
+    if credentials is not None:
+        await credentials.async_remove()
+    else:
+        await Store(hass, 1, "macromate.agent_credentials", private=True).async_remove()
     await Store(hass, STORE_VERSION, STORE_KEY).async_remove()

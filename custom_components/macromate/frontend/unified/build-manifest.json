@@ -110,38 +110,38 @@
     },
     {
       "path": "frontend/unified/app.js",
-      "bytes": 386959,
-      "sha256": "cb7faf7669ca053a2ceb72b2c8cd60da7c91e1430358817de436e7b19bcf6802"
+      "bytes": 415325,
+      "sha256": "84da9a2bd27a46541945da5d877108d5a6161a3f37015fb8290362cc6539fd2b"
     },
     {
-      "path": "frontend/unified/chunks/de-L3JMCSON.js",
-      "bytes": 15460,
-      "sha256": "fa2c2a2d9e3533bd29d55655c91818a5f91bebf737517dc25621ffc6532761e1"
+      "path": "frontend/unified/chunks/de-EHQ56H34.js",
+      "bytes": 15476,
+      "sha256": "2fc6ab49bca09679a45828f4a9499044b325ad7b931718b18c7853b8efdf98d6"
     },
     {
-      "path": "frontend/unified/chunks/es-TYY2HB2B.js",
-      "bytes": 15574,
-      "sha256": "aa6ef9824300afc57aa1478b040784dcef1073272b254b2cb168ef8db5673e42"
+      "path": "frontend/unified/chunks/es-54MLVVJR.js",
+      "bytes": 15594,
+      "sha256": "a7b2e02f8e2829959df416ee6bd8bd8ebbb0c749cbe9899384d61b457404fd18"
     },
     {
-      "path": "frontend/unified/chunks/fr-VRS6NLY6.js",
-      "bytes": 16024,
-      "sha256": "5a04d44eb7d9a92fe5a73904312da2bca361a80b0de486576a9215b2b7af5a9a"
+      "path": "frontend/unified/chunks/fr-GPRE472V.js",
+      "bytes": 16040,
+      "sha256": "1a60d0b3629b6510e4ec1dada59fbe9aa98fb4aa8b5689d330023bdd1dcbcfec"
     },
     {
-      "path": "frontend/unified/chunks/it-SW3BRMU2.js",
-      "bytes": 15045,
-      "sha256": "740f8712eab84bf8b3dfcb02c0e0a981e34ccdce176b244794634a9ea9360684"
+      "path": "frontend/unified/chunks/it-J7OBEZFG.js",
+      "bytes": 15065,
+      "sha256": "0a00923a60285a11824d788ee57df9b8642fda7237ae02ab240e1d3ca98e255f"
     },
     {
-      "path": "frontend/unified/chunks/nl-TAIPGW4J.js",
-      "bytes": 14789,
-      "sha256": "2435c57a6d66a492b527c20fbc3049f493715fb3df71952a6f07f06d41cc1328"
+      "path": "frontend/unified/chunks/nl-XCF57UHI.js",
+      "bytes": 14807,
+      "sha256": "d1a42031f9da9cd0f6b1e836dd124a215998e86cd2942a0cfe34c3292f09ad5c"
     },
     {
-      "path": "frontend/unified/chunks/pt-UPH64WCU.js",
-      "bytes": 15810,
-      "sha256": "0eb5750ba540c1a14b8240a7ac30821dcfec7f772d984ba30bae615d072fa37a"
+      "path": "frontend/unified/chunks/pt-RNXHHZAN.js",
+      "bytes": 15826,
+      "sha256": "56bcceef59df1ede4aced8600ef527b1c7a8886770142acc4753fa829ccfa2b7"
     },
     {
       "path": "frontend/unified/chunks/chunk-VYGSGG2W.js.LEGAL.txt",

@@ -1,6 +1,7 @@
 legacy_import:
   name: Import legacy stores
-  description: Atomically import explicitly supplied standalone stores and image bytes as an administrator. Never reads source files or fetches URLs.
+  description: Atomically import explicitly supplied standalone stores and image bytes as an administrator.
+    Never reads source files or fetches URLs.
   fields:
     source:
       name: Source
@@ -8,7 +9,8 @@ legacy_import:
       required: true
       selector:
         select:
-          options: [recipe_manager]
+          options:
+          - recipe_manager
     stores:
       name: Stores
       description: Exact Store keys mapped to raw data or supported versioned envelopes.
@@ -17,13 +19,15 @@ legacy_import:
         object: {}
     images:
       name: Images
-      description: Exact local image references mapped to base64 image bytes. All local references must be supplied; unused assets are rejected.
+      description: Exact local image references mapped to base64 image bytes. All local references must
+        be supplied; unused assets are rejected.
       required: false
       selector:
         object: {}
     preserve_permissions:
       name: Preserve permissions
-      description: Explicit administrator choice. False resets imported ownership to the importer and makes records private; true retains verified legacy permissions.
+      description: Explicit administrator choice. False resets imported ownership to the importer and
+        makes records private; true retains verified legacy permissions.
       required: true
       selector:
         boolean: {}
@@ -55,6 +59,12 @@ barcode:
       required: false
       selector:
         boolean: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 clear_day:
   name: Clear day
   description: Clear only an explicitly confirmed dated diary.
@@ -73,11 +83,16 @@ clear_day:
         boolean: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 copy_meal:
   name: Copy meal
   description: Copy a recorded snapshot to an explicit date.
@@ -107,11 +122,16 @@ copy_meal:
           - snack
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 delete_meal:
   name: Delete meal
   description: Delete an exact diary entry.
@@ -124,11 +144,16 @@ delete_meal:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 describe:
   name: Describe
   description: Discover the authoritative command registry and finite transport limits.
@@ -143,6 +168,12 @@ diary:
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 favorite:
   name: Favorite
   description: Set an exact food favorite.
@@ -185,11 +216,16 @@ favorite:
           max: 100000
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 food:
   name: Food
   description: Read an exact nutrient-tracked food.
@@ -200,6 +236,12 @@ food:
       required: true
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 food_delete:
   name: Food delete
   description: Delete a local or cached food without rewriting recorded diary snapshots.
@@ -212,11 +254,16 @@ food_delete:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 get_food:
   name: Get food
   description: Read an exact nutrient-tracked food.
@@ -227,6 +274,12 @@ get_food:
       required: true
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 global_timers_add:
   name: Global timers add
   description: Create a global cooking timer; start_time is epoch seconds.
@@ -275,8 +328,7 @@ global_timers_add:
         object: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -292,8 +344,7 @@ global_timers_delete:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -361,8 +412,7 @@ global_timers_update:
         object: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -376,6 +426,12 @@ list_meals:
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 log_food:
   name: Log food
   description: Log a declared food portion with an immutable snapshot.
@@ -435,11 +491,16 @@ log_food:
           max: 100000
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 log_meal:
   name: Log meal
   description: Create a quick meal retaining missing declarations.
@@ -511,11 +572,16 @@ log_meal:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 lookup_barcode:
   name: Lookup barcode
   description: Look up an exact food barcode, online only after consent.
@@ -532,6 +598,12 @@ lookup_barcode:
       required: false
       selector:
         boolean: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 meal_plan_add:
   name: Meal plan add
   description: Schedule a recipe without logging nutrition.
@@ -577,8 +649,7 @@ meal_plan_add:
         object: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -600,8 +671,7 @@ meal_plan_clear:
         boolean: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -633,8 +703,7 @@ meal_plan_remove:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -689,8 +758,7 @@ meal_plan_update:
         object: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -700,13 +768,11 @@ platform_backup:
   fields: {}
 platform_info:
   name: Platform info
-  description: Read kitchen schema and recipe-domain counts; transport supplies integration
-    version.
+  description: Read kitchen schema and recipe-domain counts; transport supplies integration version.
   fields: {}
 platform_restore:
   name: Platform restore
-  description: Atomically restore a validated complete private dataset after explicit
-    confirmation.
+  description: Atomically restore a validated complete private dataset after explicit confirmation.
   fields:
     data:
       name: Data
@@ -722,8 +788,7 @@ platform_restore:
         boolean: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -733,8 +798,7 @@ preferences_get:
   fields: {}
 preferences_update:
   name: Preferences update
-  description: Patch authenticated-user UI preferences without changing ACL or provider
-    consent.
+  description: Patch authenticated-user UI preferences without changing ACL or provider consent.
   fields:
     preferences:
       name: Preferences
@@ -744,8 +808,7 @@ preferences_update:
         object: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -780,11 +843,16 @@ recipe_entry_update:
           - snack
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 recipe_keeper_import:
   name: Recipe keeper import
   description: Import recipes from inert Recipe Keeper HTML or an archive.
@@ -803,15 +871,13 @@ recipe_keeper_import:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
 recipe_log:
   name: Recipe log
-  description: Log explicit recipe portions using an immutable declared-nutrition
-    snapshot.
+  description: Log explicit recipe portions using an immutable declared-nutrition snapshot.
   fields:
     recipe_id:
       name: Recipe id
@@ -846,11 +912,16 @@ recipe_log:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 recipes_add:
   name: Recipes add
   description: Create a recipe without inventing missing nutrition.
@@ -1053,8 +1124,7 @@ recipes_add:
         boolean: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1070,8 +1140,7 @@ recipes_delete:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1099,8 +1168,7 @@ recipes_download_image:
         boolean: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1322,8 +1390,7 @@ recipes_set_favourite:
         boolean: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1345,8 +1412,7 @@ recipes_toggle_favourite:
         boolean: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1552,8 +1618,7 @@ recipes_update:
         object: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1575,8 +1640,7 @@ recipes_upload_image:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1592,11 +1656,16 @@ save_food:
         object: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 search_foods:
   name: Search foods
   description: Search local foods; remote searches require explicit consent.
@@ -1619,6 +1688,12 @@ search_foods:
       required: false
       selector:
         boolean: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 set_favorite:
   name: Set favorite
   description: Set an exact food favorite.
@@ -1661,11 +1736,16 @@ set_favorite:
           max: 100000
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 tags_get_all:
   name: Tags get all
   description: Read sorted unique tags, courses, categories and collections.
@@ -1691,8 +1771,7 @@ timer_presets_add:
           max: 604800
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1708,8 +1787,7 @@ timer_presets_delete:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1750,8 +1828,7 @@ timer_presets_update:
           max: 604800
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
@@ -1802,11 +1879,16 @@ update_food_entry:
           max: 100000
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
 update_meal:
   name: Update meal
   description: Patch a quick meal; null clears optional declarations.
@@ -1869,8 +1951,152 @@ update_meal:
         text: {}
     request_id:
       name: Request id
-      description: Stable retry ID; keep the exact action and payload after an uncertain
-        write.
+      description: Stable retry ID; keep the exact action and payload after an uncertain write.
       required: false
       selector:
         text: {}
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
+nutrition_report:
+  name: Nutrition report
+  description: Read an ISO week or calendar month report without inventing historical goals.
+  fields:
+    period:
+      name: Period
+      description: See the command schema returned by macromate.describe.
+      selector:
+        select:
+          options:
+          - week
+          - month
+      required: false
+    date:
+      name: Date
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
+profiles_list:
+  name: Profiles list
+  description: List only accessible nutrition profiles.
+  fields: {}
+profiles_get:
+  name: Profiles get
+  description: Read an accessible nutrition profile configuration.
+  fields:
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+profiles_create:
+  name: Profiles create
+  description: Create a separate nutrition profile without moving the existing diary.
+  fields:
+    name:
+      name: Name
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+    owner_id:
+      name: Owner id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
+    allowed_users:
+      name: Allowed users
+      description: See the command schema returned by macromate.describe.
+      selector:
+        object: {}
+      required: false
+    settings:
+      name: Settings
+      description: See the command schema returned by macromate.describe.
+      selector:
+        object: {}
+      required: true
+    request_id:
+      name: Request id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+profiles_update:
+  name: Profiles update
+  description: Update a profile; only administrators may change its ownership or sharing.
+  fields:
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+    name:
+      name: Name
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
+    owner_id:
+      name: Owner id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: false
+    allowed_users:
+      name: Allowed users
+      description: See the command schema returned by macromate.describe.
+      selector:
+        object: {}
+      required: false
+    settings:
+      name: Settings
+      description: See the command schema returned by macromate.describe.
+      selector:
+        object: {}
+      required: false
+    request_id:
+      name: Request id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+profiles_delete:
+  name: Profiles delete
+  description: Delete one named profile after explicit confirmation.
+  fields:
+    profile_id:
+      name: Profile id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+    confirm:
+      name: Confirm
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+    request_id:
+      name: Request id
+      description: See the command schema returned by macromate.describe.
+      selector:
+        text: {}
+      required: true
+profiles_users:
+  name: Profiles users
+  description: List active Home Assistant users for administrator-managed profile sharing.
+  fields: {}
