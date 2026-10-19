@@ -474,7 +474,7 @@ async function delayedFoodContext(page,action,change,{reject=false}={}){
   if(change==='identity'||change==='both')replacement.user={id:'replacement-admin',is_admin:true};
   if(change==='connection'||change==='both')replacement.connection={subscribeEvents:async()=>()=>{}};
   app.hass=replacement;
-  const snapshot=()=>({results:app.foodBrowser.results.textContent,detail:app.foodBrowser.detail.textContent,food:app.foodBrowser.food??null,hidden:app.workspace.hidden,message:app.message.textContent});
+  const snapshot=()=>({results:app.foodBrowser.results.textContent,detail:app.foodBrowser.detail.textContent,food:app.foodBrowser.food??null,hidden:app.workspace.hidden,message:app.message.textContent,dialog:app.dialog?.open?app.dialog.textContent:''});
   const before=snapshot();
   if(reject)rejectRead({code:'not_found'});
   else {const food={...window.product,name:'STALE PRIVATE FOOD'};resolve(action==='food'?{food}:{foods:[food],source:'stale private'});}
@@ -496,12 +496,13 @@ function assertFoodContextCleared(result,downgrade){
   assert.equal(state.results,'',phase+' results must remain cleared');
   assert.equal(state.detail,'',phase+' detail must remain cleared');
   assert.equal(state.food,null,phase+' food model must remain cleared');
+  assert.equal(state.dialog,'',phase+' food dialog must remain closed');
   assert.equal(state.hidden,downgrade);
  }
  assert.equal(result.after.message,result.before.message,'stale completion must not replace current context status');
  assert.equal(result.pendingIntact,true,'logical write must remain untouched');
  assert.equal(result.writes,0,'context replacement must not retry logical writes');
- if(!downgrade)assert.match(result.fresh.results+result.fresh.detail,/Haferdrink/,'new context food reads still work');
+ if(!downgrade)assert.match(result.fresh.results+result.fresh.detail+result.fresh.dialog,/Haferdrink/,'new context food reads still work');
 }
 
 test('delayed food search cannot restore DOM or model after admin downgrade',async()=>{

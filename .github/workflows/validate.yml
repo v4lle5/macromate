@@ -86,14 +86,6 @@ jobs:
           cp frontend/unified-src/package.json "$MACROMATE_BUILD_DEPS/package.json"
           cp frontend/unified-src/package-lock.json "$MACROMATE_BUILD_DEPS/package-lock.json"
           npm ci --ignore-scripts --no-fund --prefix "$MACROMATE_BUILD_DEPS"
-      - name: Browser and real barcode decoder tests
-        env:
-          FRONTEND_DEPS: ${{ env.TMPDIR }}/frontend-deps
-        run: |
-          export CHROMIUM_PATH=$(node -e "console.log(require(process.env.FRONTEND_DEPS+'/node_modules/playwright').chromium.executablePath())")
-          export HA_PYTHON=$(command -v python)
-          node tools/check_frontend.mjs
-          node --test tests/frontend/*.test.mjs
       - name: Unified rebuild, connected workflows and installed native HA acceptance
         env:
           FRONTEND_DEPS: ${{ env.TMPDIR }}/frontend-deps
@@ -109,6 +101,14 @@ jobs:
           python -m unittest discover -s tests -p test_unified_packaging.py -v
           node --test tests/frontend/macromate-card.test.mjs tests/frontend/macromate-artifact.test.mjs
           python tests/ha/native_unified_browser.py
+      - name: Browser and real barcode decoder tests
+        env:
+          FRONTEND_DEPS: ${{ env.TMPDIR }}/frontend-deps
+        run: |
+          export CHROMIUM_PATH=$(node -e "console.log(require(process.env.FRONTEND_DEPS+'/node_modules/playwright').chromium.executablePath())")
+          export HA_PYTHON=$(command -v python)
+          node tools/check_frontend.mjs
+          node --test tests/frontend/*.test.mjs
       - name: Preserve nutrition layout screenshots and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
