@@ -150,15 +150,15 @@ const THEME_VARS = {
   },
   "glass-wave": {
     light: {
-      "--rm-bg-main": "transparent",
-      "--rm-bg-surface": "rgba(253, 248, 239, 0.72)",
-      "--rm-bg-elevated": "rgba(253, 248, 239, 0.72)",
+      "--rm-bg-main": "rgba(253, 248, 239, 0.90)",
+      "--rm-bg-surface": "rgba(253, 248, 239, 0.94)",
+      "--rm-bg-elevated": "#fffaf2",
       "--rm-text": "#263B47",
       "--rm-text-secondary": "#53666E",
       "--rm-text-muted": "#53666E",
       "--rm-accent": "#416F8F",
       "--rm-accent-soft": "rgba(65, 111, 143, 0.12)",
-      "--rm-border": "rgba(255, 255, 255, 0.8)",
+      "--rm-border": "#748790",
       "--rm-shadow": "0 3px 12px rgba(38, 59, 71, 0.08)",
     },
   },
@@ -568,6 +568,21 @@ export class UnifiedApp extends LitElement {
       ? (themeVars.dark ?? themeVars.light)
       : (themeVars.light ?? themeVars.dark);
     for (const [k, v] of Object.entries(vars)) this.style.setProperty(k, v);
+    this.style.colorScheme = isDark ? "dark" : "light";
+    const channels = vars["--rm-accent"].match(/[a-f\d]{2}/gi).map((hex) => {
+      const value = parseInt(hex, 16) / 255;
+      return value <= 0.04045
+        ? value / 12.92
+        : ((value + 0.055) / 1.055) ** 2.4;
+    });
+    const luminance = channels.reduce(
+      (sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index],
+      0,
+    );
+    this.style.setProperty(
+      "--rm-accent-text",
+      luminance > 0.179 ? "#000" : "#fff",
+    );
     this.style.setProperty(
       "--rm-font-size-base",
       FONT_SIZE_MAP[s.fontSize] ?? "15px",
@@ -2416,13 +2431,16 @@ export class UnifiedApp extends LitElement {
     :host([glass-wave]) {
       color-scheme: light;
       --rm-dialog-bg: #f9efda;
-      --rm-success: #576c65;
+      --rm-success: #326044;
       --rm-primary: #416f8f;
       --rm-accent-text: #fff;
-      --rm-danger: #b46f52;
+      --rm-danger: #983d25;
       --rm-touch-target: 44px;
-      --rm-warning: #c19a3f;
-      --rm-error: #b46f52;
+      --rm-warning: #765600;
+      --rm-error: #983d25;
+      --rm-disabled-bg: #e3ddd1;
+      --rm-disabled-text: #53666e;
+      --rm-disabled-opacity: 1;
       --rm-radius: 18px;
       --rm-radius-sm: 12px;
     }
@@ -2577,7 +2595,7 @@ export class UnifiedApp extends LitElement {
       width: 100%;
       padding: 8px 10px;
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border: none;
       border-radius: 8px;
       font-size: 13px;
@@ -2600,7 +2618,7 @@ export class UnifiedApp extends LitElement {
       height: 40px;
       margin: 0 auto;
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -2671,7 +2689,7 @@ export class UnifiedApp extends LitElement {
     .sb-timer-badge {
       margin-left: auto;
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border-radius: 10px;
       font-size: 11px;
       font-weight: 700;
@@ -2847,7 +2865,7 @@ export class UnifiedApp extends LitElement {
 
     .text-btn {
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border: none;
       border-radius: var(--rm-radius-sm);
       padding: 8px 16px;
@@ -3050,7 +3068,7 @@ export class UnifiedApp extends LitElement {
       justify-content: center;
     }
     .preset-arc-btn {
-      background: var(--rm-bg);
+      background: var(--rm-bg-main);
       border: 1px solid var(--rm-border);
       border-radius: 10px;
       padding: 2px 6px;
@@ -3073,7 +3091,7 @@ export class UnifiedApp extends LitElement {
     }
     .preset-arc-btn.play {
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border-color: var(--rm-accent);
       padding: 3px 12px;
       font-size: 11px;
@@ -3208,7 +3226,7 @@ export class UnifiedApp extends LitElement {
     .action-btn.primary {
       background: var(--rm-accent);
       border-color: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
     }
     .action-btn:disabled {
       opacity: 0.5;
@@ -3297,7 +3315,7 @@ export class UnifiedApp extends LitElement {
     }
     .alarm-btn.accent {
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border-color: var(--rm-accent);
     }
     .alarm-btn.stop {
@@ -3436,7 +3454,7 @@ export class UnifiedApp extends LitElement {
 
     .rm-bn-add {
       background: var(--rm-accent);
-      color: white !important;
+      color: var(--rm-accent-text, #fff) !important;
       border-radius: 50%;
       width: 44px;
       height: 44px;
@@ -3455,7 +3473,7 @@ export class UnifiedApp extends LitElement {
       top: 2px;
       right: calc(50% - 20px);
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border-radius: 8px;
       font-size: 9px;
       font-weight: 700;

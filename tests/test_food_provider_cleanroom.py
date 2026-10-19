@@ -186,7 +186,7 @@ class OffHttpTests(unittest.IsolatedAsyncioTestCase):
         cooldown_session = FakeSession(FakeResponse(status=429, headers={"Retry-After": "120"}),
                                       FakeResponse({"status": "success", "product": v3_product()}))
         cooldown = module.OpenFoodFactsProvider(cooldown_session, enabled=True, monotonic=lambda: now[0])
-        with self.assertRaises(module.ProviderUnavailable):
+        with self.assertRaises(module.ProviderRateLimited):
             await cooldown.async_lookup_barcode(CODE)
         cooldown.set_enabled(False)
         cooldown.set_enabled(True)  # toggling consent must not reset quotas/cooldown

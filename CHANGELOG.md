@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+- Keep local food search and logging available when Open Food Facts fails; explain outages, request limits and missing consent inline, including barcode searches.
+- Fix undefined surface colors in recipe import, editing and planning. Give Glass Wave readable surfaces, stronger borders, semantic status colors and visible keyboard focus.
+- Choose readable text for accent buttons in light/dark themes; verify rendered form contrast and mobile layout in Chromium.
+
 ## 0.4.0
 
 - Enforce durable atomic credential writes and erase delegation on integration removal.

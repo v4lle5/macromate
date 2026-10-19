@@ -3,6 +3,79 @@ from test_coordinator_transactions import CoordinatorTransactions
 
 
 class FoodCommandsTests(CoordinatorTransactions):
+    async def test_provider_failures_preserve_local_search_and_logging(self):
+        from unittest.mock import AsyncMock
+        from custom_components.macromate.food_provider import (
+            ProviderConsentRequired, ProviderRateLimited, ProviderUnavailable,
+        )
+        food = (await self.coord.async_command("save_food", {"food": {
+            "name": "Synthetic oats", "base_unit": "g",
+            "nutrients_per_100": {"calories": 400},
+        }}))["food"]
+        provider = self.coord._provider = AsyncMock()
+        provider.set_enabled = lambda enabled: None
+        self.coord.settings["enable_food_database"] = True
+        for failure, warning in [
+            (ProviderUnavailable("private upstream details"), "provider_unavailable"),
+            (TimeoutError(), "provider_unavailable"),
+            (ProviderRateLimited(), "provider_rate_limited"),
+            (ProviderConsentRequired(), "provider_consent_required"),
+        ]:
+            with self.subTest(warning=warning, failure=type(failure)):
+                provider.async_search.side_effect = failure
+                provider.async_lookup_barcode.side_effect = failure
+                before = self.coord._state()
+                result = await self.coord.async_command("search_foods", {
+                    "query": "oats", "online": True,
+                })
+                self.assertEqual(result["warnings"], [warning])
+                self.assertEqual(result["source"], "local")
+                self.assertEqual([row["food_id"] for row in result["foods"]], [food["food_id"]])
+                barcode = await self.coord.async_command("barcode", {
+                    "barcode": "4006381333931", "online": True,
+                })
+                self.assertEqual(barcode["warnings"], [warning])
+                self.assertEqual(barcode["foods"], [])
+                self.assertEqual(self.coord._state(), before)
+                self.assertNotIn("private upstream", str(result))
+        logged = await self.coord.async_command("log_food", {
+            "food_id": food["food_id"], "amount": 50, "meal_type": "breakfast",
+        })
+        self.assertEqual(logged["entry"]["calories"], 200)
+
+    async def test_disabled_online_search_returns_local_results_without_contacting_provider(self):
+        from unittest.mock import AsyncMock
+        provider = self.coord._provider = AsyncMock()
+        result = await self.coord.async_command("search_foods", {"query": "oats", "online": True})
+        self.assertEqual(result["warnings"], ["provider_consent_required"])
+        self.assertEqual(result["foods"], [])
+        self.assertEqual(provider.mock_calls, [])
+
+    async def test_successful_remote_search_and_cache_failure_are_not_reported_as_offline(self):
+        from unittest.mock import AsyncMock
+        from custom_components.macromate.foods import FoodProduct
+        remote = FoodProduct.from_dict({
+            "food_id": "off:4006381333931", "name": "Synthetic remote oats",
+            "base_unit": "g", "nutrients_per_100": {"calories": 400},
+            "source": "open_food_facts", "barcodes": ["4006381333931"],
+            "source_url": "https://world.openfoodfacts.org/product/4006381333931",
+            "license": "ODbL-1.0 / DbCL-1.0",
+        })
+        provider = self.coord._provider = AsyncMock()
+        provider.set_enabled = lambda enabled: None
+        provider.async_search.return_value = [remote]
+        self.coord.settings["enable_food_database"] = True
+        self.store.fail = True
+        with self.assertRaises(OSError):
+            await self.coord.async_command("search_foods", {"query": "oats", "online": True})
+        self.assertNotIn(remote.food_id, self.coord.foods)
+        self.store.fail = False
+        result = await self.coord.async_command("search_foods", {"query": "oats", "online": True})
+        self.assertEqual(result["warnings"], [])
+        self.assertEqual(result["source"], "local + Open Food Facts")
+        self.assertIn("ODbL", result["attribution"])
+        self.assertEqual(result["foods"][0]["food_id"], remote.food_id)
+
     async def test_online_access_requires_config_consent_and_cached_attribution_persists(self):
         from custom_components.macromate.foods import FoodProduct
         class Provider:
@@ -16,8 +89,9 @@ class FoodCommandsTests(CoordinatorTransactions):
                     "source":"open_food_facts","source_url":"https://world.openfoodfacts.org/product/"+barcode,"license":"ODbL-1.0 / DbCL-1.0"})
         provider = Provider()
         self.coord._provider = provider
-        with self.assertRaises(PermissionError):
-            await self.coord.async_command("barcode",{"barcode":"4006381333931","online":True})
+        disabled = await self.coord.async_command("barcode",{"barcode":"4006381333931","online":True})
+        self.assertEqual(disabled["warnings"], ["provider_consent_required"])
+        self.assertEqual(disabled["foods"], [])
         self.assertEqual(provider.calls,0)
         self.coord.settings["enable_food_database"] = True
         remote = await self.coord.async_command("barcode",{"barcode":"4006381333931","online":True})

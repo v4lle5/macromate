@@ -368,7 +368,7 @@ try{
   const glass=await dashboard.locator('mm-unified-app').evaluate(el=>{const s=getComputedStyle(el);return {accent:s.getPropertyValue('--rm-accent').trim(),text:s.getPropertyValue('--rm-text').trim(),main:s.getPropertyValue('--rm-bg-main').trim(),surface:s.getPropertyValue('--rm-bg-surface').trim()};});
   const glassControl=await settingsPane.locator('.seg-btn.active').first().evaluate(el=>({color:getComputedStyle(el).color,height:el.getBoundingClientRect().height}));
   assert.equal(glassControl.color,'rgb(255, 255, 255)');assert.ok(glassControl.height>=44,'Glass Wave segmented controls need touch-sized targets');
-  assert.deepEqual(glass,{accent:'#416F8F',text:'#263B47',main:'transparent',surface:'rgba(253, 248, 239, 0.72)'});
+  assert.deepEqual(glass,{accent:'#416F8F',text:'#263B47',main:'rgba(253, 248, 239, 0.90)',surface:'rgba(253, 248, 239, 0.94)'});
   for(const width of [1280,390]){await dashboard.setViewportSize({width,height:900});await dashboard.screenshot({path:resolve(cfg.output,`glass-wave-settings-${width}.png`)});}
   await dashboard.setViewportSize({width:1280,height:900});
   await settingsPane.locator('select').first().selectOption('en');

@@ -989,7 +989,7 @@ class RmRecipeGrid extends LitElement {
       align-items: center;
       justify-content: center;
       background: var(--rm-accent);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       border-radius: 10px;
       font-size: 10px;
       font-weight: 700;

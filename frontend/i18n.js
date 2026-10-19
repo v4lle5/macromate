@@ -1,5 +1,13 @@
 // English source messages; user content is interpolated only into text nodes.
 const de = {
+  "Open Food Facts is currently unavailable. Local foods remain available. Try again later or use Quick entry.":
+    "Open Food Facts ist derzeit nicht erreichbar. Lokale Lebensmittel bleiben verfügbar. Später erneut versuchen oder Schnelleintrag nutzen.",
+  "Online search is disabled. Enable Open Food Facts in the integration options, or use local foods and Quick entry.":
+    "Die Online-Suche ist deaktiviert. Open Food Facts in den Integrationsoptionen freigeben oder lokale Lebensmittel und Schnelleintrag nutzen.",
+  "Open Food Facts has reached its request limit. Wait before searching online again. Local foods and Quick entry remain available.":
+    "Das Anfragelimit von Open Food Facts ist erreicht. Vor der nächsten Online-Suche warten. Lokale Lebensmittel und Schnelleintrag bleiben verfügbar.",
+  "No locally saved foods found. Use Quick entry or create a custom food.":
+    "Keine lokal gespeicherten Lebensmittel gefunden. Schnelleintrag nutzen oder ein eigenes Lebensmittel anlegen.",
   "Name or barcode": "Name oder Barcode",
   "Food name or EAN": "Lebensmittelname oder EAN",
   "Active calories": "Aktivkalorien",

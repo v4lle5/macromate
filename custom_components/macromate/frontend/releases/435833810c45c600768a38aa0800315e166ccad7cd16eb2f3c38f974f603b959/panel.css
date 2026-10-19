@@ -1,0 +1,365 @@
+:host {
+  display: block;
+  color: #123d2b;
+  background: #f4f7f1;
+  font:
+    16px/1.5 system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  min-height: 100vh;
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+main {
+  max-width: 1120px;
+  margin: auto;
+  padding: 24px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.brand img {
+  border-radius: 50%;
+}
+h1 {
+  font-size: 30px;
+  letter-spacing: -1px;
+  margin: 0;
+}
+h2 {
+  font-size: 24px;
+  letter-spacing: -0.5px;
+  margin: 20px 0 14px;
+}
+h3 {
+  font-size: 19px;
+  margin: 0 0 12px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin: 0;
+  color: #45634f;
+}
+.muted,
+small {
+  color: #53665b;
+}
+.date-nav,
+.toolbar,
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.date-nav {
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #d9e2d6;
+  border-radius: 16px;
+  padding: 12px;
+}
+.date-nav label {
+  flex: 1;
+  max-width: 220px;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  min-height: 44px;
+  max-width: 100%;
+  border: 1px solid #9caf9c;
+  border-radius: 9px;
+  padding: 9px 12px;
+  background: #fff;
+  color: #123d2b;
+}
+button {
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover {
+  background: #eaf1e2;
+}
+button.primary {
+  background: #20633f;
+  color: white;
+  border-color: #20633f;
+}
+button.danger {
+  color: #a12b20;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #b37924;
+  outline-offset: 3px;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+label:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
+}
+input[type="checkbox"] {
+  min-height: 24px;
+  min-width: 24px;
+}
+input,
+select,
+textarea {
+  width: 100%;
+}
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.metric {
+  background: white;
+  border: 1px solid #d9e2d6;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.metric strong {
+  font-size: 25px;
+  letter-spacing: -0.5px;
+}
+.metric.incomplete strong {
+  font-size: 18px;
+  letter-spacing: 0;
+}
+.metric.calories {
+  background: #e8f0ce;
+}
+.metric progress {
+  width: 100%;
+  height: 8px;
+  margin-top: 12px;
+  accent-color: #437b3c;
+}
+.metric.protein progress {
+  accent-color: #a36e29;
+}
+.metric.carbs progress {
+  accent-color: #538344;
+}
+.metric.fat progress {
+  accent-color: #ab4a2a;
+}
+.meals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.card {
+  background: white;
+  border: 1px solid #d9e2d6;
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 0;
+}
+.entry {
+  border-top: 1px solid #e0e7dc;
+  padding: 12px 0;
+  overflow-wrap: anywhere;
+}
+.entry p {
+  margin: 4px 0;
+}
+.nutrients {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 16px;
+  font-size: 14px;
+}
+.nutrients dt {
+  overflow-wrap: anywhere;
+}
+.nutrients dd {
+  margin: 0;
+  text-align: right;
+}
+summary {
+  cursor: pointer;
+  padding: 10px 0;
+  min-height: 44px;
+}
+details {
+  margin-top: 8px;
+}
+.message:empty {
+  display: none;
+}
+.message {
+  border-radius: 12px;
+  background: #fff3dc;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.message p {
+  margin: 0 0 8px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+form {
+  display: grid;
+  gap: 14px;
+}
+.results {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.results button {
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.food-detail {
+  margin-top: 16px;
+}
+dialog {
+  max-width: 560px;
+  width: calc(100% - 24px);
+  max-height: 90dvh;
+  overflow: auto;
+  border: 1px solid #b8c8b4;
+  border-radius: 18px;
+  color: #123d2b;
+  padding: 24px;
+}
+dialog::backdrop {
+  background: #08291fc0;
+}
+video,
+canvas {
+  max-width: 100%;
+  border-radius: 12px;
+}
+video {
+  width: 100%;
+  max-height: 50vh;
+  background: #102b20;
+}
+fieldset {
+  border: 1px solid #c7d6c0;
+  border-radius: 12px;
+}
+legend {
+  font-weight: 600;
+}
+@media (max-width: 600px) {
+  main {
+    padding: 16px;
+  }
+  .progress-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .metric {
+    padding: 14px;
+  }
+  .metric strong {
+    font-size: 22px;
+  }
+  .meals {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 16px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .date-nav {
+    gap: 6px;
+    padding: 8px;
+  }
+  .date-nav button {
+    padding: 9px 10px;
+  }
+  dialog {
+    padding: 18px;
+  }
+  .toolbar > * {
+    flex: 1 1 130px;
+  }
+  .actions button {
+    flex: 1;
+  }
+  h1 {
+    font-size: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+input[type="checkbox"] {
+  width: 24px;
+  flex: 0 0 24px;
+}
+label:has(input[type="checkbox"]) {
+  gap: 10px;
+}
+button {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.actions button {
+  min-width: max-content;
+}
+.diary-toolbar {
+  justify-content: space-between;
+  align-items: center;
+}
+.diary-toolbar > * {
+  flex: 0 0 auto;
+}
+.diary-toolbar h2 {
+  white-space: nowrap;
+}
+section[aria-label="Lebensmittel und Einträge"] {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+.dialog-status:not(:empty) {
+  padding: 12px;
+  border-radius: 9px;
+  background: #fff3dc;
+  margin-bottom: 14px;
+}
+.dialog-status p {
+  margin-top: 0;
+}
+.results button,
+[data-retry] {
+  white-space: normal;
+}
