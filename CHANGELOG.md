@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3
+
+- Search all 7,140 BLS 4.0 foods offline, with German/English names, umlaut spellings and preparation-aware labels. Prefer simpler matches and keep both reference and online brand results visible.
+- Import all supported BLS nutrients from a pinned official archive with explicit unit conversions; preserve unknown/trace/detection-limit values as missing. Show Max Rubner-Institut attribution, CC BY 4.0 and adaptation/source details.
+- Load/index the shared reference catalogue outside the HA event loop and construct only the bounded result set. Keep personal foods, favorites, diary snapshots and existing USDA records intact and isolated by profile.
+
 ## 0.4.2
 
 - Add 32 offline reference foods (including banana, apple, oats and rice), German/English search aliases and reference portions from USDA FoodData Central SR Legacy (CC0-1.0).

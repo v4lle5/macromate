@@ -14,6 +14,10 @@ from homeassistant.util import dt as dt_util
 
 from .basic_foods import ATTRIBUTION as BASIC_ATTRIBUTION
 from .basic_foods import BASIC_FOODS, search_aliases
+from .bls_foods import ATTRIBUTION as BLS_ATTRIBUTION
+from .bls_foods import catalogue as bls_catalogue
+from .bls_foods import matches, normalize
+from .bls_foods import search as search_bls
 from .food_provider import (
     ATTRIBUTION,
     OpenFoodFactsProvider,
@@ -74,8 +78,14 @@ class DiaryCommands:
 
     def _food(self, food_id, state=None):
         foods = self.foods if state is None else state["foods"]
+        if food_id in foods:
+            row = foods[food_id]
+        elif food_id.startswith("bls4:"):
+            row = bls_catalogue()[0][food_id]
+        else:
+            row = BASIC_FOODS[food_id]
         value = {
-            **(foods[food_id] if food_id in foods else BASIC_FOODS[food_id]),
+            **row,
             "favorite": (self.favorites if state is None else state["favorites"]).get(food_id),
         }
         return FoodProduct.from_dict(value)
@@ -283,6 +293,10 @@ class DiaryCommands:
             values = vol.Schema(schemas[action])(payload)
         except vol.Invalid as err:
             raise ValueError("invalid action fields") from err
+        if action == "search_foods":
+            await self.hass.async_add_executor_job(bls_catalogue)
+        if action in ("food", "favorite", "log_food") and values["food_id"].startswith("bls4:"):
+            await self.hass.async_add_executor_job(bls_catalogue)
         if action == "diary":
             return self.diary_data(values.get("date"))
         if action == "food":
@@ -304,49 +318,54 @@ class DiaryCommands:
                     if not warnings:
                         source = "Open Food Facts"
             else:
-                query = values["query"].casefold()
-                words = query.split()
-                foods = [self._food(fid) for fid in dict.fromkeys((*self.foods, *BASIC_FOODS))]
-                foods = [
-                    food
-                    for food in foods
-                    if all(
-                        word
-                        in " ".join(
-                            (
-                                food.name,
-                                food.producer or "",
-                                search_aliases(food.food_id),
-                                *food.barcodes,
+                query = normalize(values["query"])
+                selected = values["filter"]
+                ids = [
+                    fid
+                    for fid, row in self.foods.items()
+                    if matches(
+                        query,
+                        normalize(
+                            " ".join(
+                                (
+                                    row["name"],
+                                    row.get("producer") or "",
+                                    search_aliases(fid),
+                                    bls_catalogue()[1].get(fid, ""),
+                                    *row.get("barcodes", []),
+                                )
                             )
-                        ).casefold()
-                        for word in words
+                        ),
                     )
                 ]
-                selected = values["filter"]
                 if selected == "favorites":
-                    foods = [food for food in foods if food.is_favorite]
+                    ids = [fid for fid in ids if fid in self.favorites]
                 elif selected == "custom":
-                    foods = [food for food in foods if food.is_custom]
+                    ids = [fid for fid in ids if self.foods[fid]["source"] == "local"]
                 elif selected == "recent":
                     order = dict.fromkeys(
                         item.food_id for item in reversed(self.log.entries) if item.food_id
                     )
-                    foods = sorted(
-                        (food for food in foods if food.food_id in order),
-                        key=lambda food: list(order).index(food.food_id),
-                    )
+                    ids = [fid for fid in order if fid in ids]
+                else:
+                    public = await self.hass.async_add_executor_job(search_bls, values["query"])
+                    # Personal matches (including pinned USDA records) remain first.
+                    ids = list(dict.fromkeys((*ids, *public)))
+                has_more = len(ids) > 100
+                foods = [self._food(fid) for fid in ids[:100]]
                 if values["online"] and selected == "all" and values["query"]:
                     remote, warnings = await self._online_foods(values["query"])
                     if remote:
                         await self._cache_foods(remote)
-                    merged = {food.food_id: food for food in foods}
-                    for food in remote:
+                    # Keep both reference foods and explicitly requested brand results
+                    # visible even when a broad term matches >100 reference records.
+                    merged = {food.food_id: food for food in foods[:20]}
+                    for food in (*remote, *foods[20:]):
                         merged[food.food_id] = self._food(food.food_id)
                     foods = list(merged.values())
                     if not warnings:
                         source = "local + Open Food Facts"
-            has_more = len(foods) > 100
+            has_more = (has_more if action == "search_foods" else False) or len(foods) > 100
             foods = foods[:100]
             attribution = (
                 dict(ATTRIBUTION)
@@ -356,6 +375,8 @@ class DiaryCommands:
             attributions = [attribution] if attribution else []
             if any(food.source == "usda" for food in foods):
                 attributions.append(dict(BASIC_ATTRIBUTION))
+            if any(food.source == "bls" for food in foods):
+                attributions.append(dict(BLS_ATTRIBUTION))
             return {
                 "foods": [food.to_dict() for food in foods],
                 "source": source,
@@ -421,7 +442,7 @@ class DiaryCommands:
 
             def apply(state):
                 food = self._food(values["food_id"], state)
-                if values["enabled"] and food.source == "usda":
+                if values["enabled"] and food.source in ("usda", "bls"):
                     state["foods"].setdefault(food.food_id, food.to_dict())
                 food = food.with_favorite(
                     values["enabled"],
@@ -470,7 +491,7 @@ class DiaryCommands:
 
             def apply(state):
                 food = self._food(values["food_id"], state)
-                if food.source == "usda":
+                if food.source in ("usda", "bls"):
                     state["foods"].setdefault(food.food_id, food.to_dict())
                 amount = food.portion_amount(
                     values.get("amount"),
