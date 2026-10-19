@@ -1,5 +1,8 @@
 // English source messages; user content is interpolated only into text nodes.
 const de = {
+  Source: "Quelle",
+  "BLS 4.0 reference averages per 100 g edible portion. Weigh the edible portion and check the preparation. Adapted for MacroMate: nutrient selection and unit conversion.":
+    "BLS 4.0: Durchschnittswerte je 100 g essbarem Anteil. Essbaren Anteil wiegen und Zubereitungsart beachten. Für MacroMate aufbereitet: Nährstoffauswahl und Einheitenumrechnung.",
   "Update MacroMate and reload the workspace.":
     "MacroMate aktualisieren und die Ansicht neu laden.",
   "USDA FoodData Central reference averages. Weigh the edible portion; check whether the food is raw or cooked.":

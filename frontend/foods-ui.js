@@ -354,7 +354,12 @@ export class FoodBrowser {
         { class: "muted" },
         [
           food.producer,
-          food.source === "usda" ? "USDA FoodData Central" : food.source,
+          food.source === "usda"
+            ? "USDA FoodData Central"
+            : food.source === "bls"
+              ? "BLS 4.0 · Max Rubner-Institut · " +
+                food.food_id.replace(/^bls4:/, "")
+              : food.source,
           food.license,
         ]
           .filter(Boolean)
@@ -367,6 +372,39 @@ export class FoodBrowser {
               {},
               this.t(
                 "USDA FoodData Central reference averages. Weigh the edible portion; check whether the food is raw or cooked.",
+              ),
+            ),
+          ]
+        : []),
+      ...(food.source === "bls"
+        ? [
+            el(
+              "small",
+              {},
+              this.t(
+                "BLS 4.0 reference averages per 100 g edible portion. Weigh the edible portion and check the preparation. Adapted for MacroMate: nutrient selection and unit conversion.",
+              ),
+              " ",
+              el(
+                "a",
+                {
+                  href: "https://doi.org/10.25826/Data20251217-134202-0",
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  style: "color:inherit",
+                },
+                this.t("Source"),
+              ),
+              " · ",
+              el(
+                "a",
+                {
+                  href: "https://creativecommons.org/licenses/by/4.0/",
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  style: "color:inherit",
+                },
+                "CC BY 4.0",
               ),
             ),
           ]

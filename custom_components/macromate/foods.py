@@ -184,7 +184,7 @@ class FoodProduct:
         object.__setattr__(self, "barcodes", barcodes)
         if self.producer is not None:
             _text("producer", self.producer)
-        if self.source not in ("local", "open_food_facts", "usda"):
+        if self.source not in ("local", "open_food_facts", "usda", "bls"):
             raise ValueError("unknown food source")
         for key in ("source_url", "license"):
             if getattr(self, key) is not None:

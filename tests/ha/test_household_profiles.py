@@ -63,7 +63,8 @@ class HouseholdProfiles(unittest.IsolatedAsyncioTestCase):
             "profile_id":profile_id,"food_id":food_id,"amount":100,"meal_type":"snack",
             "date":"2026-10-14","request_id":"shared-banana",
         }, self.other)
-        self.assertEqual(logged["entry"]["calories"], 89)
+        self.assertEqual(food_id, "bls4:F503100")
+        self.assertEqual(logged["entry"]["calories"], 79)
         own = await self.call("search_foods", {"profile_id":profile_id,"query":"Banane","filter":"favorites"}, self.other)
         root = await self.call("search_foods", {"query":"Banane","filter":"favorites"})
         self.assertEqual(len(own["foods"]),1)
