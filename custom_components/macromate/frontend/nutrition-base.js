@@ -215,6 +215,7 @@ export class MacroMateNutritionBase extends HTMLElement {
     this.foodBrowser = new FoodBrowser(this);
     this.barcode = new BarcodeUI(this);
     this.workspace.append(this.foodBrowser.render());
+    this.syncControls();
     this.startLive();
     this.loadDiary();
   }

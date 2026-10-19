@@ -1,5 +1,5 @@
 // Generated from tests/frontend/macromate-loader.js. Manual resource URLs remain supported.
-const revision='9bc373e9b7aa6825b9dd3394df936d4af7ad1eed5a63a0fb6f950326b7ff5a83';
+const revision='31b1655738041c0d4794020456dcefa6e174406b55de5b391938e09731a57f3f';
 const key=Symbol.for('macromate.delivery');
 function diagnostic(code){
  const detail={code,revision};window.dispatchEvent(new CustomEvent('macromate-delivery-error',{detail}));
@@ -16,7 +16,7 @@ else if(!previous){
  if(existing&&existing.buildRevision!==revision){diagnostic('registration_conflict');}
  else {
   const state=window[key]={revision};
-  state.ready=existing?Promise.resolve():import('./releases/9bc373e9b7aa6825b9dd3394df936d4af7ad1eed5a63a0fb6f950326b7ff5a83/card-runtime.js').then(module=>{module.MacroMateCard.buildRevision=revision;});
+  state.ready=existing?Promise.resolve():import('./releases/31b1655738041c0d4794020456dcefa6e174406b55de5b391938e09731a57f3f/card-runtime.js').then(module=>{module.MacroMateCard.buildRevision=revision;});
   state.ready.catch(()=>diagnostic('asset_load_failed'));
   await state.ready;
  }

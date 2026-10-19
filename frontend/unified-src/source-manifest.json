@@ -30,7 +30,7 @@
     {
       "path": "frontend/build-info.js",
       "bytes": 96,
-      "sha256": "f3cb447a3b9991ba55aae8306a4e9668b74b6e6e1e56fa90375a0cce02f444d3"
+      "sha256": "a14b7e26fe99f5b71dfb50f3eb68caee3d7272eff1aa15722c84c48b4eba8f79"
     },
     {
       "path": "frontend/card-runtime.js",
@@ -50,7 +50,7 @@
     {
       "path": "frontend/delivery-manifest.json",
       "bytes": 7807,
-      "sha256": "4410dafe014b47562438564edbc144ee3067b659d69d22b7dd8be2d69cb2e027"
+      "sha256": "ad6a61b956371a426745f15e4e982c74fcbdd68c01f75476b18f97077b1141c4"
     },
     {
       "path": "frontend/dom.js",
@@ -59,8 +59,8 @@
     },
     {
       "path": "frontend/entry-ui.js",
-      "bytes": 8953,
-      "sha256": "0ec328ec133b2e4113f1363813a2ec6d8f42c5befcce289bf65aa030085b4bfb"
+      "bytes": 8977,
+      "sha256": "c3498411aae6aad2e5975fbc7cbed12706f3be5e624cfddaa0980e8c482238df"
     },
     {
       "path": "frontend/foods-ui.js",
@@ -85,7 +85,7 @@
     {
       "path": "frontend/macromate-card.js",
       "bytes": 1820,
-      "sha256": "d0e3f3b71939766abe4edfd8e51c6da39b178eeb4bb5c1b98bcb7f1d86da5658"
+      "sha256": "8933a4e921aa94eb4e57c64223ef54e3c56611d32fbcc5ad19b821c4bf5e984a"
     },
     {
       "path": "frontend/navigation.js",
@@ -94,8 +94,8 @@
     },
     {
       "path": "frontend/nutrition-base.js",
-      "bytes": 16904,
-      "sha256": "6d59a695f6902fac62ee10b1c0a6f4c753ac162dda62fcaa8062d76685f1b916"
+      "bytes": 16929,
+      "sha256": "acdab847274dfd836817f28b2eb72996d43765c53f32075e8a6abb2bff32d018"
     },
     {
       "path": "frontend/nutrition-profiles.js",
@@ -114,8 +114,8 @@
     },
     {
       "path": "frontend/retained-releases.json",
-      "bytes": 53639,
-      "sha256": "5eea982bf9d50a50097e88587d71c23e969f047dbffb5d60b22106ce0829ad44"
+      "bytes": 61433,
+      "sha256": "78fc72dbb74e7b6ad58c39ceab3392bd2d61affb8aaae09058936d857cea39c5"
     },
     {
       "path": "frontend/scanner.js",
@@ -404,8 +404,8 @@
     },
     {
       "path": "tests/frontend/macromate-unified-nutrition-browser.mjs",
-      "bytes": 16042,
-      "sha256": "cc2412427fb5e2764b804ef40354108b287ca18846addda30d794d2dd4ca7183"
+      "bytes": 16606,
+      "sha256": "1aa8e0987030bb90292fa076b609529131995edcbf5d5cbd7c873936ac2f1124"
     },
     {
       "path": "tests/frontend/macromate-unified-refresh-browser.mjs",
