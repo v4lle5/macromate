@@ -32,6 +32,7 @@ export function openDialog(panel, title, children) {
   panel.shadowRoot.append(dialog);
   panel.dialog = dialog;
   dialog.showModal();
+  panel.syncControls();
   return dialog;
 }
 export function numericFields(keys, values = {}, locale = "de") {

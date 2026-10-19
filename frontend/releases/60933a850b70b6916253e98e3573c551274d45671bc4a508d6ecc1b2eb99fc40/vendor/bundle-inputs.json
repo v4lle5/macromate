@@ -1,0 +1,125 @@
+{
+  "@zxing/library/esm/core/BarcodeFormat.js": {
+    "bytes": 2555
+  },
+  "@zxing/library/esm/core/DecodeHintType.js": {
+    "bytes": 5134
+  },
+  "@zxing/library/esm/core/util/System.js": {
+    "bytes": 612
+  },
+  "@zxing/library/esm/core/Result.js": {
+    "bytes": 5200
+  },
+  "@zxing/library/esm/core/ResultMetadataType.js": {
+    "bytes": 3896
+  },
+  "@zxing/library/esm/core/common/detector/MathUtils.js": {
+    "bytes": 3009
+  },
+  "@zxing/library/esm/core/util/Float.js": {
+    "bytes": 488
+  },
+  "@zxing/library/esm/core/ResultPoint.js": {
+    "bytes": 4230
+  },
+  "ts-custom-error/dist/custom-error.mjs": {
+    "bytes": 2914
+  },
+  "@zxing/library/esm/core/Exception.js": {
+    "bytes": 1387
+  },
+  "@zxing/library/esm/core/IllegalArgumentException.js": {
+    "bytes": 1065
+  },
+  "@zxing/library/esm/core/IndexOutOfBoundsException.js": {
+    "bytes": 1072
+  },
+  "@zxing/library/esm/core/ArrayIndexOutOfBoundsException.js": {
+    "bytes": 1346
+  },
+  "@zxing/library/esm/core/util/Arrays.js": {
+    "bytes": 6652
+  },
+  "@zxing/library/esm/core/util/Integer.js": {
+    "bytes": 2710
+  },
+  "@zxing/library/esm/core/common/BitArray.js": {
+    "bytes": 13499
+  },
+  "@zxing/library/esm/core/NotFoundException.js": {
+    "bytes": 1121
+  },
+  "@zxing/library/esm/core/oned/OneDReader.js": {
+    "bytes": 11904
+  },
+  "@zxing/library/esm/core/FormatException.js": {
+    "bytes": 1101
+  },
+  "@zxing/library/esm/core/oned/AbstractUPCEANReader.js": {
+    "bytes": 8839
+  },
+  "@zxing/library/esm/core/oned/UPCEANExtension5Support.js": {
+    "bytes": 6848
+  },
+  "@zxing/library/esm/core/oned/UPCEANExtension2Support.js": {
+    "bytes": 4517
+  },
+  "@zxing/library/esm/core/oned/UPCEANExtensionSupport.js": {
+    "bytes": 1718
+  },
+  "@zxing/library/esm/core/ChecksumException.js": {
+    "bytes": 1121
+  },
+  "@zxing/library/esm/core/oned/UPCEANReader.js": {
+    "bytes": 7688
+  },
+  "@zxing/library/esm/core/oned/EAN13Reader.js": {
+    "bytes": 5450
+  },
+  "@zxing/library/esm/core/oned/EAN8Reader.js": {
+    "bytes": 4573
+  },
+  "@zxing/library/esm/core/common/CharacterSetECI.js": {
+    "bytes": 11806
+  },
+  "@zxing/library/esm/core/UnsupportedOperationException.js": {
+    "bytes": 1100
+  },
+  "@zxing/library/esm/core/util/StringEncoding.js": {
+    "bytes": 4151
+  },
+  "@zxing/library/esm/core/common/StringUtils.js": {
+    "bytes": 11751
+  },
+  "@zxing/library/esm/core/util/StringBuilder.js": {
+    "bytes": 2083
+  },
+  "@zxing/library/esm/core/LuminanceSource.js": {
+    "bytes": 4539
+  },
+  "@zxing/library/esm/core/InvertedLuminanceSource.js": {
+    "bytes": 3742
+  },
+  "@zxing/library/esm/core/RGBLuminanceSource.js": {
+    "bytes": 5804
+  },
+  "@zxing/library/esm/core/BinaryBitmap.js": {
+    "bytes": 5640
+  },
+  "@zxing/library/esm/core/Binarizer.js": {
+    "bytes": 1484
+  },
+  "@zxing/library/esm/core/common/BitMatrix.js": {
+    "bytes": 18125
+  },
+  "@zxing/library/esm/core/common/GlobalHistogramBinarizer.js": {
+    "bytes": 8779
+  },
+  "@zxing/library/esm/core/common/HybridBinarizer.js": {
+    "bytes": 11650
+  },
+  "frontend/vendor/zxing-entry.js": {
+    "bytes": 1103
+  }
+}

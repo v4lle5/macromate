@@ -10,7 +10,11 @@ export class BarcodeUI {
   }
   render() {
     this.input = this.panel.foodBrowser.query;
-    return button(this.t("Scan barcode"), () => this.openScanner());
+    return button(this.t("Scan barcode"), () => this.openScanner(), {
+      "data-scan": true,
+      "aria-label": this.t("Scan barcode"),
+      title: this.t("Scan barcode"),
+    });
   }
   async lookup(barcode) {
     if (!validGTIN(barcode)) {
@@ -31,7 +35,7 @@ export class BarcodeUI {
     try {
       const result = await this.panel.client.read("barcode", {
         barcode,
-        online: browser.online.querySelector("input").checked,
+        online: true,
       });
       if (browser.current(context)) {
         this.panel.message.replaceChildren();

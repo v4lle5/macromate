@@ -69,14 +69,13 @@ test('top energy overview shows only snapshot current active energy, preserving 
 test('online failures explain consent, quota or outage while local food logging and quick entry stay usable',async()=>{
  const page=await open();const pane=panel(page);const query=pane.getByLabel('Lebensmittel suchen',{exact:true});
  await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane'),read=app.hass.callWS;window.providerWarning='provider_unavailable';app.hass={...app.hass,callWS:message=>['search_foods','barcode'].includes(message.action)?Promise.resolve({foods:window.localMiss?[]:[window.product],source:'local',warnings:[window.providerWarning]}):read(message)};});
- await pane.getByLabel('Online-Suche (Open Food Facts)').check();
  for(const [code,text] of [['provider_unavailable','derzeit nicht erreichbar'],['provider_consent_required','Online-Suche ist deaktiviert'],['provider_rate_limited','Anfragelimit']]){
   await page.evaluate(code=>{window.providerWarning=code;},code);await query.fill('Hafer');await query.press('Enter');
   await pane.locator('.provider-warning').getByText(new RegExp(text)).waitFor();
   assert.equal(await pane.locator('.results button').count(),1,'the local result is still selectable');
   assert.equal(await pane.locator('[role=alert]').count(),0,'optional provider failures do not become page errors');
  }
- await pane.locator('.results button').click();await pane.getByRole('button',{name:'Lebensmittel eintragen',exact:true}).click();
+ await pane.locator('.results button').click();await pane.getByRole('radio',{name:'Snacks',exact:true}).check();await pane.getByRole('button',{name:'Lebensmittel eintragen',exact:true}).click();
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='log_food'));
  await page.evaluate(()=>{window.localMiss=true;window.providerWarning='provider_unavailable';});await query.fill('4006381333931');await query.press('Enter');
  await pane.locator('.results').getByText(/Keine lokal gespeicherten/).waitFor();assert.match(await pane.locator('.provider-warning').innerText(),/derzeit nicht erreichbar/);
@@ -88,7 +87,7 @@ test('online failures explain consent, quota or outage while local food logging 
 
 test('diary loads HA-local today, shows unknown nutrients and dated goals, and navigates without timezone shifts',async()=>{
  const page=await open();
- assert.match(await panel(page).locator('main').innerText(),/MacroMate/);
+ assert.equal(await panel(page).locator('.brand').count(),0);
  assert.match(await panel(page).locator('main').innerText(),/300/);
  await panel(page).getByText('Alle Tagesnährwerte',{exact:true}).click();
  assert.match(await panel(page).locator('main').innerText(),/Unbekannt/);
@@ -122,6 +121,7 @@ test('manual local search escapes product text, fetches detail, logs ml portions
  const real=backend({seed_food:await page.evaluate(()=>window.product),calls:(await calls(page)).filter(c=>c.action==='favorite')});
  assert.equal(real.results[0].food.is_favorite,true);assert.equal(real.results[1].food.is_favorite,false);
  assert.deepEqual(real.state.favorites,{});
+ await panel(page).getByRole('radio',{name:'Snacks',exact:true}).check();
  await panel(page).getByRole('button',{name:'Lebensmittel eintragen'}).click();
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='log_food'));
  const log=(await calls(page)).find(c=>c.action==='log_food');
@@ -131,7 +131,7 @@ test('manual local search escapes product text, fetches detail, logs ml portions
   await panel(page).getByRole('button',{name:'Suchen',exact:true}).click();
   await page.waitForFunction(f=>window.calls.some(c=>c.action==='search_foods'&&c.payload.filter===f),filter);
  }
- await panel(page).getByLabel('Online-Suche (Open Food Facts)').check();
+ await panel(page).getByLabel('Filter',{exact:true}).selectOption('all');await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('Hafer');
  await panel(page).getByRole('button',{name:'Suchen',exact:true}).click();
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='search_foods'&&c.payload.online===true));
  await page.close();
@@ -279,17 +279,18 @@ test('extended nutrients use explicit mg and microgram units without treating mi
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='save_food'));
  const food=(await calls(page)).find(c=>c.action==='save_food').payload.food;
  assert.equal(food.nutrients_per_100.vitamin_c,12);assert.equal(food.nutrients_per_100.vitamin_b12,2.4);
+ await panel(page).getByText('Nährwerte der gewählten Portion',{exact:true}).click();
  assert.match(await panel(page).locator('.food-detail').innerText(),/12 mg/);
  assert.match(await panel(page).locator('.food-detail').innerText(),/2,4 µg/);
  assert.match(await panel(page).locator('.food-detail').innerText(),/Unbekannt/);
  await page.close();
 });
 
-test('phone controls keep readable unbroken labels and compact adjacent online checkbox',async()=>{
+test('phone controls keep readable labels and automatic online lookup without a checkbox',async()=>{
  const page=await open();
  assert.ok((await panel(page).getByRole('button',{name:'Haferfrühstück bearbeiten'}).boundingBox()).height<=50);
  assert.ok((await panel(page).getByRole('heading',{name:'Dein Tagebuch'}).boundingBox()).height<=40);
- assert.ok((await panel(page).getByLabel('Online-Suche (Open Food Facts)').boundingBox()).width<=32);
+ assert.equal(await panel(page).getByRole('checkbox',{name:'Online-Suche (Open Food Facts)'}).count(),0);
  await panel(page).getByRole('button',{name:'Suchen',exact:true}).click();
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'long external product labels must wrap');
  await page.close();
@@ -320,7 +321,7 @@ test('barcode manual input preserves leading zeros and scanner image input decod
  await panel(page).getByRole('button',{name:'Suchen',exact:true}).click();
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='barcode'));
  assert.equal((await calls(page)).find(c=>c.action==='barcode').payload.barcode,'012345678905');
- assert.equal((await calls(page)).find(c=>c.action==='barcode').payload.online,false);
+ assert.equal((await calls(page)).find(c=>c.action==='barcode').payload.online,true);
  await panel(page).getByLabel('Lebensmittel suchen',{exact:true}).fill('4006381333932');
  await panel(page).getByRole('button',{name:'Suchen',exact:true}).click();
  assert.equal((await calls(page)).filter(c=>c.action==='barcode').length,1);
@@ -473,7 +474,7 @@ async function delayedFoodContext(page,action,change,{reject=false}={}){
   if(change==='identity'||change==='both')replacement.user={id:'replacement-admin',is_admin:true};
   if(change==='connection'||change==='both')replacement.connection={subscribeEvents:async()=>()=>{}};
   app.hass=replacement;
-  const snapshot=()=>({results:app.foodBrowser.results.textContent,detail:app.foodBrowser.detail.textContent,food:app.foodBrowser.food??null,hidden:app.workspace.hidden,message:app.message.textContent});
+  const snapshot=()=>({results:app.foodBrowser.results.textContent,detail:app.foodBrowser.detail.textContent,food:app.foodBrowser.food??null,hidden:app.workspace.hidden,message:app.message.textContent,dialog:app.dialog?.open?app.dialog.textContent:''});
   const before=snapshot();
   if(reject)rejectRead({code:'not_found'});
   else {const food={...window.product,name:'STALE PRIVATE FOOD'};resolve(action==='food'?{food}:{foods:[food],source:'stale private'});}
@@ -495,12 +496,13 @@ function assertFoodContextCleared(result,downgrade){
   assert.equal(state.results,'',phase+' results must remain cleared');
   assert.equal(state.detail,'',phase+' detail must remain cleared');
   assert.equal(state.food,null,phase+' food model must remain cleared');
+  assert.equal(state.dialog,'',phase+' food dialog must remain closed');
   assert.equal(state.hidden,downgrade);
  }
  assert.equal(result.after.message,result.before.message,'stale completion must not replace current context status');
  assert.equal(result.pendingIntact,true,'logical write must remain untouched');
  assert.equal(result.writes,0,'context replacement must not retry logical writes');
- if(!downgrade)assert.match(result.fresh.results+result.fresh.detail,/Haferdrink/,'new context food reads still work');
+ if(!downgrade)assert.match(result.fresh.results+result.fresh.detail+result.fresh.dialog,/Haferdrink/,'new context food reads still work');
 }
 
 test('delayed food search cannot restore DOM or model after admin downgrade',async()=>{

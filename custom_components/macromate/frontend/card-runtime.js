@@ -161,13 +161,8 @@ export class MacroMateCard extends MacroMateSummary {
     api.addEventListener("state", state);
     const workspace = document.createElement("div");
     workspace.className = "workspace";
-    const build = document.createElement("small");
-    build.className = "build-revision";
-    build.textContent = `MacroMate · ${BUILD_REVISION.slice(0, 12)}`;
-    build.title = BUILD_REVISION;
-    build.style.cssText =
-      "flex:none;font:11px system-ui;padding:2px 12px;color:var(--secondary-text-color,#666)";
-    workspace.append(build, status, app);
+    this.dataset.buildRevision = BUILD_REVISION;
+    workspace.append(status, app);
     this.shadowRoot.replaceChildren(stylesheet, workspace);
     api
       .call("describe")
