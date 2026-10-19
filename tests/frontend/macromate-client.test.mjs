@@ -31,3 +31,12 @@ test('definitive validation failure clears pending write so corrected input rece
  await assert.rejects(client.write('log_meal',{name:'Invalid',calories:-1}));assert.equal(client.pending,null);
  await client.write('log_meal',{name:'Fixed',calories:1});assert.notEqual(calls[0].payload.request_id,calls[1].payload.request_id);
 });
+
+test('native HA schema and unknown-command rejections never retain an uncertain nutrition write',async()=>{
+ const {CommandClient}=await import('../../frontend/client.js');
+ for(const code of ['invalid_format','unknown_command']){
+  const client=new CommandClient({callWS:async()=>{throw {code};}});
+  await assert.rejects(client.write('log_food',{food_id:'food',amount:100,meal_type:'snack'}),e=>e.code===code);
+  assert.equal(client.pending,null);
+ }
+});

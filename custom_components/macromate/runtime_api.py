@@ -12,6 +12,8 @@ from zoneinfo import ZoneInfo
 import voluptuous as vol
 from homeassistant.util import dt as dt_util
 
+from .basic_foods import ATTRIBUTION as BASIC_ATTRIBUTION
+from .basic_foods import BASIC_FOODS, search_aliases
 from .food_provider import (
     ATTRIBUTION,
     OpenFoodFactsProvider,
@@ -73,7 +75,7 @@ class DiaryCommands:
     def _food(self, food_id, state=None):
         foods = self.foods if state is None else state["foods"]
         value = {
-            **foods[food_id],
+            **(foods[food_id] if food_id in foods else BASIC_FOODS[food_id]),
             "favorite": (self.favorites if state is None else state["favorites"]).get(food_id),
         }
         return FoodProduct.from_dict(value)
@@ -304,13 +306,20 @@ class DiaryCommands:
             else:
                 query = values["query"].casefold()
                 words = query.split()
-                foods = [self._food(fid) for fid in self.foods]
+                foods = [self._food(fid) for fid in dict.fromkeys((*self.foods, *BASIC_FOODS))]
                 foods = [
                     food
                     for food in foods
                     if all(
                         word
-                        in " ".join((food.name, food.producer or "", *food.barcodes)).casefold()
+                        in " ".join(
+                            (
+                                food.name,
+                                food.producer or "",
+                                search_aliases(food.food_id),
+                                *food.barcodes,
+                            )
+                        ).casefold()
                         for word in words
                     )
                 ]
@@ -344,13 +353,17 @@ class DiaryCommands:
                 if any(food.source == "open_food_facts" for food in foods)
                 else None
             )
+            attributions = [attribution] if attribution else []
+            if any(food.source == "usda" for food in foods):
+                attributions.append(dict(BASIC_ATTRIBUTION))
             return {
                 "foods": [food.to_dict() for food in foods],
                 "source": source,
                 "has_more": has_more,
                 "warnings": warnings,
-                "attribution": attribution["text"] if attribution else None,
-                "attribution_details": attribution,
+                "attribution": " · ".join(row["text"] for row in attributions) or None,
+                "attribution_details": attributions[0] if attributions else None,
+                "attributions": attributions,
             }
         request_id = values.pop("request_id", None)
         if action == "log_meal":
@@ -407,7 +420,10 @@ class DiaryCommands:
         if action == "favorite":
 
             def apply(state):
-                food = self._food(values["food_id"], state).with_favorite(
+                food = self._food(values["food_id"], state)
+                if values["enabled"] and food.source == "usda":
+                    state["foods"].setdefault(food.food_id, food.to_dict())
+                food = food.with_favorite(
                     values["enabled"],
                     values.get("amount"),
                     serving_id=values.get("serving_id"),
@@ -454,6 +470,8 @@ class DiaryCommands:
 
             def apply(state):
                 food = self._food(values["food_id"], state)
+                if food.source == "usda":
+                    state["foods"].setdefault(food.food_id, food.to_dict())
                 amount = food.portion_amount(
                     values.get("amount"),
                     serving_id=values.get("serving_id"),

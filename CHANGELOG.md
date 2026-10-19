@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.2
+
+- Add 32 offline reference foods (including banana, apple, oats and rice), German/English search aliases and reference portions from USDA FoodData Central SR Legacy (CC0-1.0).
+- Keep raw/cooked preparation and edible-weight basis explicit; retain source metadata and pin used foods/diary snapshots across catalogue updates.
+- Preserve canonical nutrient values across repeated serialization instead of introducing floating-point drift.
+- Reject unrelated Home Assistant requests before creating MacroMate write state. Native schema/unknown-command rejections no longer produce an uncertain-save lock.
+
 ## 0.4.1
 
 - Keep local food search and logging available when Open Food Facts fails; explain outages, request limits and missing consent inline, including barcode searches.

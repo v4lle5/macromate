@@ -26,7 +26,7 @@ class FoodCommandsTests(CoordinatorTransactions):
                 provider.async_lookup_barcode.side_effect = failure
                 before = self.coord._state()
                 result = await self.coord.async_command("search_foods", {
-                    "query": "oats", "online": True,
+                    "query": "synthetic oats", "online": True,
                 })
                 self.assertEqual(result["warnings"], [warning])
                 self.assertEqual(result["source"], "local")
@@ -46,7 +46,7 @@ class FoodCommandsTests(CoordinatorTransactions):
     async def test_disabled_online_search_returns_local_results_without_contacting_provider(self):
         from unittest.mock import AsyncMock
         provider = self.coord._provider = AsyncMock()
-        result = await self.coord.async_command("search_foods", {"query": "oats", "online": True})
+        result = await self.coord.async_command("search_foods", {"query": "unknown fixture", "online": True})
         self.assertEqual(result["warnings"], ["provider_consent_required"])
         self.assertEqual(result["foods"], [])
         self.assertEqual(provider.mock_calls, [])
@@ -67,10 +67,10 @@ class FoodCommandsTests(CoordinatorTransactions):
         self.coord.settings["enable_food_database"] = True
         self.store.fail = True
         with self.assertRaises(OSError):
-            await self.coord.async_command("search_foods", {"query": "oats", "online": True})
+            await self.coord.async_command("search_foods", {"query": "remote oats", "online": True})
         self.assertNotIn(remote.food_id, self.coord.foods)
         self.store.fail = False
-        result = await self.coord.async_command("search_foods", {"query": "oats", "online": True})
+        result = await self.coord.async_command("search_foods", {"query": "remote oats", "online": True})
         self.assertEqual(result["warnings"], [])
         self.assertEqual(result["source"], "local + Open Food Facts")
         self.assertIn("ODbL", result["attribution"])

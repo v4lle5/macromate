@@ -352,8 +352,25 @@ export class FoodBrowser {
       el(
         "p",
         { class: "muted" },
-        [food.producer, food.source, food.license].filter(Boolean).join(" · "),
+        [
+          food.producer,
+          food.source === "usda" ? "USDA FoodData Central" : food.source,
+          food.license,
+        ]
+          .filter(Boolean)
+          .join(" · "),
       ),
+      ...(food.source === "usda"
+        ? [
+            el(
+              "small",
+              {},
+              this.t(
+                "USDA FoodData Central reference averages. Weigh the edible portion; check whether the food is raw or cooked.",
+              ),
+            ),
+          ]
+        : []),
       el(
         "form",
         {

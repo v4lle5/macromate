@@ -54,6 +54,23 @@ class HouseholdProfiles(unittest.IsolatedAsyncioTestCase):
         diary = await restarted.async_command("diary", {"profile_id": profile_id, "date": "2026-10-14"}, actor=Actor(self.other.id))
         self.assertEqual(diary["totals"]["calories"], 321)
 
+    async def test_public_reference_foods_keep_private_favorites_and_diaries_separate(self):
+        profile_id = await self.profile()
+        search = await self.call("search_foods", {"profile_id":profile_id,"query":"Banane"}, self.other)
+        food_id = search["foods"][0]["food_id"]
+        await self.call("favorite", {"profile_id":profile_id,"food_id":food_id,"enabled":True}, self.other)
+        logged = await self.call("log_food", {
+            "profile_id":profile_id,"food_id":food_id,"amount":100,"meal_type":"snack",
+            "date":"2026-10-14","request_id":"shared-banana",
+        }, self.other)
+        self.assertEqual(logged["entry"]["calories"], 89)
+        own = await self.call("search_foods", {"profile_id":profile_id,"query":"Banane","filter":"favorites"}, self.other)
+        root = await self.call("search_foods", {"query":"Banane","filter":"favorites"})
+        self.assertEqual(len(own["foods"]),1)
+        self.assertEqual(root["foods"],[])
+        self.assertNotIn(food_id,self.coord.foods)
+        self.assertEqual((await self.call("diary", {"date":"2026-10-14"}))["entries"],[])
+
     async def test_sharing_revocation_and_cross_profile_ids(self):
         first = await self.profile()
         second = await self.profile(self.owner)

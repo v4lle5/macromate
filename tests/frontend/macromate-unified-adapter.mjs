@@ -46,3 +46,20 @@ for(const response of [null,{}, {preferences:null},{preferences:[]}]){
  assert.ok(malformed.pending.payload.request_id);
 }
 console.log('PASS: canonical transport, stable uncertain retry, disposal, scoped member permissions, read-only nutrition, stale reads, private media lifecycle');
+
+const isolated=new MacroMateAPI(hass),optional=isolated.facade();const beforeOptional=sent.length;
+await assert.rejects(optional.callWS({type:'hacs/repositories/list'}),e=>e.code==='invalid_request');
+assert.equal(sent.length,beforeOptional,'An unrelated HA lookup never reaches the MacroMate backend');
+assert.equal(isolated.pending,null,'An optional HACS read never blocks diary writes');
+assert.equal(isolated.lastFailure,undefined,'An optional HACS read never raises an uncertain-save banner');
+for(const code of ['invalid_format','unknown_command']){
+ const rejected=new MacroMateAPI({...hass,callWS:async()=>{throw {code};}});
+ await assert.rejects(rejected.call('recipes_add',{name:'Rejected before execution'}),e=>e.code===code);
+ assert.equal(rejected.pending,null,'HA schema/command rejection establishes that no write was executed');
+}
+await isolated.call('recipes_add',{name:'After optional lookup'});assert.equal(isolated.pending,null);
+await assert.rejects(isolated.call(null),e=>e.code==='invalid_request');
+const retained=failureAPI.pending;const previousFailure=failureAPI.lastFailure;
+await assert.rejects(failureAPI.facade().callWS({type:'hacs/repositories/list'}),e=>e.code==='invalid_request');
+assert.equal(failureAPI.pending,retained,'An unrelated lookup must preserve an actual uncertain write');assert.equal(failureAPI.lastFailure,previousFailure);
+console.log('PASS: unrelated HACS queries and definitive HA command/schema errors never become uncertain MacroMate writes');

@@ -8,6 +8,8 @@ const DEFINITIVE = new Set([
   "invalid_payload",
   "forbidden",
   "conflict",
+  "invalid_format",
+  "unknown_command",
 ]);
 const READS = new Set([
   "profiles_list",
@@ -46,6 +48,8 @@ export function safeError(code) {
     read_failed: "Reading failed. Check the connection and reload.",
     unauthorized: "This account cannot access this workspace.",
     invalid_request: "Check the submitted fields.",
+    invalid_format: "Check the submitted fields.",
+    unknown_command: "Update MacroMate and reload the workspace.",
     not_found: "The selected record no longer exists.",
     context_changed: "Account or connection changed. Reopen the workspace.",
     pending: "Resolve the uncertain request before another change.",
@@ -158,7 +162,11 @@ export class MacroMateAPI extends EventTarget {
     this.dispatchEvent(new Event("state"));
   }
   async call(type, payload = {}) {
+    if (typeof type !== "string") throw safeError("invalid_request");
     const action = canonicalAction(type);
+    // Native/third-party HA requests must never become MacroMate mutations.
+    if (!/^[a-z][a-z0-9_]{0,63}$/.test(action))
+      throw safeError("invalid_request");
     this.authorize(action, payload);
     if (this.readOnly(action))
       return this.send(action, structuredClone(payload));
