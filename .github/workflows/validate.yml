@@ -109,6 +109,17 @@ jobs:
           python -m unittest discover -s tests -p test_unified_packaging.py -v
           node --test tests/frontend/macromate-card.test.mjs tests/frontend/macromate-artifact.test.mjs
           python tests/ha/native_unified_browser.py
+      - name: Preserve nutrition layout screenshots and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nutrition-ui-evidence
+          path: |
+            ${{ env.TMPDIR }}/unified-evidence/nutrition-compact-*.png
+            ${{ env.TMPDIR }}/unified-evidence/compact-layouts.json
+            ${{ env.TMPDIR }}/unified-evidence/verification.json
+          if-no-files-found: ignore
+          retention-days: 14
 
   hassfest:
     runs-on: ubuntu-latest

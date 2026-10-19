@@ -255,6 +255,7 @@ try{
   await connect(0);
   await view('Nutrition');
   let pane=page.locator('mm-nutrition');
+  await pane.getByRole('button',{name:'Nutrition options',exact:true}).click();
   await pane.getByRole('button',{name:'Add person',exact:true}).click();
   const dialog=pane.getByRole('dialog');
   await dialog.locator('input[name=profile_name]').fill('Synthetic household person');

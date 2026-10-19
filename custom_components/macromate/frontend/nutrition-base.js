@@ -8,6 +8,7 @@ import {
   editFoodEntry,
   copyEntry,
   deleteEntry,
+  openDialog,
 } from "./entry-ui.js";
 import { FoodBrowser } from "./foods-ui.js";
 import { CommandClient, publicError } from "./client.js";
@@ -181,6 +182,16 @@ export class MacroMateNutritionBase extends HTMLElement {
     this.diaryNode = el("section", { "aria-label": this.t("Diary") });
     this.profileControls = el("section", {
       "aria-label": this.t("Nutrition profile"),
+      hidden: true,
+    });
+    this.profileHome = el(
+      "div",
+      { class: "profile-home" },
+      this.profileControls,
+    );
+    this.entriesNode = el("section", {
+      class: "diary-entries",
+      "aria-label": this.t("Meals"),
     });
     this.workspace = el("section", {
       "aria-label": this.t("Foods"),
@@ -190,43 +201,36 @@ export class MacroMateNutritionBase extends HTMLElement {
       el(
         "main",
         {},
-        el(
-          "header",
-          { class: "brand" },
-          el("img", {
-            src: new URL("./brand-icon.png", import.meta.url).href,
-            alt: "",
-            width: 64,
-            height: 64,
-          }),
-          el(
-            "div",
-            {},
-            el("h1", {}, "MacroMate"),
-            el("p", { class: "eyebrow" }, "TRACK · EAT · PROGRESS"),
-          ),
-        ),
         this.message,
-        this.profileControls,
+        this.profileHome,
         this.diaryNode,
-        this.workspace,
+        el(
+          "div",
+          { class: "nutrition-content" },
+          this.workspace,
+          this.entriesNode,
+        ),
       ),
     );
     this.foodBrowser = new FoodBrowser(this);
     this.barcode = new BarcodeUI(this);
-    this.workspace.append(
-      el(
-        "div",
-        { class: "toolbar" },
-        button(this.t("Custom food"), () => customFood(this), {
-          "data-custom-food": true,
-          "data-write": true,
-        }),
-      ),
-      this.foodBrowser.render(),
-    );
+    this.workspace.append(this.foodBrowser.render());
     this.startLive();
     this.loadDiary();
+  }
+  openNutritionOptions() {
+    this.profileControls.hidden = false;
+    const dialog = openDialog(this, this.t("Nutrition options"), [
+      this.profileControls,
+      button(this.t("Close"), () => dialog.close()),
+    ]);
+    dialog.addEventListener("close", () => {
+      this.profileControls.hidden = !!this.profiles?.length;
+      this.profileHome.append(this.profileControls);
+    });
+  }
+  createCustomFood() {
+    customFood(this);
   }
   async write(action, payload, refresh = true) {
     try {
@@ -250,7 +254,10 @@ export class MacroMateNutritionBase extends HTMLElement {
       .forEach(
         (b) =>
           (b.disabled =
-            !!this.client.pending || !!this.diaryBusy || !this.data),
+            !!this.client.pending ||
+            !!this.diaryBusy ||
+            !this.data ||
+            b.dataset.needsSelection === "true"),
       );
   }
   showError(error) {
@@ -312,6 +319,7 @@ export class MacroMateNutritionBase extends HTMLElement {
       this.diaryBusy = false;
       this.data = null;
       this.diaryNode.replaceChildren();
+      this.entriesNode.replaceChildren();
       this.workspace.hidden = true;
       this.foodBrowser.invalidate();
       this.barcode?.stop();
@@ -341,6 +349,7 @@ export class MacroMateNutritionBase extends HTMLElement {
         ) {
           this.data = null;
           this.diaryNode.replaceChildren();
+          this.entriesNode.replaceChildren();
           this.workspace.hidden = true;
           this.foodBrowser.invalidate();
           this.barcode?.stop();
@@ -363,29 +372,8 @@ export class MacroMateNutritionBase extends HTMLElement {
       }
     }
   }
-  renderDiary() {
+  renderOverview() {
     const data = this.data;
-    const date = field(this.t("Day"), {
-      type: "date",
-      value: this.date,
-      required: true,
-      "aria-label": this.t("Diary date"),
-      onchange: (event) => {
-        if (event.target.value) this.loadDiary(event.target.value);
-      },
-    });
-    const navigation = el(
-      "nav",
-      { class: "date-nav", "aria-label": this.t("Date") },
-      button("‹", () => this.loadDiary(shiftDate(this.date, -1)), {
-        "aria-label": this.t("Previous day"),
-      }),
-      date,
-      button("›", () => this.loadDiary(shiftDate(this.date, 1)), {
-        "aria-label": this.t("Next day"),
-      }),
-      button(this.t("Today"), () => this.loadDiary(this.today)),
-    );
     const recommendation = data.recommendation;
     const progress = el("div", { class: "progress-grid" });
     for (const key of ["calories", "protein", "carbs", "fat"]) {
@@ -436,6 +424,42 @@ export class MacroMateNutritionBase extends HTMLElement {
         );
       progress.append(tile);
     }
+    return progress;
+  }
+  renderDiary() {
+    const data = this.data;
+    const date = field(this.t("Day"), {
+      type: "date",
+      value: this.date,
+      required: true,
+      "aria-label": this.t("Diary date"),
+      onchange: (event) => {
+        if (event.target.value) this.loadDiary(event.target.value);
+      },
+    });
+    const navigation = el(
+      "nav",
+      { class: "date-nav", "aria-label": this.t("Date") },
+      button("‹", () => this.loadDiary(shiftDate(this.date, -1)), {
+        "aria-label": this.t("Previous day"),
+      }),
+      date,
+      button("›", () => this.loadDiary(shiftDate(this.date, 1)), {
+        "aria-label": this.t("Next day"),
+      }),
+      button(this.t("Today"), () => this.loadDiary(this.today)),
+      ...(this.profilesEnabled
+        ? [
+            button("⋯", () => this.openNutritionOptions(), {
+              class: "nutrition-options",
+              "aria-label": this.t("Nutrition options"),
+              title: this.t("Nutrition options"),
+            }),
+          ]
+        : []),
+    );
+    const recommendation = data.recommendation;
+    const progress = this.renderOverview();
     const meals = el("div", { class: "meals" });
     for (const [key, label] of Object.entries(MEALS)) {
       const entries =
@@ -443,7 +467,7 @@ export class MacroMateNutritionBase extends HTMLElement {
         data.entries.filter((e) => e.meal_type === key);
       const section = el(
         "article",
-        { class: "card" },
+        { class: "card meal-card" },
         el("h3", {}, this.t(label)),
       );
       if (!entries.length)
@@ -453,12 +477,26 @@ export class MacroMateNutritionBase extends HTMLElement {
           el(
             "div",
             { class: "entry" },
-            el("strong", {}, entry.name),
-            el("p", {}, this.display(entry.calories, "kcal")),
             el(
               "details",
-              {},
-              el("summary", {}, this.t("Nutrients")),
+              { class: "entry-details" },
+              el(
+                "summary",
+                {},
+                el("strong", { title: entry.name }, entry.name),
+                el(
+                  "span",
+                  { class: "entry-meta" },
+                  [
+                    entry.amount != null
+                      ? this.display(entry.amount, entry.base_unit)
+                      : null,
+                    this.display(entry.calories, "kcal"),
+                  ]
+                    .filter(Boolean)
+                    .join(" · "),
+                ),
+              ),
               this.renderNutrients(
                 entry.nutrients ||
                   Object.fromEntries(
@@ -468,7 +506,7 @@ export class MacroMateNutritionBase extends HTMLElement {
             ),
             el(
               "div",
-              { class: "actions" },
+              { class: "actions entry-actions" },
               button(
                 this.t("Edit"),
                 () =>
@@ -478,16 +516,19 @@ export class MacroMateNutritionBase extends HTMLElement {
                 {
                   "aria-label": this.t("{name} edit", { name: entry.name }),
                   "data-write": true,
+                  "data-entry-action": "edit",
                 },
               ),
               button(this.t("Copy"), () => copyEntry(this, entry), {
                 "aria-label": this.t("{name} copy", { name: entry.name }),
                 "data-write": true,
+                "data-entry-action": "copy",
               }),
               button(this.t("Delete"), () => deleteEntry(this, entry), {
                 "aria-label": this.t("{name} delete", { name: entry.name }),
                 class: "danger",
                 "data-write": true,
+                "data-entry-action": "delete",
               }),
             ),
           ),
@@ -497,18 +538,17 @@ export class MacroMateNutritionBase extends HTMLElement {
     }
     this.diaryNode.replaceChildren(
       navigation,
-      el(
-        "div",
-        { class: "toolbar diary-toolbar" },
-        el("h2", {}, this.t("Your diary")),
-      ),
       progress,
       ...(!recommendation
         ? [el("p", { class: "muted" }, this.t("No saved daily target"))]
         : []),
+    );
+    this.entriesNode.replaceChildren(
+      el("h2", {}, this.t("Your diary")),
+      meals,
       el(
         "details",
-        {},
+        { class: "daily-nutrients" },
         el("summary", {}, this.t("All daily nutrients")),
         this.renderNutrients({
           ...data.totals,
@@ -517,9 +557,8 @@ export class MacroMateNutritionBase extends HTMLElement {
           ),
         }),
       ),
-      meals,
+      reportControls(this),
     );
     this.diaryNode.dataset.testid = "diary";
-    this.diaryNode.append(reportControls(this));
   }
 }

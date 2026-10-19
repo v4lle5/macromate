@@ -53,6 +53,8 @@ export async function loadProfiles(panel) {
   panel.client.profileId =
     panel.profileId && panel.profileId !== "default" ? panel.profileId : null;
   panel.profileControls.replaceChildren(profileControls(panel));
+  if (!panel.dialog?.contains(panel.profileControls))
+    panel.profileControls.hidden = panel.profiles.length > 0;
   return panel.profileId !== null;
 }
 

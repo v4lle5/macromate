@@ -1,6 +1,6 @@
 import { translator } from "./i18n.js";
 import { el, button, field, nutrients, display, MEALS } from "./dom.js";
-import { quickEntry } from "./entry-ui.js";
+import { quickEntry, openDialog } from "./entry-ui.js";
 export function selectField(label, name, options, value) {
   const input = el(
     "select",
@@ -72,15 +72,11 @@ export class FoodBrowser {
       ],
       "all",
     );
-    this.online = field(this.t("Online search (Open Food Facts)"), {
-      type: "checkbox",
-    });
     this.results = el("div", { class: "results", "aria-live": "polite" });
     this.detail = el("div", { class: "food-detail" });
     this.node = el(
       "div",
-      { class: "card" },
-      el("h2", {}, this.t("Log food")),
+      { class: "card food-search" },
       el(
         "form",
         {
@@ -93,32 +89,35 @@ export class FoodBrowser {
           "div",
           { class: "toolbar" },
           this.query,
-          this.filter,
           el("button", { type: "submit", class: "primary" }, this.t("Search")),
+        ),
+        el(
+          "div",
+          { class: "toolbar search-tools" },
+          this.filter,
           button(this.t("Quick entry"), () => quickEntry(this.panel), {
             "data-write": true,
           }),
           this.panel.barcode.render(),
-        ),
-        this.online,
-        el(
-          "small",
-          {},
-          this.t(
-            "Search by name or barcode. Choose Quick entry for your own nutrients. Local only by default; online requires submission and consent in integration settings.",
-          ),
+          button(this.t("Custom food"), () => this.panel.createCustomFood(), {
+            "data-custom-food": true,
+            "data-write": true,
+            "aria-label": this.t("Custom food"),
+            title: this.t("Custom food"),
+          }),
         ),
       ),
       this.results,
-      this.detail,
     );
     return this.node;
   }
   invalidate() {
     this.sequence++;
     this.results.replaceChildren();
+    this.results.removeAttribute("aria-busy");
     this.detail.replaceChildren();
     this.food = null;
+    this.dialog?.close();
   }
   readContext() {
     return {
@@ -142,7 +141,7 @@ export class FoodBrowser {
     const context = this.readContext();
     try {
       const query = this.query.querySelector("input").value;
-      this.detail.replaceChildren();
+      this.dialog?.close();
       if (
         /^[\p{Decimal_Number}\s]+$/u.test(query) &&
         /\p{Decimal_Number}/u.test(query)
@@ -166,16 +165,29 @@ export class FoodBrowser {
         this.query.querySelector("input").focus();
         return;
       }
-      const result = await this.panel.client.read("search_foods", {
+      const payload = {
         query: this.query.querySelector("input").value,
-        online: this.online.querySelector("input").checked,
         filter: this.filter.querySelector("select").value,
+      };
+      const result = await this.panel.client.read("search_foods", {
+        ...payload,
+        online: false,
       });
       if (!this.current(context)) return;
       this.panel.message.replaceChildren();
       this.showResults(result);
+      if (payload.filter === "all" && payload.query.trim()) {
+        this.results.setAttribute("aria-busy", "true");
+        const online = await this.panel.client.read("search_foods", {
+          ...payload,
+          online: true,
+        });
+        if (this.current(context)) this.showResults(online);
+      }
     } catch (e) {
       if (this.current(context)) this.panel.showError(e);
+    } finally {
+      if (this.current(context)) this.results.removeAttribute("aria-busy");
     }
   }
   showResults(result) {
@@ -198,28 +210,37 @@ export class FoodBrowser {
         el("p", { role: "status", class: "provider-warning" }, warnings[code]),
       ),
       el(
-        "small",
-        {},
-        [result.source, result.attribution].filter(Boolean).join(" · "),
-      ),
-      ...(result.foods?.length
-        ? result.foods.map((food) =>
-            button(
-              `${food.name}${food.producer ? " · " + food.producer : ""}`,
-              () => this.pick(food.food_id),
-            ),
-          )
-        : [
-            el(
-              "p",
-              {},
-              this.t(
-                notices.length
-                  ? "No locally saved foods found. Use Quick entry or create a custom food."
-                  : "No foods found. Try another search or create a custom food.",
+        "div",
+        { class: "food-results" },
+        ...(result.foods?.length
+          ? result.foods.map((food) =>
+              button(
+                `${food.name}${food.producer ? " · " + food.producer : ""}`,
+                () => this.pick(food.food_id),
               ),
+            )
+          : [
+              el(
+                "p",
+                {},
+                this.t(
+                  notices.length
+                    ? "No locally saved foods found. Use Quick entry or create a custom food."
+                    : "No foods found. Try another search or create a custom food.",
+                ),
+              ),
+            ]),
+      ),
+      ...(result.attribution
+        ? [
+            el(
+              "details",
+              { class: "result-sources" },
+              el("summary", {}, this.t("Sources")),
+              el("small", {}, result.attribution),
             ),
-          ]),
+          ]
+        : []),
     );
   }
   async pick(food_id) {
@@ -234,6 +255,7 @@ export class FoodBrowser {
   }
   showFood(food) {
     this.food = food;
+    this.results.removeAttribute("aria-busy");
     const serving = selectField(
       this.t("Serving"),
       "serving",
@@ -246,7 +268,9 @@ export class FoodBrowser {
       ],
       food.favorite?.serving_id || "",
     );
-    const amount = field(this.t("Amount") + " (" + food.base_unit + ")", {
+    serving.hidden = !food.servings?.length;
+    const amount = field(`${this.t("Amount")} (${food.base_unit})`, {
+      name: "amount",
       type: "number",
       min: "0.001",
       step: "any",
@@ -254,19 +278,36 @@ export class FoodBrowser {
       value: food.favorite?.amount || 100,
     });
     const quantity = field(this.t("Quantity"), {
+      name: "quantity",
       type: "number",
       min: "0.001",
       step: "any",
       required: true,
       value: food.favorite?.quantity || 1,
     });
-    const meal = selectField(
-      this.t("Meal"),
-      "meal",
-      Object.entries(MEALS).map(([id, label]) => [id, this.t(label)]),
-      "snack",
+    const meal = el(
+      "fieldset",
+      { class: "meal-choice" },
+      el("legend", {}, this.t("Which meal?")),
+      ...Object.entries(MEALS).map(([value, label]) =>
+        el(
+          "label",
+          {},
+          el("input", {
+            type: "radio",
+            name: "meal_type",
+            value,
+            required: true,
+          }),
+          el("span", {}, this.t(label)),
+        ),
+      ),
     );
-    const preview = el("div", { "aria-live": "polite" });
+    const preview = el("div", {
+      class: "portion-preview",
+      "aria-live": "polite",
+    });
+    const fullNutrients = el("div");
     const portion = () =>
       serving.querySelector("select").value
         ? {
@@ -274,6 +315,17 @@ export class FoodBrowser {
             quantity: positive(quantity.querySelector("input")),
           }
         : { amount: positive(amount.querySelector("input")) };
+    let validPortion = true;
+    const log = el(
+      "button",
+      {
+        type: "submit",
+        class: "primary",
+        "data-write": true,
+        "data-needs-selection": "true",
+      },
+      this.t("Log food"),
+    );
     const refresh = () => {
       const id = serving.querySelector("select").value;
       amount.hidden = !!id;
@@ -281,44 +333,52 @@ export class FoodBrowser {
       amount.querySelector("input").disabled = !!id;
       quantity.querySelector("input").disabled = !id;
       try {
-        const p = portion();
+        const selected = portion();
         const size =
-          p.amount ??
-          food.servings.find((s) => s.serving_id === p.serving_id).amount *
-            p.quantity;
+          selected.amount ??
+          food.servings.find((s) => s.serving_id === selected.serving_id)
+            .amount * selected.quantity;
         const per =
           food.nutrients_per_100 ||
           Object.fromEntries(
-            Object.entries(food.nutrients || {}).map(([k, v]) => [
-              k,
-              v == null ? null : v * 100,
+            Object.entries(food.nutrients || {}).map(([key, value]) => [
+              key,
+              value == null ? null : value * 100,
             ]),
           );
+        const values = Object.fromEntries(
+          Object.entries(per).map(([key, value]) => [
+            key,
+            value == null ? null : (value * size) / 100,
+          ]),
+        );
         preview.replaceChildren(
-          el(
-            "p",
-            {},
-            `${this.t("Selected:")} ${this.display(size, food.base_unit)}`,
-          ),
-          this.renderNutrients(
-            Object.fromEntries(
-              Object.entries(per).map(([k, v]) => [
-                k,
-                v == null ? null : (v * size) / 100,
-              ]),
+          el("strong", {}, this.display(values.calories, "kcal")),
+          ...["protein", "carbs", "fat"].map((key) =>
+            el(
+              "span",
+              {},
+              `${this.t({ protein: "Protein", carbs: "Carbohydrates", fat: "Fat" }[key])} ${this.display(values[key], "g")}`,
             ),
           ),
         );
+        fullNutrients.replaceChildren(this.renderNutrients(values));
+        validPortion = true;
       } catch {
         preview.replaceChildren(
           el("p", {}, this.t("Enter a positive amount.")),
         );
+        validPortion = false;
       }
+      log.dataset.needsSelection = String(
+        !validPortion || !meal.querySelector("input:checked"),
+      );
+      this.panel.syncControls();
     };
-    serving.addEventListener("change", refresh);
-    amount.addEventListener("input", refresh);
-    quantity.addEventListener("input", refresh);
-    refresh();
+    for (const node of [serving, amount, quantity, meal]) {
+      node.addEventListener("input", refresh);
+      node.addEventListener("change", refresh);
+    }
     const favorite = button(
       food.is_favorite
         ? this.t("Remove favorite")
@@ -341,60 +401,53 @@ export class FoodBrowser {
               ? this.t("Remove favorite")
               : this.t("Save portion as favorite");
           }
-        } catch (e) {
-          this.panel.showError(e);
+        } catch (error) {
+          this.panel.showError(error);
         }
       },
       { "data-write": true },
     );
-    this.detail.replaceChildren(
-      el("h3", {}, food.name),
+    const source =
+      food.source === "bls"
+        ? `BLS 4.0 · Max Rubner-Institut · ${food.food_id.replace(/^bls4:/, "")}`
+        : food.source === "usda"
+          ? "USDA FoodData Central"
+          : food.source;
+    const sourceDetails = el(
+      "details",
+      { class: "food-source-details" },
+      el("summary", {}, this.t("Source")),
       el(
-        "p",
-        { class: "muted" },
-        [
-          food.producer,
-          food.source === "usda"
-            ? "USDA FoodData Central"
-            : food.source === "bls"
-              ? "BLS 4.0 · Max Rubner-Institut · " +
-                food.food_id.replace(/^bls4:/, "")
-              : food.source,
-          food.license,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      ),
-      ...(food.source === "usda"
-        ? [
-            el(
-              "small",
-              {},
-              this.t(
+        "small",
+        {},
+        [food.producer, source, food.license].filter(Boolean).join(" · "),
+        " ",
+        food.source === "bls"
+          ? this.t(
+              "BLS 4.0 reference averages per 100 g edible portion. Weigh the edible portion and check the preparation. Adapted for MacroMate: nutrient selection and unit conversion.",
+            )
+          : food.source === "usda"
+            ? this.t(
                 "USDA FoodData Central reference averages. Weigh the edible portion; check whether the food is raw or cooked.",
-              ),
-            ),
-          ]
-        : []),
-      ...(food.source === "bls"
-        ? [
-            el(
-              "small",
-              {},
-              this.t(
-                "BLS 4.0 reference averages per 100 g edible portion. Weigh the edible portion and check the preparation. Adapted for MacroMate: nutrient selection and unit conversion.",
-              ),
+              )
+            : "",
+        ...(/^https:\/\/[^\s]+$/.test(food.source_url || "")
+          ? [
               " ",
               el(
                 "a",
                 {
-                  href: "https://doi.org/10.25826/Data20251217-134202-0",
+                  href: food.source_url,
                   target: "_blank",
                   rel: "noopener noreferrer",
                   style: "color:inherit",
                 },
                 this.t("Source"),
               ),
+            ]
+          : []),
+        ...(food.source === "bls"
+          ? [
               " · ",
               el(
                 "a",
@@ -406,44 +459,75 @@ export class FoodBrowser {
                 },
                 "CC BY 4.0",
               ),
-            ),
-          ]
-        : []),
-      el(
-        "form",
-        {
-          onsubmit: async (event) => {
-            event.preventDefault();
-            try {
-              await this.panel.write("log_food", {
-                food_id: food.food_id,
-                ...portion(),
-                meal_type: meal.querySelector("select").value,
-                date: this.panel.date,
-              });
-            } catch (e) {
-              this.panel.showError(e);
-            }
-          },
-        },
-        el("div", { class: "form-grid" }, serving, amount, quantity, meal),
-        el(
-          "details",
-          { open: true },
-          el("summary", {}, this.t("Selected portion nutrients")),
-          preview,
-        ),
-        el(
-          "div",
-          { class: "actions" },
-          el(
-            "button",
-            { type: "submit", class: "primary", "data-write": true },
-            this.t("Log food"),
-          ),
-          favorite,
-        ),
+            ]
+          : []),
       ),
     );
+    let dialog;
+    const form = el(
+      "form",
+      {
+        onsubmit: async (event) => {
+          event.preventDefault();
+          const selected = meal.querySelector("input:checked");
+          if (!selected || !validPortion) return;
+          const result = await this.panel.write("log_food", {
+            food_id: food.food_id,
+            ...portion(),
+            meal_type: selected.value,
+            date: this.panel.date,
+          });
+          if (result) {
+            dialog.close();
+            this.invalidate();
+            this.query.querySelector("input").value = "";
+            this.query.querySelector("input").focus();
+          }
+        },
+      },
+      meal,
+      el(
+        "div",
+        { class: "form-grid portion-fields" },
+        serving,
+        amount,
+        quantity,
+      ),
+      preview,
+      el(
+        "details",
+        {},
+        el("summary", {}, this.t("Selected portion nutrients")),
+        fullNutrients,
+      ),
+      el(
+        "div",
+        { class: "actions log-actions" },
+        log,
+        button(this.t("Cancel"), () => dialog.close()),
+      ),
+      el(
+        "div",
+        { class: "food-secondary" },
+        favorite,
+        el("small", {}, [source, food.license].filter(Boolean).join(" · ")),
+        sourceDetails,
+      ),
+    );
+    this.detail.replaceChildren(form);
+    dialog = openDialog(this.panel, food.name, [this.detail]);
+    dialog.classList.add("food-log-dialog");
+    this.dialog = dialog;
+    dialog.addEventListener(
+      "close",
+      () => {
+        if (this.dialog === dialog) {
+          this.dialog = null;
+          this.food = null;
+        }
+      },
+      { capture: true },
+    );
+    refresh();
   }
 }
