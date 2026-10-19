@@ -30,7 +30,7 @@
     {
       "path": "frontend/build-info.js",
       "bytes": 96,
-      "sha256": "7e152fd8c93b75dc09ef5b34211b6de165fec3813a1cdc75f75202ba05b87175"
+      "sha256": "400f0bc84903b6a745f2ebf872a76f809a4ab7a18ea5c41e452a33d52732f77e"
     },
     {
       "path": "frontend/card-runtime.js",
@@ -50,7 +50,7 @@
     {
       "path": "frontend/delivery-manifest.json",
       "bytes": 7807,
-      "sha256": "891541c71cbb67bf9a589e6ec43e9854c81538388006dfe764dae70360bff8bc"
+      "sha256": "30bf336177485dcd1f03a1a4b2b7d7e61b3b4d43c48500d15974832d7d8dedbf"
     },
     {
       "path": "frontend/dom.js",
@@ -85,7 +85,7 @@
     {
       "path": "frontend/macromate-card.js",
       "bytes": 1820,
-      "sha256": "ecbed8a8c4d0ad146e2592e3dc2b40adb68bb96677c779a81fcaca87cd4fa824"
+      "sha256": "8fc53d3dcbc639297e2fc8b7408959e602b57da3fdbbf1ddfaa8f79fdbe6ff5c"
     },
     {
       "path": "frontend/navigation.js",
@@ -109,13 +109,13 @@
     },
     {
       "path": "frontend/panel.css",
-      "bytes": 9655,
-      "sha256": "7334a89e11f4ae89c3a94625d26aedf8a8db6ae70aec7bda2198c4b2585dc0b4"
+      "bytes": 9674,
+      "sha256": "52a3dfddfefd5db76fa9f69c1837a5d101432a8049484b4256d03fde4b5402e3"
     },
     {
       "path": "frontend/retained-releases.json",
-      "bytes": 69227,
-      "sha256": "9a2c3cd1c5f6cc36428d6ec3507561baaeed6acfba19e8e66f581f9170fa06f8"
+      "bytes": 77021,
+      "sha256": "7e47aba23e8d0c3ca64da258f95af373f8a5bbc25abf5fc32c3bfcba62a544b9"
     },
     {
       "path": "frontend/scanner.js",
