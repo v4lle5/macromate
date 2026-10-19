@@ -541,7 +541,13 @@ export class MacroMateNutritionBase extends HTMLElement {
       navigation,
       progress,
       ...(!recommendation
-        ? [el("p", { class: "muted" }, this.t("No saved daily target"))]
+        ? [
+            el(
+              "p",
+              { class: "muted target-notice" },
+              this.t("No saved daily target"),
+            ),
+          ]
         : []),
     );
     this.entriesNode.replaceChildren(

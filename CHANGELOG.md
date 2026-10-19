@@ -5,6 +5,7 @@
 - Compact the nutrition workspace into one themed calorie/macro overview, adjacent food search and meal diary on desktop, and a responsive single-column layout on phones. Remove duplicate branding, the persistent profile form and repeated calorie tiles.
 - Open a compact portion dialog after selecting a food and require an explicit breakfast/lunch/dinner/snack choice before logging. Keep full nutrients, source details and profile management available on demand.
 - Automatically supplement submitted searches and barcode lookups with Open Food Facts, respecting the integration's online setting. Show offline search results immediately and ignore late online responses after selection or context changes.
+- Keep nutrition writes disabled until the initial profile and diary date are loaded, including on slow connections.
 
 ## 0.4.3
 
