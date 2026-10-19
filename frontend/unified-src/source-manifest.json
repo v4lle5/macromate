@@ -399,8 +399,8 @@
     },
     {
       "path": "tests/frontend/macromate-unified-native.mjs",
-      "bytes": 45133,
-      "sha256": "d503c6438fb9fff03aa4fc90d033f44c2b5d18a550f62981d6927118f3ee3ae3"
+      "bytes": 45736,
+      "sha256": "94ddd3dcc116fc48b813a7ace265f1bf4c993e66bd88a06f7e0fe007195b5a72"
     },
     {
       "path": "tests/frontend/macromate-unified-nutrition-browser.mjs",

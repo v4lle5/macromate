@@ -437,10 +437,17 @@ try{
    await dashboard.locator('mm-nutrition').getByRole('button',{name:'Cancel',exact:true}).click();
    for(let i=0;i<8;i++)await dashboard.mouse.wheel(0,700);
    await dashboard.waitForTimeout(200);
-   const barcode=await dashboard.locator('mm-nutrition').getByRole('button',{name:'Scan barcode',exact:true}).boundingBox();
-   metric.finalBarcodeControl=barcode;
-   assert.ok(barcode.y>=paneBounds.y&&barcode.y+barcode.height<=height,'The entire nutrition pane reaches its final barcode controls');
+   const details=await dashboard.locator('mm-nutrition').getByText('Reports',{exact:true}).boundingBox();
+   metric.finalDiaryDetails=details;
+   assert.ok(details.y>=paneBounds.y&&details.y+details.height<=paneBounds.y+paneBounds.height,'The entire diary reaches its expandable reports');
    await dashboard.screenshot({path:resolve(cfg.output,`native-nutrition-end-${width}.png`)});
+   const scan=dashboard.locator('mm-nutrition').getByRole('button',{name:'Scan barcode',exact:true});
+   for(let i=0;i<60;i++){
+    const r=await scan.boundingBox();if(r.y>=paneBounds.y&&r.y+r.height<=Math.min(height,paneBounds.y+paneBounds.height))break;
+    await dashboard.mouse.wheel(0,r.y<paneBounds.y?-160:160);await dashboard.waitForTimeout(35);
+   }
+   const barcode=await scan.boundingBox();metric.searchBarcodeControl=barcode;
+   assert.ok(barcode.y>=paneBounds.y&&barcode.y+barcode.height<=Math.min(height,paneBounds.y+paneBounds.height),'Scrolling returns to the compact search and barcode toolbar');
    await dashboard.locator('macromate-card').getByRole('button',{name:'Timers',exact:true}).click();
    await dashboard.locator('macromate-card').getByRole('button',{name:'Home',exact:true}).click();
    await dashboard.screenshot({path:resolve(cfg.output,`native-lovelace-panel-${width}.png`)});
