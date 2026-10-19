@@ -184,7 +184,7 @@ class FoodProduct:
         object.__setattr__(self, "barcodes", barcodes)
         if self.producer is not None:
             _text("producer", self.producer)
-        if self.source not in ("local", "open_food_facts"):
+        if self.source not in ("local", "open_food_facts", "usda"):
             raise ValueError("unknown food source")
         for key in ("source_url", "license"):
             if getattr(self, key) is not None:
@@ -264,7 +264,10 @@ class FoodProduct:
                 )
             ):
                 raise ValueError("conflicting nutrient bases")
-            nutrients = per_base
+            # Preserve the canonical per-unit values after validating both bases.
+            # Recomputing them on every reload introduces binary-float drift.
+            if nutrients is None:
+                nutrients = per_base
         if nutrients is None:
             raise ValueError("nutrients or nutrients_per_100 is required")
         return cls(

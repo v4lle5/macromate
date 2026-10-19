@@ -91,6 +91,12 @@ Goals are snapshotted by HA local date on setup/source updates and at local midn
 
 ## Food source, license and scanner
 
+The normal local search includes a small offline catalogue of 32 common foods, such as banana, apple, oats, rice and eggs. It also searches your saved products; Open Food Facts remains an optional additional source. German/English aliases work without an API key or online consent. Favorites and recorded portions belong only to the selected nutrition profile.
+
+Reference data: **USDA FoodData Central, SR Legacy April 2018**, public domain under **CC0-1.0** ([license statement](https://fdc.nal.usda.gov/api-guide/)). Values are reference averages per **100 g edible portion**. Raw/cooked preparation and added salt/fortification are explicit in product names; milk/oil remain measured in grams rather than assuming a gram/ml conversion. Only published nutrients are included. Missing values are unknown, and historical diary snapshots never change with catalogue updates. The selected reference record is pinned locally when favorited or logged.
+
+Maintainers can regenerate `basic_food_data.py` with `python tools/update_basic_foods.py /path/to/FoodData_Central_sr_legacy_food_json_2018-04.zip`, then `python -m ruff format custom_components/macromate/basic_food_data.py`. The generator verifies the official archive SHA-256, maps nutrient units and keeps source FDC IDs/descriptions; the 13 MB source archive is not shipped or downloaded at runtime.
+
 Enable the database in integration options, then explicitly enable online lookup for a submitted search/scan. Only that query/barcode goes to Open Food Facts, not profile/diary data. No per-keystroke network search. Camera frames and barcode photos are decoded locally and never uploaded. Camera access needs HTTPS or localhost plus browser permission.
 
 OFF product reads use v3.6; text search uses documented legacy CGI because v2 structured search is not full-text search. GET-only requests have timeouts, response-size bounds, no redirects, rolling quotas, cooldowns and memory caches. Other applications behind the same IP still share upstream limits. Imported products persist locally for offline use.

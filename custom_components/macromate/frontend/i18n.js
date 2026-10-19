@@ -1,5 +1,9 @@
 // English source messages; user content is interpolated only into text nodes.
 const de = {
+  "Update MacroMate and reload the workspace.":
+    "MacroMate aktualisieren und die Ansicht neu laden.",
+  "USDA FoodData Central reference averages. Weigh the edible portion; check whether the food is raw or cooked.":
+    "Durchschnittswerte aus USDA FoodData Central. Essbaren Anteil wiegen und auf die Angabe roh oder gekocht achten.",
   "Open Food Facts is currently unavailable. Local foods remain available. Try again later or use Quick entry.":
     "Open Food Facts ist derzeit nicht erreichbar. Lokale Lebensmittel bleiben verfügbar. Später erneut versuchen oder Schnelleintrag nutzen.",
   "Online search is disabled. Enable Open Food Facts in the integration options, or use local foods and Quick entry.":

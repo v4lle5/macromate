@@ -9,6 +9,8 @@ const DEFINITIVE = new Set([
   "not_ready",
   "unauthorized",
   "provider_unavailable",
+  "invalid_format",
+  "unknown_command",
 ]);
 export function publicError(error) {
   return (
@@ -18,6 +20,8 @@ export function publicError(error) {
       unauthorized:
         "Nur Home-Assistant-Administratoren dürfen MacroMate verwenden.",
       invalid_request: "Bitte Eingaben prüfen.",
+      invalid_format: "Bitte Eingaben prüfen.",
+      unknown_command: "MacroMate aktualisieren und die Ansicht neu laden.",
       not_found: "Eintrag oder Lebensmittel nicht gefunden.",
       not_ready: "MacroMate ist noch nicht bereit.",
       provider_unavailable:
