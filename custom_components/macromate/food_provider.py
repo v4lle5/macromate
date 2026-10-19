@@ -304,6 +304,9 @@ class OpenFoodFactsProvider:
                             else 3600
                         )
                         self._cooldown_until = self._clock() + delay
+                        raise ProviderRateLimited(
+                            "Open Food Facts is temporarily rate limited"
+                        ) from None
                     if response.status != 200:
                         raise ValueError("provider HTTP failure")
                     content_type = (

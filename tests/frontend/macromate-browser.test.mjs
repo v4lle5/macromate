@@ -66,6 +66,26 @@ test('top energy overview shows only snapshot current active energy, preserving 
  await page.close();
 });
 
+test('online failures explain consent, quota or outage while local food logging and quick entry stay usable',async()=>{
+ const page=await open();const pane=panel(page);const query=pane.getByLabel('Lebensmittel suchen',{exact:true});
+ await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane'),read=app.hass.callWS;window.providerWarning='provider_unavailable';app.hass={...app.hass,callWS:message=>['search_foods','barcode'].includes(message.action)?Promise.resolve({foods:window.localMiss?[]:[window.product],source:'local',warnings:[window.providerWarning]}):read(message)};});
+ await pane.getByLabel('Online-Suche (Open Food Facts)').check();
+ for(const [code,text] of [['provider_unavailable','derzeit nicht erreichbar'],['provider_consent_required','Online-Suche ist deaktiviert'],['provider_rate_limited','Anfragelimit']]){
+  await page.evaluate(code=>{window.providerWarning=code;},code);await query.fill('Hafer');await query.press('Enter');
+  await pane.locator('.provider-warning').getByText(new RegExp(text)).waitFor();
+  assert.equal(await pane.locator('.results button').count(),1,'the local result is still selectable');
+  assert.equal(await pane.locator('[role=alert]').count(),0,'optional provider failures do not become page errors');
+ }
+ await pane.locator('.results button').click();await pane.getByRole('button',{name:'Lebensmittel eintragen',exact:true}).click();
+ await page.waitForFunction(()=>window.calls.some(c=>c.action==='log_food'));
+ await page.evaluate(()=>{window.localMiss=true;window.providerWarning='provider_unavailable';});await query.fill('4006381333931');await query.press('Enter');
+ await pane.locator('.results').getByText(/Keine lokal gespeicherten/).waitFor();assert.match(await pane.locator('.provider-warning').innerText(),/derzeit nicht erreichbar/);
+ await query.fill('Mein Essen');await pane.getByRole('button',{name:'Schnelleintrag',exact:true}).click();assert.match(await pane.getByRole('dialog').innerText(),/Mein Essen/);
+ await pane.getByRole('button',{name:'Abbrechen',exact:true}).click();
+ await page.evaluate(()=>{window.localMiss=false;window.providerWarning='';});await query.press('Enter');await pane.locator('.results button').waitFor();assert.equal(await pane.locator('.provider-warning').count(),0,'a successful search clears old provider warnings');
+ await page.close();
+});
+
 test('diary loads HA-local today, shows unknown nutrients and dated goals, and navigates without timezone shifts',async()=>{
  const page=await open();
  assert.match(await panel(page).locator('main').innerText(),/MacroMate/);

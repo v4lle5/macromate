@@ -224,7 +224,7 @@ export const recipeDetailStyles = css`
     align-items: center;
   }
   .chip-label {
-    background: var(--rm-bg);
+    background: var(--rm-bg-main);
     border: 1px solid var(--rm-border);
     color: var(--rm-text-secondary);
     font-weight: 600;
@@ -236,7 +236,7 @@ export const recipeDetailStyles = css`
     flex-shrink: 0;
     height: 180px;
     position: relative;
-    background: var(--rm-surface, #2c2c2e);
+    background: var(--rm-bg-elevated, #2c2c2e);
     overflow: hidden;
   }
   .hero.no-image {
@@ -639,7 +639,7 @@ export const recipeDetailStyles = css`
   .ing-check.checked {
     background: var(--rm-accent, #ff6b35);
     border-color: var(--rm-accent, #ff6b35);
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
   }
   .ing-check ha-icon {
     --mdc-icon-size: 12px;
@@ -739,7 +739,7 @@ export const recipeDetailStyles = css`
     justify-content: center;
     font-size: 13px;
     font-weight: 700;
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
     cursor: pointer;
     transition:
       background 0.15s,
@@ -791,7 +791,7 @@ export const recipeDetailStyles = css`
   }
   .time-chip:hover {
     background: var(--rm-accent, #ff6b35);
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
   }
 
   /* Notes */
@@ -1036,7 +1036,7 @@ export const recipeDetailStyles = css`
     bottom: 4px;
     left: 4px;
     background: var(--rm-accent, #ff6b35);
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
     font-size: 10px;
     font-weight: 700;
     padding: 2px 6px;
@@ -1154,7 +1154,7 @@ export const recipeDetailStyles = css`
   .action-btn.primary {
     background: var(--rm-accent, #ff6b35);
     border-color: var(--rm-accent, #ff6b35);
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
   }
   .action-btn:disabled {
     opacity: 0.5;
@@ -1450,7 +1450,7 @@ export const recipeDetailStyles = css`
     background: var(--rm-accent, #9fa8da);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
     padding: 7px 12px;
     cursor: pointer;
     font-size: 13px;
@@ -1973,7 +1973,7 @@ export const recipeDetailStyles = css`
   }
   .list-picker-input {
     flex: 1;
-    background: var(--rm-bg-surface, var(--rm-bg));
+    background: var(--rm-bg-surface, var(--rm-bg-main));
     border: 1px solid var(--rm-border);
     border-radius: 7px;
     color: var(--rm-text);
@@ -1991,7 +1991,7 @@ export const recipeDetailStyles = css`
     border-radius: 7px;
     border: 1px solid var(--rm-accent);
     background: var(--rm-accent);
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
     cursor: pointer;
     font-size: 13px;
     font-family: inherit;
@@ -2060,7 +2060,7 @@ export const recipeDetailStyles = css`
   }
   .ing-inline-save:hover {
     background: var(--rm-accent);
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
   }
   .ing-inline-save ha-icon,
   .ing-inline-cancel ha-icon {

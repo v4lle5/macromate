@@ -12,7 +12,13 @@ from zoneinfo import ZoneInfo
 import voluptuous as vol
 from homeassistant.util import dt as dt_util
 
-from .food_provider import ATTRIBUTION, OpenFoodFactsProvider
+from .food_provider import (
+    ATTRIBUTION,
+    OpenFoodFactsProvider,
+    ProviderConsentRequired,
+    ProviderRateLimited,
+    ProviderUnavailable,
+)
 from .foods import NUTRIENT_UNITS, FoodProduct, validate_barcode
 from .models import MEAL_TYPES, NUTRIENTS, MealEntry
 from .platform_support import Actor, require_nutrition
@@ -96,6 +102,23 @@ class DiaryCommands:
             return {"cached": [food.food_id for food in foods]}
 
         await self._transact("cache_foods", {}, None, apply_cache)
+
+    async def _online_foods(self, value, *, barcode=False):
+        """Keep local search usable when the optional provider cannot answer."""
+        if self.settings.get("enable_food_database") is not True:
+            return [], ["provider_consent_required"]
+        try:
+            provider = self._online_provider()
+            if barcode:
+                food = await provider.async_lookup_barcode(value)
+                return [food] if food is not None else [], []
+            return await provider.async_search(value, submitted=True), []
+        except ProviderConsentRequired:
+            return [], ["provider_consent_required"]
+        except ProviderRateLimited:
+            return [], ["provider_rate_limited"]
+        except (ProviderUnavailable, TimeoutError):
+            return [], ["provider_unavailable"]
 
     @staticmethod
     def _entry_result(item):
@@ -264,6 +287,7 @@ class DiaryCommands:
             return {"food": self._food(values["food_id"]).to_dict()}
         if action in ("search_foods", "barcode"):
             source = "local"
+            warnings = []
             if action == "barcode":
                 barcode = validate_barcode(values["barcode"])
                 foods = [
@@ -272,11 +296,11 @@ class DiaryCommands:
                     if barcode in food.get("barcodes", [])
                 ]
                 if not foods and values["online"]:
-                    food = await self._online_provider().async_lookup_barcode(barcode)
-                    foods = [food] if food is not None else []
+                    foods, warnings = await self._online_foods(barcode, barcode=True)
                     if foods:
                         await self._cache_foods(foods)
-                    source = "Open Food Facts"
+                    if not warnings:
+                        source = "Open Food Facts"
             else:
                 query = values["query"].casefold()
                 words = query.split()
@@ -304,16 +328,15 @@ class DiaryCommands:
                         key=lambda food: list(order).index(food.food_id),
                     )
                 if values["online"] and selected == "all" and values["query"]:
-                    remote = await self._online_provider().async_search(
-                        values["query"], submitted=True
-                    )
+                    remote, warnings = await self._online_foods(values["query"])
                     if remote:
                         await self._cache_foods(remote)
                     merged = {food.food_id: food for food in foods}
                     for food in remote:
                         merged[food.food_id] = self._food(food.food_id)
                     foods = list(merged.values())
-                    source = "local + Open Food Facts"
+                    if not warnings:
+                        source = "local + Open Food Facts"
             has_more = len(foods) > 100
             foods = foods[:100]
             attribution = (
@@ -325,6 +348,7 @@ class DiaryCommands:
                 "foods": [food.to_dict() for food in foods],
                 "source": source,
                 "has_more": has_more,
+                "warnings": warnings,
                 "attribution": attribution["text"] if attribution else None,
                 "attribution_details": attribution,
             }

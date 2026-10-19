@@ -172,13 +172,31 @@ export class FoodBrowser {
         filter: this.filter.querySelector("select").value,
       });
       if (!this.current(context)) return;
+      this.panel.message.replaceChildren();
       this.showResults(result);
     } catch (e) {
       if (this.current(context)) this.panel.showError(e);
     }
   }
   showResults(result) {
+    const warnings = {
+      provider_unavailable: this.t(
+        "Open Food Facts is currently unavailable. Local foods remain available. Try again later or use Quick entry.",
+      ),
+      provider_consent_required: this.t(
+        "Online search is disabled. Enable Open Food Facts in the integration options, or use local foods and Quick entry.",
+      ),
+      provider_rate_limited: this.t(
+        "Open Food Facts has reached its request limit. Wait before searching online again. Local foods and Quick entry remain available.",
+      ),
+    };
+    const notices = (result.warnings || []).filter((code) =>
+      Object.hasOwn(warnings, code),
+    );
     this.results.replaceChildren(
+      ...notices.map((code) =>
+        el("p", { role: "status", class: "provider-warning" }, warnings[code]),
+      ),
       el(
         "small",
         {},
@@ -196,7 +214,9 @@ export class FoodBrowser {
               "p",
               {},
               this.t(
-                "No foods found. Try another search or create a custom food.",
+                notices.length
+                  ? "No locally saved foods found. Use Quick entry or create a custom food."
+                  : "No foods found. Try another search or create a custom food.",
               ),
             ),
           ]),

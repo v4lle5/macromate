@@ -576,7 +576,7 @@ class RmMealPlanner extends LitElement {
     }
     .day-header.today .day-num {
       background: var(--rm-accent, #ff6b35);
-      color: #fff;
+      color: var(--rm-accent-text, #fff);
       width: 24px;
       height: 24px;
       border-radius: 50%;
@@ -620,7 +620,7 @@ class RmMealPlanner extends LitElement {
     }
     .meal-cell {
       min-height: 48px;
-      background: var(--rm-surface, #2c2c2e);
+      background: var(--rm-bg-elevated, #2c2c2e);
       border-radius: 6px;
       padding: 3px;
       display: flex;
@@ -813,7 +813,7 @@ class RmMealPlanner extends LitElement {
       gap: 8px;
     }
     .scaler-btn {
-      background: var(--rm-surface, #2c2c2e);
+      background: var(--rm-bg-elevated, #2c2c2e);
       border: 1px solid var(--rm-border, rgba(255, 255, 255, 0.08));
       border-radius: 50%;
       width: 26px;
@@ -877,7 +877,7 @@ class RmMealPlanner extends LitElement {
       transition: background 0.12s;
     }
     .picker-item:hover {
-      background: var(--rm-surface, #2c2c2e);
+      background: var(--rm-bg-elevated, #2c2c2e);
     }
     .picker-thumb {
       width: 44px;
@@ -887,7 +887,7 @@ class RmMealPlanner extends LitElement {
       flex-shrink: 0;
     }
     .picker-placeholder {
-      background: var(--rm-surface, #2c2c2e);
+      background: var(--rm-bg-elevated, #2c2c2e);
       display: flex;
       align-items: center;
       justify-content: center;

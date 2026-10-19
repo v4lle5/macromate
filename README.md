@@ -95,6 +95,8 @@ Enable the database in integration options, then explicitly enable online lookup
 
 OFF product reads use v3.6; text search uses documented legacy CGI because v2 structured search is not full-text search. GET-only requests have timeouts, response-size bounds, no redirects, rolling quotas, cooldowns and memory caches. Other applications behind the same IP still share upstream limits. Imported products persist locally for offline use.
 
+If online access is unavailable, disabled or rate limited, search still returns local foods and displays an inline explanation. Logging local foods and Quick entry remain available. The `search_foods` and `barcode` responses include a `warnings` list (`provider_unavailable`, `provider_consent_required`, or `provider_rate_limited`); an online failure does not imply that no matching online products exist.
+
 Food data: **Open Food Facts contributors**, https://world.openfoodfacts.org — database **ODbL 1.0**, contents **DbCL 1.0**. Cached products retain attribution; it is displayed with results. Redistributing a derived database may invoke ODbL share-alike requirements. The integration's code license does not replace data licensing. Product images are not fetched. Community data can be incomplete or wrong: verify the label.
 
 Barcodes are preserved as strings, including leading zeros. MacroMate requires ASCII GTIN8/12/13/14 syntax and a valid mod-10 checksum; no trimming, repair or integer normalization. A food without declared calories cannot be logged until a separate local product is completed. Unknown macros/micronutrients remain marked missing, and incomplete totals are partial known totals.
