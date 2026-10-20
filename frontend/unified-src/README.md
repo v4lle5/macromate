@@ -23,11 +23,20 @@ handoff does not install, deploy or register the resource in a live dashboard.
 ## Source and runtime
 
 The recipe shell, recipe library/detail/editor, weekly planner, timer UI,
-settings, eight theme palettes and seven locale modules adapt the MIT
+settings and seven locale modules adapt the MIT
 Recipe-Manager-Card revision `e25f96663538fb148b25ccbe51982b7ba6c6681d`.
 The original full notice is in `RECIPE-MANAGER-CARD-LICENSE.txt` and in the built
 `../unified/THIRD-PARTY-NOTICES.txt`. Disabled Cookbook, Sync and Help navigation
 placeholders remain disabled; they are not implemented upstream workflows.
+
+Glass Wave is the only current theme. Shared color, typography and spacing
+tokens live in `services/theme.js`; common component controls use
+`components/component-styles.js`. Authenticated legacy preferences normalize
+to Glass Wave while preserving supported appearance and unrelated settings.
+Shared browser-local settings are not read across accounts. The appearance
+control offers Light, Auto and Dark; text sizes are 14, 16 and 18 pixels.
+Rendered text/placeholder contrast and responsive checks cover both modes
+including 320-pixel phones with large text.
 
 Internal shopping and the generic action editor are retired. Historical data
 is retained. Dedicated recipe editing/logging, planning, timers/presets,
@@ -146,7 +155,8 @@ compilation and notice discovery; it regenerates the source manifest and hashes
 all output files, including notices.
 
 - The first browser fixture is explicitly synthetic. It renders actual source
-  components, all palettes/locales, forms, consent and rejection states; it
+  components, Glass Wave light/dark/system appearance, migration from retired
+  palettes, seven locales, forms, consent and rejection states; it
   does not fabricate successful backend mutations.
 - The domain browser uses the actual recipe/shopping commands and schemas with
   a task-local kitchen dictionary. It exercises CRUD and independent exact

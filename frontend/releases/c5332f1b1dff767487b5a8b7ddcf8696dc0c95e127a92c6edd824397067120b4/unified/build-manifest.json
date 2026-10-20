@@ -1,0 +1,162 @@
+{
+  "source": {
+    "project": "Recipe-Manager-Card",
+    "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+    "license": "MIT"
+  },
+  "build": {
+    "bundler": "esbuild",
+    "version": "0.25.12",
+    "target": "es2022",
+    "scriptsExecuted": false
+  },
+  "runtimeDependencies": [
+    {
+      "name": "@lit/localize",
+      "version": "0.12.2",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "@lit/reactive-element",
+      "version": "2.1.2",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "core-util-is",
+      "version": "1.0.3",
+      "license": "MIT"
+    },
+    {
+      "name": "immediate",
+      "version": "3.0.6",
+      "license": "MIT"
+    },
+    {
+      "name": "inherits",
+      "version": "2.0.4",
+      "license": "ISC"
+    },
+    {
+      "name": "isarray",
+      "version": "1.0.0",
+      "license": "MIT"
+    },
+    {
+      "name": "jszip",
+      "version": "3.10.1",
+      "license": "(MIT OR GPL-3.0-or-later)"
+    },
+    {
+      "name": "lie",
+      "version": "3.3.0",
+      "license": "MIT"
+    },
+    {
+      "name": "lit",
+      "version": "3.3.1",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "lit-element",
+      "version": "4.2.2",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "lit-html",
+      "version": "3.3.3",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "pako",
+      "version": "1.0.11",
+      "license": "(MIT AND Zlib)"
+    },
+    {
+      "name": "process-nextick-args",
+      "version": "2.0.1",
+      "license": "MIT"
+    },
+    {
+      "name": "readable-stream",
+      "version": "2.3.8",
+      "license": "MIT"
+    },
+    {
+      "name": "safe-buffer",
+      "version": "5.1.2",
+      "license": "MIT"
+    },
+    {
+      "name": "setimmediate",
+      "version": "1.0.5",
+      "license": "MIT"
+    },
+    {
+      "name": "string_decoder",
+      "version": "1.1.1",
+      "license": "MIT"
+    },
+    {
+      "name": "util-deprecate",
+      "version": "1.0.2",
+      "license": "MIT"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "frontend/unified/app.js.LEGAL.txt",
+      "bytes": 460,
+      "sha256": "c8a27631e3d7418c3087e9b25057b58a30c6c56336f979b6b4880cab99a9fe54"
+    },
+    {
+      "path": "frontend/unified/app.js",
+      "bytes": 427103,
+      "sha256": "d52735c95952aa92e5dc6321e7ada5e25d29a743bd06fcc29e464ebbf2a9a920"
+    },
+    {
+      "path": "frontend/unified/chunks/de-EHQ56H34.js",
+      "bytes": 15476,
+      "sha256": "2fc6ab49bca09679a45828f4a9499044b325ad7b931718b18c7853b8efdf98d6"
+    },
+    {
+      "path": "frontend/unified/chunks/es-54MLVVJR.js",
+      "bytes": 15594,
+      "sha256": "a7b2e02f8e2829959df416ee6bd8bd8ebbb0c749cbe9899384d61b457404fd18"
+    },
+    {
+      "path": "frontend/unified/chunks/fr-GPRE472V.js",
+      "bytes": 16040,
+      "sha256": "1a60d0b3629b6510e4ec1dada59fbe9aa98fb4aa8b5689d330023bdd1dcbcfec"
+    },
+    {
+      "path": "frontend/unified/chunks/it-J7OBEZFG.js",
+      "bytes": 15065,
+      "sha256": "0a00923a60285a11824d788ee57df9b8642fda7237ae02ab240e1d3ca98e255f"
+    },
+    {
+      "path": "frontend/unified/chunks/nl-XCF57UHI.js",
+      "bytes": 14807,
+      "sha256": "d1a42031f9da9cd0f6b1e836dd124a215998e86cd2942a0cfe34c3292f09ad5c"
+    },
+    {
+      "path": "frontend/unified/chunks/pt-RNXHHZAN.js",
+      "bytes": 15826,
+      "sha256": "56bcceef59df1ede4aced8600ef527b1c7a8886770142acc4753fa829ccfa2b7"
+    },
+    {
+      "path": "frontend/unified/chunks/chunk-VYGSGG2W.js.LEGAL.txt",
+      "bytes": 1272,
+      "sha256": "630427e8f7649304b3cb411a4d742f3c093c11ffd48fcdb76b2c695713af14d2"
+    },
+    {
+      "path": "frontend/unified/chunks/chunk-VYGSGG2W.js",
+      "bytes": 18028,
+      "sha256": "cab5f3d046af88c099609f3773ef5b840d6c309983ea6a8171495a6092e9c985"
+    },
+    {
+      "path": "frontend/unified/THIRD-PARTY-NOTICES.txt",
+      "bytes": 58244,
+      "sha256": "cb6d329da482b44f885688f8671e748d3fff3324d3f01d2e65530875b47bda23"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { translate } from "../i18n.js";
 import { navigationPath } from "../navigation.js";
+import { applyGlassWaveTheme } from "./services/theme.js";
 
 const element = (tag, attributes = {}, ...children) => {
   const node = document.createElement(tag);
@@ -41,6 +42,8 @@ export class MacroMateSummary extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.generation = 0;
+    this.appearanceQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    this.onAppearanceChange = () => this.applyTheme();
     this.stylesheet = element("link", {
       rel: "stylesheet",
       href: new URL("../macromate-card.css", import.meta.url).href,
@@ -73,6 +76,7 @@ export class MacroMateSummary extends HTMLElement {
       this.context?.admin !== context.admin;
     this.context = context;
     this._hass = hass;
+    this.applyTheme();
     if (changed) {
       this.invalidate();
       if (this.isConnected) {
@@ -89,12 +93,28 @@ export class MacroMateSummary extends HTMLElement {
     return this._hass?.user?.is_admin === true;
   }
   connectedCallback() {
+    this.startAppearance();
     this.render();
     this.startLive();
     this.loadDiary();
   }
   disconnectedCallback() {
+    this.stopAppearance();
     this.invalidate();
+  }
+  startAppearance() {
+    this.appearanceQuery.addEventListener("change", this.onAppearanceChange);
+    this.applyTheme();
+  }
+  stopAppearance() {
+    this.appearanceQuery.removeEventListener("change", this.onAppearanceChange);
+  }
+  applyTheme() {
+    applyGlassWaveTheme(
+      this,
+      {},
+      this._hass?.themes?.darkMode ?? this.appearanceQuery.matches,
+    );
   }
   invalidate() {
     this.generation++;

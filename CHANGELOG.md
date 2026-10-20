@@ -42,6 +42,10 @@
 
 ## Unreleased
 
+- Use Glass Wave as the only current theme, with light, dark and system appearance. Migrate retired palette preferences on read while preserving other settings; save the normalized theme with the next explicit settings change.
+- Centralize shared colors, typography, focus and form styles across recipes, planning, timers, settings, nutrition and the compact summary. Increase small text, improve status contrast, and keep dialog surfaces readable over dashboard backgrounds.
+- Make recipe cards and planner entries keyboard accessible, enlarge touch controls, and keep weekly headers aligned while scrolling on narrow screens.
+- Restore saved appearance preferences for household members as well as administrators. Retain historical asset graphs so existing open dashboards can still load their modules.
 - Added private CI test scratch, the optional HTTP ordering declaration, complete service descriptions, and the MIT license in both the repository and installable component.
 - Added an optional local dashboard card with a calorie-balance ring, macro progress, meal-group summaries and a link to the existing diary.
 - Dashboard resource setup is explicit; the card uses the existing administrator-only diary API without additional credentials or fixed entity IDs.

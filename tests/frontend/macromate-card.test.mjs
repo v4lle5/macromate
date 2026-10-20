@@ -196,23 +196,23 @@ test('responsive themed styling provides a central jade ring and keyboard target
       return {overflow:document.documentElement.scrollWidth>innerWidth,ringWidth:ring.width,ringCenter:ring.x+ring.width/2,hostCenter:host.x+host.width/2,targetHeight:box.height,targetWidth:box.width,bg:getComputedStyle(root.querySelector('ha-card')).backgroundColor};
     });
     assert.equal(layout.overflow,false);assert.ok(layout.ringWidth>=170);assert.ok(Math.abs(layout.ringCenter-layout.hostCenter)<2);
-    assert.ok(layout.targetHeight>=44&&layout.targetWidth>=44);assert.equal(layout.bg,'rgb(255, 254, 251)');
+    assert.ok(layout.targetHeight>=44&&layout.targetWidth>=44);assert.equal(layout.bg,'rgb(247, 244, 237)');
     if(width===320||width===1280)await screenshot(page,String(width));
   }
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(()=>window.card.shadowRoot.activeElement?.tagName),'A');
   assert.notEqual(await card(page).getByRole('link').evaluate(el=>getComputedStyle(el).outlineStyle),'none');
-  await page.evaluate(()=>document.body.classList.add('dark'));
-  assert.equal(await card(page).locator('ha-card').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(27, 39, 33)');
+  await page.evaluate(()=>{document.body.classList.add('dark');window.card.hass={...window.card.hass,themes:{darkMode:true}};});
+  assert.equal(await card(page).locator('ha-card').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(20, 38, 47)');
   await page.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await card(page).getByRole('link').evaluate(el=>getComputedStyle(el).transitionDuration),'0s');
   await page.setViewportSize({width:390,height:900});await screenshot(page,'dark');
-  await page.evaluate(()=>document.body.classList.remove('dark'));await screenshot(page,'light');
+  await page.evaluate(()=>{document.body.classList.remove('dark');window.card.hass={...window.card.hass,themes:{darkMode:false}};});await screenshot(page,'light');
   await page.close();
 });
 
 test('diary link remains readable when a dark theme supplies a low-contrast accent',async()=>{
-  const page=await open(320);await page.evaluate(()=>{window.mount();document.body.classList.add('dark');document.body.style.setProperty('--primary-color','#187957');});await loaded(page);
+  const page=await open(320);await page.evaluate(()=>{window.mount();window.card.hass={...window.card.hass,themes:{darkMode:true}};document.body.classList.add('dark');document.body.style.setProperty('--primary-color','#187957');});await loaded(page);
   await page.waitForFunction(()=>!!window.card.shadowRoot.querySelector('link')?.sheet);
   const ratio=await card(page).getByRole('link').evaluate(link=>{
     const luminance=color=>{const channels=color.match(/[\d.]+/g).slice(0,3).map(Number).map(n=>{n/=255;return n<=0.04045?n/12.92:((n+0.055)/1.055)**2.4;});return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;};
@@ -397,5 +397,21 @@ test('incomplete nutrition suppresses exact remaining and progress including mea
   assert.equal(await card(page).locator('[data-nutrient="carbs"] progress').count(),1);
   assert.match(await card(page).locator('[data-meal="breakfast"]').innerText(),/Unvollständig/);
   await screenshot(page,'incomplete');
+  await page.close();
+});
+
+
+test('switching app and summary restores live reads and system appearance without stale listeners',async()=>{
+  const page=await open();await page.emulateMedia({colorScheme:'light'});await page.evaluate(()=>window.mount());await loaded(page);
+  await page.evaluate(()=>window.card.setConfig({mode:'app'}));
+  await page.locator('mm-unified-app').waitFor();
+  await page.evaluate(()=>window.card.setConfig({mode:'summary'}));await loaded(page);
+  assert.equal(await page.evaluate(()=>window.subscriptions.filter(s=>s.active).length),1);
+  await page.emulateMedia({colorScheme:'dark'});
+  await page.waitForFunction(()=>window.card.getAttribute('data-appearance')==='dark');
+  await page.evaluate(()=>window.card.hass={...window.card.hass,themes:{darkMode:false}});
+  assert.equal(await card(page).getAttribute('data-appearance'),'light','HA appearance overrides OS in Auto mode');
+  await page.evaluate(()=>window.card.remove());
+  assert.equal(await page.evaluate(()=>window.subscriptions.filter(s=>s.active).length),0);
   await page.close();
 });

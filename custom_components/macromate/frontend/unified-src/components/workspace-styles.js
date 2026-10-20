@@ -1,11 +1,11 @@
 import { css } from "lit";
+import { componentStyles } from "./component-styles.js";
 export const workspaceStyles = css`
   :host {
     display: block;
-    color: var(--rm-text, #424242);
-    font: inherit;
     height: 100%;
     overflow: auto;
+    overscroll-behavior: contain;
   }
   section {
     padding: 24px;
@@ -14,9 +14,12 @@ export const workspaceStyles = css`
   }
   h2 {
     margin: 0 0 20px;
+    font-size: clamp(22px, 3vw, 28px);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
   }
   h3 {
-    font-size: 16px;
+    font-size: var(--rm-font-size-base, 16px);
   }
   nav,
   .toolbar,
@@ -34,27 +37,19 @@ export const workspaceStyles = css`
     font: inherit;
     color: inherit;
     background: var(--rm-bg-surface, white);
-    border: 1px solid var(--rm-border, #ddd);
-    border-radius: 8px;
-    padding: 10px;
+    border: 1px solid var(--rm-border-strong, var(--rm-border, #a6bbc4));
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-height: 44px;
   }
   button {
     cursor: pointer;
+    font-weight: 600;
   }
   button:hover,
   button.active {
-    background: var(--rm-accent-soft, #eee);
-  }
-  button:focus-visible,
-  input:focus-visible,
-  textarea:focus-visible,
-  select:focus-visible {
-    outline: 2px solid var(--rm-accent, #646cab);
-    outline-offset: 2px;
-  }
-  button:disabled {
-    opacity: 0.5;
-    cursor: default;
+    background: var(--rm-accent-soft, #dce9f0);
+    color: var(--rm-accent, #315d75);
   }
   label {
     display: flex;
@@ -70,6 +65,13 @@ export const workspaceStyles = css`
   }
   textarea {
     min-height: 80px;
+    resize: vertical;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 20px;
+    width: 20px;
+    height: 20px;
   }
   pre {
     white-space: pre-wrap;
@@ -81,7 +83,7 @@ export const workspaceStyles = css`
     padding: 14px;
     background: var(--rm-bg-surface, white);
     border: 1px solid var(--rm-border, #ddd);
-    border-radius: 12px;
+    border-radius: var(--rm-radius, 16px);
     margin: 8px 0;
   }
   .muted {
@@ -89,6 +91,8 @@ export const workspaceStyles = css`
   }
   .row strong {
     flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .checked strong {
     text-decoration: line-through;
@@ -97,7 +101,7 @@ export const workspaceStyles = css`
     max-width: 720px;
   }
   .danger {
-    color: #b74444;
+    color: var(--rm-error, #983d25);
   }
   @media (max-width: 600px) {
     section {
@@ -107,8 +111,9 @@ export const workspaceStyles = css`
       gap: 4px;
     }
     nav button {
-      padding: 8px;
-      font-size: 13px;
+      padding: 8px 12px;
+      font-size: var(--rm-font-size-sm, 14px);
     }
   }
+  ${componentStyles}
 `;

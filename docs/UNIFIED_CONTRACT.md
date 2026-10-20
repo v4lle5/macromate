@@ -97,7 +97,7 @@ Recipe upload/download, Recipe Keeper import and product images stay local after
 
 ## Frontend contract
 
-Preserve the MIT reference's sidebar/mobile navigation, soft theme, cards, recipe tiles/detail, taxonomy, serving controls, editing, planner, cooking timers, settings and locale surfaces. Keep its runtime dependencies local and notices complete. Backend dependencies become a single MacroMate adapter; no required Recipe Manager or Shopping List Manager integration/card remains.
+Preserve the MIT reference's sidebar/mobile navigation, cards, recipe tiles/detail, taxonomy, serving controls, editing, planner, cooking timers, settings and locale surfaces. Use the shared Glass Wave theme in light, dark or system mode, with consistent readable typography and keyboard focus. Migrate removed palette preferences without discarding unrelated settings. Keep runtime dependencies local and notices complete. Backend dependencies become a single MacroMate adapter; no required Recipe Manager or Shopping List Manager integration/card remains.
 
 Keep `custom:macromate-card` and `/macromate-assets/macromate-card.js` as the installed identity/resource. A summary-mode compatibility option may preserve the prior compact nutrition card, but the default combined card must contain the requested full application. Nutrition can reuse existing modules/forms/scanner and the original ring; it must support actual entry CRUD, not merely link to a separate app.
 

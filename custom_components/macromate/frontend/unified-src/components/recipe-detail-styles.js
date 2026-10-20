@@ -1,4 +1,5 @@
 import { css } from "lit";
+import { componentStyles } from "./component-styles.js";
 
 export const recipeDetailStyles = css`
   :host {
@@ -81,7 +82,7 @@ export const recipeDetailStyles = css`
   }
   .notes-section h3 {
     margin: 0 0 8px;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -148,7 +149,7 @@ export const recipeDetailStyles = css`
     border: none;
     cursor: pointer;
     color: var(--rm-text-secondary);
-    font-size: 10px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 600;
     transition: color 0.15s;
     text-decoration: none;
@@ -169,22 +170,23 @@ export const recipeDetailStyles = css`
     --mdc-icon-size: 22px;
   }
   .action-icon-btn:hover .btn-icon {
-    background: rgba(255, 107, 53, 0.25);
+    background: var(--rm-accent-soft);
   }
   .action-icon-btn:hover {
     color: var(--rm-accent, #ff6b35);
   }
   .action-icon-btn.fav-active .btn-icon {
-    background: rgba(207, 102, 121, 0.15);
+    background: var(--rm-error-soft, #f6e5df);
   }
   .action-icon-btn.fav-active {
-    color: var(--error-color, #cf6679);
+    color: var(--rm-error, #983d25);
   }
   .action-icon-btn.danger .btn-icon {
-    background: var(--error-color, #cf6679);
+    background: var(--rm-error, #983d25);
+    color: var(--rm-error-text, #fff);
   }
   .action-icon-btn.danger {
-    color: #fff;
+    color: var(--rm-error, #983d25);
   }
 
   /* Meta chips (wide layout) */
@@ -203,7 +205,7 @@ export const recipeDetailStyles = css`
     border: 1px solid var(--rm-border);
     border-radius: 20px;
     padding: 5px 12px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary);
     font-weight: 600;
   }
@@ -299,11 +301,11 @@ export const recipeDetailStyles = css`
     background: rgba(0, 0, 0, 0.75);
   }
   .hero-btn.fav-active {
-    color: var(--error-color, #cf6679);
+    color: #ffb5c0;
   }
   .hero-btn.delete-btn.confirm {
-    background: var(--error-color, #cf6679);
-    color: #fff;
+    background: var(--rm-error, #983d25);
+    color: var(--rm-error-text, #fff);
   }
 
   /* Scroll area */
@@ -320,7 +322,7 @@ export const recipeDetailStyles = css`
   }
   .detail-desc {
     margin: 0 0 8px;
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     color: var(--rm-text-secondary, #8e8e93);
     line-height: 1.5;
   }
@@ -341,13 +343,13 @@ export const recipeDetailStyles = css`
     min-width: 60px;
   }
   .meta-label {
-    font-size: 10px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary, #8e8e93);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   .meta-val {
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 600;
     color: var(--rm-text, #e5e5ea);
   }
@@ -363,7 +365,7 @@ export const recipeDetailStyles = css`
     color: var(--rm-accent, #ff6b35);
     border-radius: 20px;
     padding: 3px 10px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
   }
 
   /* Chip groups (courses, categories, collections) */
@@ -375,7 +377,7 @@ export const recipeDetailStyles = css`
     margin-top: 5px;
   }
   .chip-group-label {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary, #8e8e93);
     font-weight: 600;
     text-transform: uppercase;
@@ -384,7 +386,7 @@ export const recipeDetailStyles = css`
   .chip {
     border-radius: 20px;
     padding: 3px 10px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     border: none;
     cursor: default;
   }
@@ -395,20 +397,20 @@ export const recipeDetailStyles = css`
       opacity 0.15s;
   }
   .chip-nav:hover {
-    filter: brightness(1.25);
-    opacity: 0.9;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .chip-course {
-    background: rgba(88, 166, 255, 0.15);
-    color: #58a6ff;
+    background: var(--rm-accent-soft);
+    color: var(--rm-accent);
   }
   .chip-category {
-    background: rgba(63, 185, 80, 0.15);
-    color: #3fb950;
+    background: var(--rm-success-soft, #e2eee7);
+    color: var(--rm-success, #326044);
   }
   .chip-collection {
-    background: rgba(210, 153, 34, 0.15);
-    color: #d2a01e;
+    background: var(--rm-warning-soft, #f2ebd5);
+    color: var(--rm-warning, #765600);
   }
   .chip-tag {
     background: var(--rm-accent-soft);
@@ -454,7 +456,7 @@ export const recipeDetailStyles = css`
     --mdc-icon-size: 18px;
   }
   .scaler-val {
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 600;
     color: var(--rm-text);
     min-width: 34px;
@@ -486,7 +488,7 @@ export const recipeDetailStyles = css`
     border-bottom: 2px solid transparent;
     padding: 11px 14px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 600;
     color: var(--rm-text-secondary, #8e8e93);
     transition:
@@ -513,7 +515,7 @@ export const recipeDetailStyles = css`
     border: 1px solid var(--rm-border);
     border-radius: 20px;
     padding: 4px 12px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     cursor: pointer;
     color: var(--rm-text-secondary);
     transition: all 0.15s;
@@ -533,9 +535,8 @@ export const recipeDetailStyles = css`
     border: 1px dashed var(--rm-border);
     border-radius: 20px;
     padding: 4px 12px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-muted);
-    opacity: 0.8;
   }
   .wakelock-unsupported ha-icon {
     --mdc-icon-size: 14px;
@@ -555,7 +556,7 @@ export const recipeDetailStyles = css`
     border: 1px solid var(--rm-border);
     border-radius: 20px;
     padding: 4px 12px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     cursor: pointer;
     color: var(--rm-text-secondary);
     transition: all 0.15s;
@@ -572,7 +573,7 @@ export const recipeDetailStyles = css`
   /* Ingredient section heading */
   .ing-heading {
     list-style: none;
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -598,18 +599,18 @@ export const recipeDetailStyles = css`
     border-bottom: none;
   }
   .ing-amount {
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 700;
     color: var(--rm-accent, #ff6b35);
     min-width: 70px;
     flex-shrink: 0;
   }
   .ing-name {
-    font-size: 15px;
+    font-size: var(--rm-font-size-base, 16px);
     color: var(--rm-text, #e5e5ea);
   }
   .ing-notes {
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     color: var(--rm-text-secondary, #8e8e93);
     font-style: italic;
   }
@@ -679,7 +680,7 @@ export const recipeDetailStyles = css`
     color: var(--rm-text-secondary, #8e8e93);
     padding: 4px 10px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
   }
   .picker-sel-btn:hover {
     background: var(--rm-accent-soft);
@@ -691,7 +692,7 @@ export const recipeDetailStyles = css`
     justify-content: flex-end;
   }
   .shopping-note {
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary, #8e8e93);
   }
   .list-select {
@@ -701,15 +702,15 @@ export const recipeDetailStyles = css`
     border-radius: 8px;
     color: var(--rm-text, #e5e5ea);
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     min-width: 120px;
   }
   .shopping-success {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--success-color, #4caf50);
-    font-size: 14px;
+    color: var(--rm-success, #326044);
+    font-size: var(--rm-font-size-sm, 14px);
     padding: 8px 0;
   }
   .shopping-success ha-icon {
@@ -737,7 +738,7 @@ export const recipeDetailStyles = css`
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 700;
     color: var(--rm-accent-text, #fff);
     cursor: pointer;
@@ -759,12 +760,12 @@ export const recipeDetailStyles = css`
     --mdc-icon-size: 16px;
   }
   .step-item.step-done .step-text {
-    opacity: 0.45;
+    color: var(--rm-text-secondary);
     text-decoration: line-through;
     text-decoration-color: var(--rm-border);
   }
   .step-text {
-    font-size: 15px;
+    font-size: var(--rm-font-size-base, 16px);
     color: var(--rm-text, #e5e5ea);
     line-height: 1.7;
     transition: opacity 0.2s;
@@ -780,7 +781,7 @@ export const recipeDetailStyles = css`
     border: 1px solid var(--rm-accent, #ff6b35);
     border-radius: 12px;
     padding: 1px 7px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s;
@@ -796,7 +797,7 @@ export const recipeDetailStyles = css`
 
   /* Notes */
   .notes-text {
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     color: var(--rm-text, #e5e5ea);
     line-height: 1.6;
   }
@@ -805,7 +806,7 @@ export const recipeDetailStyles = css`
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     color: var(--rm-text-secondary, #8e8e93);
     text-align: center;
     padding: 20px 0;
@@ -835,7 +836,7 @@ export const recipeDetailStyles = css`
     margin-bottom: 2px;
   }
   .nutr-sub {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary, #8e8e93);
     margin-bottom: 6px;
   }
@@ -852,16 +853,16 @@ export const recipeDetailStyles = css`
     justify-content: space-between;
     align-items: baseline;
     padding: 2px 0;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     color: var(--rm-text, #e5e5ea);
   }
   .nutr-bold {
     font-weight: 700;
-    font-size: 15px;
+    font-size: var(--rm-font-size-base, 16px);
   }
   .nutr-indent {
     padding-left: 14px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
   }
   .nutr-val {
     font-weight: 600;
@@ -869,7 +870,7 @@ export const recipeDetailStyles = css`
   }
   .nutr-val em {
     font-style: normal;
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary, #8e8e93);
   }
 
@@ -907,16 +908,16 @@ export const recipeDetailStyles = css`
     line-height: 1;
   }
   .nutr-mcol-label {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary);
     font-weight: 500;
   }
   .nutr-mcol-pct {
-    font-size: 10px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 600;
   }
   .nutr-serving-note {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-muted);
     text-align: center;
     margin-top: -4px;
@@ -932,7 +933,7 @@ export const recipeDetailStyles = css`
     padding: 10px 0 0;
     cursor: pointer;
     color: var(--rm-text);
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 600;
     width: 100%;
     text-align: left;
@@ -941,7 +942,7 @@ export const recipeDetailStyles = css`
     flex: 1;
   }
   .nutr-rda-count {
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 700;
     color: var(--rm-text-secondary);
     background: var(--rm-bg-elevated);
@@ -965,7 +966,7 @@ export const recipeDetailStyles = css`
     grid-template-rows: auto 4px;
     column-gap: 8px;
     row-gap: 4px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
   }
   .nutr-rda-label {
     color: var(--rm-text-secondary);
@@ -1002,7 +1003,7 @@ export const recipeDetailStyles = css`
     transition: width 0.3s;
   }
   .nutr-rda-bar.over {
-    background: var(--error-color, #cf6679);
+    background: var(--rm-error, #983d25);
   }
 
   /* Photos tab */
@@ -1037,7 +1038,7 @@ export const recipeDetailStyles = css`
     left: 4px;
     background: var(--rm-accent, #ff6b35);
     color: var(--rm-accent-text, #fff);
-    font-size: 10px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 4px;
@@ -1080,7 +1081,7 @@ export const recipeDetailStyles = css`
     border-top: 1px solid var(--rm-border, rgba(255, 255, 255, 0.08));
   }
   .photo-add-label {
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -1097,7 +1098,7 @@ export const recipeDetailStyles = css`
     border-radius: 8px;
     color: var(--rm-text, #e5e5ea);
     padding: 8px 10px;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
   }
   .photo-url-input:focus {
     outline: none;
@@ -1120,7 +1121,7 @@ export const recipeDetailStyles = css`
     color: var(--rm-text, #e5e5ea);
     padding: 16px 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     text-align: center;
     transition:
       background 0.15s,
@@ -1145,7 +1146,7 @@ export const recipeDetailStyles = css`
     color: var(--rm-text, #e5e5ea);
     padding: 8px 14px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -1157,7 +1158,8 @@ export const recipeDetailStyles = css`
     color: var(--rm-accent-text, #fff);
   }
   .action-btn:disabled {
-    opacity: 0.5;
+    color: var(--rm-disabled-text, var(--rm-text-secondary));
+    background: var(--rm-disabled-bg, var(--rm-bg-elevated));
     cursor: not-allowed;
   }
   .icon-btn {
@@ -1198,7 +1200,7 @@ export const recipeDetailStyles = css`
     padding: 14px 16px;
     border-bottom: 1px solid var(--rm-border, rgba(255, 255, 255, 0.08));
     font-weight: 600;
-    font-size: 16px;
+    font-size: var(--rm-font-size-base, 16px);
     color: var(--rm-text, #e5e5ea);
     flex-shrink: 0;
   }
@@ -1211,7 +1213,7 @@ export const recipeDetailStyles = css`
     gap: 12px;
   }
   .edit-section-label {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -1231,7 +1233,7 @@ export const recipeDetailStyles = css`
     gap: 4px;
   }
   .edit-field label {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary, #8e8e93);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1243,7 +1245,7 @@ export const recipeDetailStyles = css`
     border-radius: 8px;
     color: var(--rm-text, #e5e5ea);
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-family: inherit;
     resize: vertical;
   }
@@ -1292,7 +1294,7 @@ export const recipeDetailStyles = css`
   }
   .edit-thumb-badge ha-icon {
     --mdc-icon-size: 16px;
-    color: #fff;
+    color: var(--rm-accent-text, #fff);
   }
   .edit-photo-add {
     width: 144px;
@@ -1309,7 +1311,7 @@ export const recipeDetailStyles = css`
     transition: background 0.15s;
   }
   .edit-photo-add:hover {
-    background: rgba(255, 107, 53, 0.22);
+    background: var(--rm-accent-soft);
   }
   .edit-photo-add.loading {
     opacity: 0.6;
@@ -1366,7 +1368,7 @@ export const recipeDetailStyles = css`
     gap: 8px;
     padding: 5px 0;
     border-bottom: 1px solid var(--rm-border, rgba(255, 255, 255, 0.06));
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     color: var(--rm-text, #e5e5ea);
   }
   .edit-ing-heading {
@@ -1437,7 +1439,7 @@ export const recipeDetailStyles = css`
     border-radius: 8px;
     color: var(--rm-text, #e5e5ea);
     padding: 7px 10px;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-family: inherit;
     resize: none;
   }
@@ -1453,19 +1455,19 @@ export const recipeDetailStyles = css`
     color: var(--rm-accent-text, #fff);
     padding: 7px 12px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   /* Danger outline button */
   .action-btn.danger-outline {
-    color: var(--error-color, #cf6679);
-    border-color: var(--error-color, #cf6679);
+    color: var(--rm-error, #983d25);
+    border-color: var(--rm-error, #983d25);
   }
   .action-btn.danger-outline:hover {
-    background: var(--error-color, #cf6679);
-    color: #fff;
+    background: var(--rm-error, #983d25);
+    color: var(--rm-error-text, #fff);
   }
 
   /* ── Wide grid layout (2 cols × auto rows) ─────────────── */
@@ -1610,7 +1612,7 @@ export const recipeDetailStyles = css`
   .wide-desc {
     text-align: center;
     margin: 6px 0;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     color: var(--rm-text-secondary);
     line-height: 1.5;
   }
@@ -1696,7 +1698,7 @@ export const recipeDetailStyles = css`
     border-color: var(--rm-accent);
   }
   .ing-shop-success {
-    color: var(--success-color, #4caf50);
+    color: var(--rm-success, #326044);
     display: flex;
     align-items: center;
   }
@@ -1713,7 +1715,7 @@ export const recipeDetailStyles = css`
     padding: 12px;
   }
   .review-title {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 12px);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1760,7 +1762,7 @@ export const recipeDetailStyles = css`
     border: 1.5px solid var(--rm-border, rgba(255, 255, 255, 0.12));
     background: none;
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text, #e5e5ea);
     font-family: inherit;
     transition: all 0.15s;
@@ -1790,7 +1792,7 @@ export const recipeDetailStyles = css`
     padding: 12px 14px;
   }
   .wide-section-title {
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 700;
     color: var(--rm-text);
     margin-bottom: 10px;
@@ -1811,14 +1813,14 @@ export const recipeDetailStyles = css`
     flex: 1;
   }
   .wide-step-card.step-done .step-text {
-    opacity: 0.45;
+    color: var(--rm-text-secondary);
     text-decoration: line-through;
     text-decoration-color: var(--rm-border);
   }
 
   /* ── Markdown content ─────────────────────────────── */
   .md-content {
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     line-height: 1.65;
   }
   .md-content p {
@@ -1833,12 +1835,12 @@ export const recipeDetailStyles = css`
     margin: 10px 0 4px;
   }
   .md-content h2 {
-    font-size: 16px;
+    font-size: var(--rm-font-size-base, 16px);
     font-weight: 700;
     margin: 8px 0 4px;
   }
   .md-content h3 {
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-weight: 700;
     margin: 6px 0 3px;
   }
@@ -1858,7 +1860,7 @@ export const recipeDetailStyles = css`
   }
   .md-content code {
     font-family: monospace;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     background: var(--rm-bg-elevated);
     padding: 1px 4px;
     border-radius: 3px;
@@ -1898,7 +1900,7 @@ export const recipeDetailStyles = css`
     gap: 3px;
     padding: 3px 8px;
     border-radius: 14px;
-    font-size: 12px;
+    font-size: var(--rm-font-size-xs, 12px);
     border: 1px solid var(--rm-border);
     background: var(--rm-bg-elevated);
     color: var(--rm-text);
@@ -1925,7 +1927,7 @@ export const recipeDetailStyles = css`
     padding: 0 0 0 2px;
     cursor: pointer;
     color: inherit;
-    font-size: 14px;
+    font-size: var(--rm-font-size-sm, 14px);
     line-height: 1;
     opacity: 0.7;
   }
@@ -1978,7 +1980,7 @@ export const recipeDetailStyles = css`
     border-radius: 7px;
     color: var(--rm-text);
     padding: 5px 9px;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-family: inherit;
     min-width: 0;
   }
@@ -1993,7 +1995,7 @@ export const recipeDetailStyles = css`
     background: var(--rm-accent);
     color: var(--rm-accent-text, #fff);
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-family: inherit;
   }
   .list-picker-new-btn:disabled {
@@ -2022,7 +2024,7 @@ export const recipeDetailStyles = css`
     border-radius: 6px;
     color: var(--rm-text);
     padding: 4px 6px;
-    font-size: 13px;
+    font-size: var(--rm-font-size-sm, 14px);
     font-family: inherit;
     min-width: 0;
   }
@@ -2066,4 +2068,72 @@ export const recipeDetailStyles = css`
   .ing-inline-cancel ha-icon {
     --mdc-icon-size: 13px;
   }
+
+  .detail-container,
+  .detail-right,
+  .detail-left-scroll,
+  .detail-right-scroll,
+  .detail-scroll,
+  .edit-body {
+    min-width: 0;
+    min-height: 0;
+  }
+  .detail-desc,
+  .ing-name,
+  .notes-text,
+  .recipe-title {
+    overflow-wrap: anywhere;
+  }
+  .action-btn,
+  .tab-btn,
+  .wakelock-btn,
+  .metric-btn,
+  .photo-url-input,
+  .edit-field input,
+  .edit-field textarea {
+    min-height: var(--rm-touch-target, 44px);
+  }
+  .hero-btn,
+  .scaler-btn,
+  .icon-btn,
+  .photo-action,
+  .slide-btn,
+  .ing-shop-btn {
+    width: var(--rm-touch-target, 44px);
+    height: var(--rm-touch-target, 44px);
+  }
+  .action-icon-btn {
+    width: 76px;
+    line-height: 1.4;
+  }
+  .edit-field input,
+  .edit-field textarea,
+  .photo-url-input {
+    font-size: var(--rm-font-size-base, 16px);
+    border-color: var(--rm-border-strong, var(--rm-border));
+  }
+  .edit-panel {
+    border: 1px solid var(--rm-border);
+    max-height: 82dvh;
+  }
+  .edit-footer,
+  .edit-footer-right {
+    flex-wrap: wrap;
+  }
+  @media (max-width: 480px) {
+    .edit-row-3 {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .action-btns-row {
+      gap: 8px;
+    }
+    .nutr-top {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .photo-url-row {
+      flex-wrap: wrap;
+    }
+  }
+  ${componentStyles}
 `;

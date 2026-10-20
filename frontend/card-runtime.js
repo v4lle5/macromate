@@ -2,6 +2,7 @@ import { BUILD_REVISION } from "./build-info.js";
 import { MacroMateSummary } from "./unified-src/summary.js";
 import { MacroMateAPI } from "./unified-src/services/adapter.js";
 import { clearUI } from "./unified-src/services/context-cache.js";
+import { applyGlassWaveTheme } from "./unified-src/services/theme.js";
 import { navigationPath } from "./navigation.js";
 import "./unified/app.js";
 
@@ -12,6 +13,14 @@ export class MacroMateCard extends MacroMateSummary {
     this.mode = "app";
     this.application = null;
     this.api = null;
+    this.addEventListener("macromate-appearance", (event) => {
+      if (event.composedPath()[0] !== this.application) return;
+      applyGlassWaveTheme(
+        this,
+        event.detail.settings,
+        this._hass?.themes?.darkMode ?? this.appearanceQuery.matches,
+      );
+    });
     this.addEventListener("macromate-open-app", () => {
       this.mode = "app";
       this.cleanup();
@@ -32,7 +41,10 @@ export class MacroMateCard extends MacroMateSummary {
     this.mode = config.mode || this.mode;
     this.config = { ...config };
     if (changed) this.cleanup();
-    if (this.isConnected) this.render();
+    if (this.isConnected) {
+      if (changed && this.mode === "summary") super.connectedCallback();
+      else this.render();
+    }
   }
   set hass(hass) {
     if (this.mode === "summary") {
@@ -59,6 +71,7 @@ export class MacroMateCard extends MacroMateSummary {
         clearUI(previous.userId);
       this.cleanup();
     }
+    if (this.application) this.application.systemDark = hass?.themes?.darkMode;
     if (this.isConnected) this.render();
   }
   get hass() {
@@ -73,6 +86,7 @@ export class MacroMateCard extends MacroMateSummary {
     super.disconnectedCallback();
   }
   cleanup() {
+    this.stopAppearance();
     this.api?.dispose();
     this.api = null;
     this.application = null;
@@ -94,7 +108,7 @@ export class MacroMateCard extends MacroMateSummary {
     const api = this.api;
     const stylesheet = document.createElement("style");
     stylesheet.textContent =
-      ":host{display:block;min-width:0;min-height:0;height:100%}.workspace{display:flex;flex-direction:column;height:100%;min-height:0}mm-unified-app{flex:none;height:100%;min-height:0}.status:empty{display:none}.status{flex-shrink:0;padding:12px;background:#fff4dc;color:#443700;font:14px system-ui}.status button{min-width:44px;min-height:44px;padding:8px;margin-left:12px}";
+      ":host{display:block;min-width:0;min-height:0;height:100%}.workspace{display:flex;flex-direction:column;height:100%;min-height:0}mm-unified-app{flex:none;height:100%;min-height:0}.status:empty{display:none}.status{flex-shrink:0;padding:12px;background:var(--rm-warning-soft,#f4ebd0);color:var(--rm-text,#233b47);font:var(--rm-font-size-sm,14px)/1.55 var(--rm-font-family,system-ui)}.status button{min-width:44px;min-height:44px;padding:8px;margin-left:12px;border:1px solid var(--rm-border-strong,#738991);border-radius:var(--rm-radius-sm,12px);background:var(--rm-bg-elevated,#fffdf8);color:inherit;font:inherit}.status button:focus-visible{outline:3px solid var(--rm-focus,#326382);outline-offset:2px}";
     const status = document.createElement("div");
     status.className = "status";
     status.setAttribute("role", "status");
@@ -103,6 +117,7 @@ export class MacroMateCard extends MacroMateSummary {
     this.application = app;
     app.transport = api;
     app.hass = api.facade();
+    app.systemDark = this._hass?.themes?.darkMode;
     app.setConfig(this.config);
     const state = () => {
       if (this.api !== api || !api.current()) return;

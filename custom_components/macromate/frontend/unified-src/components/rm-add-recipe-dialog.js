@@ -3,6 +3,7 @@
  */
 import { LitElement, html, css } from "lit";
 import { msg, str } from "@lit/localize";
+import { componentStyles } from "./component-styles.js";
 import JSZip from "jszip";
 import {
   declarationFields,
@@ -387,6 +388,7 @@ class RmAddRecipeDialog extends LitElement {
         <div class="mode-toggle">
           <button
             class="mode-btn ${this._mode === "url" ? "active" : ""}"
+            aria-pressed=${this._mode === "url"}
             @click=${() => {
               this._mode = "url";
             }}
@@ -395,6 +397,7 @@ class RmAddRecipeDialog extends LitElement {
           </button>
           <button
             class="mode-btn ${this._mode === "manual" ? "active" : ""}"
+            aria-pressed=${this._mode === "manual"}
             @click=${() => {
               this._mode = "manual";
             }}
@@ -403,6 +406,7 @@ class RmAddRecipeDialog extends LitElement {
           </button>
           <button
             class="mode-btn ${this._mode === "import" ? "active" : ""}"
+            aria-pressed=${this._mode === "import"}
             @click=${() => {
               this._mode = "import";
             }}
@@ -411,7 +415,11 @@ class RmAddRecipeDialog extends LitElement {
           </button>
         </div>
         ${!this.inlineMode
-          ? html`<button class="icon-btn" @click=${this._close}>
+          ? html`<button
+              class="icon-btn"
+              aria-label=${msg("Close")}
+              @click=${this._close}
+            >
               <ha-icon icon="mdi:close"></ha-icon>
             </button>`
           : ""}
@@ -1052,24 +1060,14 @@ class RmAddRecipeDialog extends LitElement {
       color-scheme: inherit;
     }
 
-    input::placeholder,
-    textarea::placeholder {
-      color: var(--rm-text-secondary, #757575);
-      opacity: 1;
-    }
-
-    button:focus-visible,
-    input:focus-visible,
-    textarea:focus-visible,
-    select:focus-visible,
     .file-label:focus-within {
-      outline: 2px solid var(--rm-accent, #416f8f);
+      outline: 3px solid var(--rm-focus, var(--rm-accent, #416f8f));
       outline-offset: 2px;
     }
 
     button,
     select {
-      min-height: var(--rm-touch-target, 36px);
+      min-height: var(--rm-touch-target, 44px);
     }
 
     .inline-panel {
@@ -1105,8 +1103,11 @@ class RmAddRecipeDialog extends LitElement {
       width: 100%;
       max-width: 620px;
       max-height: 90vh;
+      max-height: 90dvh;
       display: flex;
       flex-direction: column;
+      border: 1px solid var(--rm-border);
+      box-shadow: var(--rm-shadow);
     }
 
     .panel-mode .dialog-panel {
@@ -1125,10 +1126,12 @@ class RmAddRecipeDialog extends LitElement {
       padding: 14px 16px;
       border-bottom: 1px solid var(--rm-border, rgba(255, 255, 255, 0.08));
       flex-shrink: 0;
+      gap: 8px;
     }
 
     .mode-toggle {
       display: flex;
+      flex-wrap: wrap;
       gap: 4px;
       background: var(--rm-bg-elevated, #2c2c2e);
       border-radius: 8px;
@@ -1140,7 +1143,7 @@ class RmAddRecipeDialog extends LitElement {
       border-radius: 6px;
       padding: 6px 12px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
       color: var(--rm-text-secondary, #8e8e93);
       display: flex;
       align-items: center;
@@ -1162,8 +1165,9 @@ class RmAddRecipeDialog extends LitElement {
       border: none;
       cursor: pointer;
       color: var(--rm-text-secondary, #8e8e93);
-      width: 32px;
-      height: 32px;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -1173,6 +1177,7 @@ class RmAddRecipeDialog extends LitElement {
 
     .dialog-body {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       padding: 16px;
       scrollbar-width: thin;
@@ -1189,7 +1194,7 @@ class RmAddRecipeDialog extends LitElement {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
       color: var(--rm-text-secondary, #8e8e93);
       background: var(--rm-bg-elevated, #2c2c2e);
       border-radius: 8px;
@@ -1210,7 +1215,7 @@ class RmAddRecipeDialog extends LitElement {
       border-radius: 8px;
       color: var(--rm-text, #e5e5ea);
       padding: 10px 12px;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm, 14px);
     }
     .url-input:focus {
       outline: none;
@@ -1221,7 +1226,7 @@ class RmAddRecipeDialog extends LitElement {
       align-items: center;
       gap: 6px;
       color: var(--rm-error, var(--error-color, #cf6679));
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
     }
     .error-msg ha-icon {
       --mdc-icon-size: 16px;
@@ -1239,7 +1244,7 @@ class RmAddRecipeDialog extends LitElement {
       gap: 4px;
     }
     .field label {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs, 12px);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -1252,7 +1257,7 @@ class RmAddRecipeDialog extends LitElement {
       border-radius: 8px;
       color: var(--rm-text, #e5e5ea);
       padding: 8px 10px;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm, 14px);
       font-family: inherit;
       resize: vertical;
     }
@@ -1298,7 +1303,7 @@ class RmAddRecipeDialog extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs, 12px);
       color: var(--rm-text-secondary, #8e8e93);
       text-decoration: underline;
       padding: 0;
@@ -1306,7 +1311,7 @@ class RmAddRecipeDialog extends LitElement {
 
     /* Section divider */
     .section-divider {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs, 12px);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1329,7 +1334,7 @@ class RmAddRecipeDialog extends LitElement {
       gap: 8px;
       padding: 5px 0;
       border-bottom: 1px solid var(--rm-border, rgba(255, 255, 255, 0.06));
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
       color: var(--rm-text, #e5e5ea);
     }
     .ing-list li.ing-heading {
@@ -1341,7 +1346,7 @@ class RmAddRecipeDialog extends LitElement {
       flex: 1;
     }
     .bulk-hint {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs, 12px);
       color: var(--rm-text-secondary, #8e8e93);
       margin-top: 6px;
       display: flex;
@@ -1350,14 +1355,14 @@ class RmAddRecipeDialog extends LitElement {
       flex-wrap: wrap;
     }
     .bulk-hint code {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--rm-accent-soft);
       border-radius: 4px;
       padding: 1px 5px;
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs, 12px);
     }
     .bulk-btn {
       padding: 4px 8px !important;
-      font-size: 11px !important;
+      font-size: var(--rm-font-size-xs, 12px) !important;
     }
     .remove-btn {
       background: none;
@@ -1384,7 +1389,7 @@ class RmAddRecipeDialog extends LitElement {
       border-radius: 8px;
       color: var(--rm-text, #e5e5ea);
       padding: 8px 10px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
       font-family: inherit;
       resize: none;
     }
@@ -1402,7 +1407,7 @@ class RmAddRecipeDialog extends LitElement {
       color: var(--rm-text, #e5e5ea);
       padding: 9px 14px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm, 14px);
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
@@ -1420,16 +1425,16 @@ class RmAddRecipeDialog extends LitElement {
     }
     .action-btn.sm {
       padding: 6px 10px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
     }
     .action-btn:disabled {
-      opacity: 0.5;
+      opacity: 1;
       cursor: not-allowed;
     }
     .action-btn.primary:disabled {
       background: var(--rm-disabled-bg, var(--rm-accent));
       color: var(--rm-disabled-text, var(--rm-accent-text, #fff));
-      opacity: var(--rm-disabled-opacity, 0.5);
+      opacity: 1;
     }
 
     /* Import mode */
@@ -1444,7 +1449,7 @@ class RmAddRecipeDialog extends LitElement {
       background: var(--rm-bg-elevated, #2c2c2e);
       border-radius: 10px;
       padding: 12px 14px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
       color: var(--rm-text-secondary, #8e8e93);
       line-height: 1.5;
     }
@@ -1457,13 +1462,14 @@ class RmAddRecipeDialog extends LitElement {
       color: var(--rm-text, #e5e5ea);
     }
     .import-info code {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--rm-accent-soft);
       border-radius: 4px;
       padding: 1px 5px;
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs, 12px);
     }
 
     .file-label {
+      position: relative;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1472,7 +1478,7 @@ class RmAddRecipeDialog extends LitElement {
       border-radius: 10px;
       padding: 16px 14px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm, 14px);
       color: var(--rm-text, #e5e5ea);
       transition: border-color 0.15s;
     }
@@ -1484,14 +1490,20 @@ class RmAddRecipeDialog extends LitElement {
       color: var(--rm-accent, #ff6b35);
     }
     .file-input {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
 
     .toggle-row {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
       color: var(--rm-text-secondary, #8e8e93);
       cursor: pointer;
     }
@@ -1507,7 +1519,7 @@ class RmAddRecipeDialog extends LitElement {
       gap: 10px;
       border-radius: 8px;
       padding: 12px 14px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm, 14px);
     }
     .import-result ha-icon {
       --mdc-icon-size: 20px;
@@ -1515,22 +1527,22 @@ class RmAddRecipeDialog extends LitElement {
       margin-top: 1px;
     }
     .import-result.success {
-      background: rgba(76, 175, 80, 0.12);
-      color: var(--rm-success, var(--success-color, #4caf50));
+      background: var(--rm-success-soft, #e2eee7);
+      color: var(--rm-success, #326044);
     }
     .import-result.partial {
-      background: rgba(255, 152, 0, 0.12);
-      color: var(--rm-warning, #ff9800);
+      background: var(--rm-warning-soft, #f2ebd5);
+      color: var(--rm-warning, #765600);
     }
     .import-result.error {
-      background: rgba(207, 102, 121, 0.12);
-      color: var(--rm-error, var(--error-color, #cf6679));
+      background: var(--rm-error-soft, #f6e5df);
+      color: var(--rm-error, #983d25);
     }
     .import-result strong {
       display: block;
     }
     .import-result small {
-      opacity: 0.85;
+      font-size: var(--rm-font-size-sm, 14px);
     }
 
     .import-btn {
@@ -1544,12 +1556,37 @@ class RmAddRecipeDialog extends LitElement {
 
     .dialog-footer {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       justify-content: flex-end;
       padding: 12px 16px;
       border-top: 1px solid var(--rm-border, rgba(255, 255, 255, 0.08));
       flex-shrink: 0;
     }
+    .url-input,
+    .field input,
+    .field textarea,
+    .add-row input,
+    .add-row textarea {
+      min-height: var(--rm-touch-target, 44px);
+      font-size: var(--rm-font-size-base, 16px);
+      border-color: var(--rm-border-strong, var(--rm-border));
+    }
+    @media (max-width: 480px) {
+      .field-row,
+      .field-row-3 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .mode-btn {
+        padding: 8px;
+      }
+      .dialog-header,
+      .dialog-body,
+      .dialog-footer {
+        padding: 12px;
+      }
+    }
+    ${componentStyles}
   `;
 }
 

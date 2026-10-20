@@ -5,6 +5,7 @@ import { LitElement, html, css } from "lit";
 import { msg, str } from "@lit/localize";
 import { RecipeManagerAPI } from "./services/api.js";
 import { loadUI, saveUI } from "./services/context-cache.js";
+import { normalizeSettings, applyGlassWaveTheme } from "./services/theme.js";
 import { setActiveLocale, allLocales } from "./services/localize.js";
 import {
   acquire as acquireWakeLock,
@@ -20,237 +21,14 @@ import "./components/rm-add-recipe-dialog.js";
 import "./components/rm-meal-planner.js";
 import "./components/rm-settings-view.js";
 import "./components/nutrition.js";
+import { componentStyles } from "./components/component-styles.js";
 
 // ---------------------------------------------------------------------------
 // Settings helpers
 // ---------------------------------------------------------------------------
 
-const SETTINGS_KEY = "rm_settings";
-const RECENT_RECIPES_KEY = "rm_recent_recipes";
-const TIMERS_KEY = "rm_timers";
-const TIMER_PRESETS_KEY = "rm_timer_presets";
-const VIEW_STATE_KEY = "rm_view_state";
-// Views worth restoring after a reload — excludes transient/in-progress ones
-// like 'add' (mid-import dialog) or 'timers' (a temporary overlay).
+// Views worth restoring after a reload, excluding transient import/timer views.
 const RESTORABLE_VIEWS = ["grid", "detail", "settings", "planner"];
-
-function loadViewState() {
-  return null;
-}
-function saveViewState() {}
-
-function loadTimerPresets() {
-  return [];
-}
-function saveTimerPresets() {}
-
-const DEFAULT_SETTINGS = {
-  theme: "soft",
-  darkMode: "system",
-  fontSize: "medium",
-  columns: 3,
-  showFavourites: true,
-  showPlanner: true,
-  recentCount: 12,
-  timerSound: "beep",
-  keepScreenOn: false,
-  keepScreenOnMins: 30,
-  showUnitConversion: false,
-  language: "en",
-  unitSystem: "imperial",
-};
-
-// ---------------------------------------------------------------------------
-// Application themes
-// ---------------------------------------------------------------------------
-
-const THEME_VARS = {
-  // Adaptive (light/dark)
-  soft: {
-    light: {
-      "--rm-bg-main": "#fafbfc",
-      "--rm-bg-surface": "#ffffff",
-      "--rm-bg-elevated": "#ffffff",
-      "--rm-text": "#424242",
-      "--rm-text-secondary": "#757575",
-      "--rm-text-muted": "#9e9e9e",
-      "--rm-accent": "#9fa8da",
-      "--rm-accent-soft": "rgba(159,168,218,0.15)",
-      "--rm-border": "#e8eaf6",
-      "--rm-shadow": "0 2px 6px rgba(0,0,0,0.08)",
-    },
-    dark: {
-      "--rm-bg-main": "#14161a",
-      "--rm-bg-surface": "#1b1f25",
-      "--rm-bg-elevated": "#232833",
-      "--rm-text": "#e4e7ec",
-      "--rm-text-secondary": "#a8b0bd",
-      "--rm-text-muted": "#7a8594",
-      "--rm-accent": "#9fa8da",
-      "--rm-accent-soft": "rgba(159,168,218,0.18)",
-      "--rm-border": "#2b313c",
-      "--rm-shadow": "0 2px 6px rgba(0,0,0,0.3)",
-    },
-  },
-
-  // Light-only
-  arctic: {
-    light: {
-      "--rm-bg-main": "#f0f4f8",
-      "--rm-bg-surface": "#ffffff",
-      "--rm-bg-elevated": "#ffffff",
-      "--rm-text": "#1a2332",
-      "--rm-text-secondary": "#526070",
-      "--rm-text-muted": "#8097aa",
-      "--rm-accent": "#2979ff",
-      "--rm-accent-soft": "rgba(41,121,255,0.12)",
-      "--rm-border": "#dce6f0",
-      "--rm-shadow": "0 2px 6px rgba(26,35,50,0.1)",
-    },
-  },
-  meadow: {
-    light: {
-      "--rm-bg-main": "#f4f7f0",
-      "--rm-bg-surface": "#fefffe",
-      "--rm-bg-elevated": "#fefffe",
-      "--rm-text": "#2d3a2a",
-      "--rm-text-secondary": "#6b7c64",
-      "--rm-text-muted": "#96a98e",
-      "--rm-accent": "#4caf50",
-      "--rm-accent-soft": "rgba(76,175,80,0.12)",
-      "--rm-border": "#dde8d8",
-      "--rm-shadow": "0 2px 6px rgba(45,58,42,0.1)",
-    },
-  },
-  blossom: {
-    light: {
-      "--rm-bg-main": "#fdf8fb",
-      "--rm-bg-surface": "#ffffff",
-      "--rm-bg-elevated": "#fff8fc",
-      "--rm-text": "#3d1f35",
-      "--rm-text-secondary": "#8c5e79",
-      "--rm-text-muted": "#b48fa5",
-      "--rm-accent": "#c2668a",
-      "--rm-accent-soft": "rgba(194,102,138,0.12)",
-      "--rm-border": "#f0d6e8",
-      "--rm-shadow": "0 2px 6px rgba(61,31,53,0.1)",
-    },
-    dark: {
-      "--rm-bg-main": "#1a0d12",
-      "--rm-bg-surface": "#241420",
-      "--rm-bg-elevated": "#2e1a28",
-      "--rm-text": "#f8d0de",
-      "--rm-text-secondary": "#c070a0",
-      "--rm-text-muted": "#603050",
-      "--rm-accent": "#f48fb1",
-      "--rm-accent-soft": "rgba(244,143,177,0.15)",
-      "--rm-border": "rgba(248,208,222,0.08)",
-      "--rm-shadow": "0 2px 8px rgba(0,0,0,0.4)",
-    },
-  },
-  "glass-wave": {
-    light: {
-      "--rm-bg-main": "rgba(253, 248, 239, 0.90)",
-      "--rm-bg-surface": "rgba(253, 248, 239, 0.94)",
-      "--rm-bg-elevated": "#fffaf2",
-      "--rm-text": "#263B47",
-      "--rm-text-secondary": "#53666E",
-      "--rm-text-muted": "#53666E",
-      "--rm-accent": "#416F8F",
-      "--rm-accent-soft": "rgba(65, 111, 143, 0.12)",
-      "--rm-border": "#748790",
-      "--rm-shadow": "0 3px 12px rgba(38, 59, 71, 0.08)",
-    },
-  },
-  ocean: {
-    light: {
-      "--rm-bg-main": "#f0f7ff",
-      "--rm-bg-surface": "#ffffff",
-      "--rm-bg-elevated": "#f9fbff",
-      "--rm-text": "#1a3a5f",
-      "--rm-text-secondary": "#4a6b8c",
-      "--rm-text-muted": "#7a9bbd",
-      "--rm-accent": "#0077ff",
-      "--rm-accent-soft": "rgba(0,119,255,0.12)",
-      "--rm-border": "#d0e1f2",
-      "--rm-shadow": "0 2px 6px rgba(26,58,95,0.1)",
-    },
-  },
-
-  // Dark-only
-  midnight: {
-    dark: {
-      "--rm-bg-main": "#0d1117",
-      "--rm-bg-surface": "#161b22",
-      "--rm-bg-elevated": "#1c2333",
-      "--rm-text": "#c9d1d9",
-      "--rm-text-secondary": "#8b949e",
-      "--rm-text-muted": "#6e7681",
-      "--rm-accent": "#58a6ff",
-      "--rm-accent-soft": "rgba(88,166,255,0.15)",
-      "--rm-border": "#21262d",
-      "--rm-shadow": "0 2px 8px rgba(0,0,0,0.5)",
-    },
-  },
-  ember: {
-    dark: {
-      "--rm-bg-main": "#111111",
-      "--rm-bg-surface": "#1c1a17",
-      "--rm-bg-elevated": "#242018",
-      "--rm-text": "#f5f0e8",
-      "--rm-text-secondary": "#a89880",
-      "--rm-text-muted": "#7a6a55",
-      "--rm-accent": "#f0a500",
-      "--rm-accent-soft": "rgba(240,165,0,0.15)",
-      "--rm-border": "rgba(245,240,232,0.08)",
-      "--rm-shadow": "0 2px 8px rgba(0,0,0,0.5)",
-    },
-  },
-  neon: {
-    dark: {
-      "--rm-bg-main": "#0a0b10",
-      "--rm-bg-surface": "#121420",
-      "--rm-bg-elevated": "#1a1d2e",
-      "--rm-text": "#e0e0f0",
-      "--rm-text-secondary": "#a0a5c0",
-      "--rm-text-muted": "#6a6f8e",
-      "--rm-accent": "#bb86fc",
-      "--rm-accent-soft": "rgba(187,134,252,0.15)",
-      "--rm-border": "#2a2d45",
-      "--rm-shadow": "0 2px 8px rgba(0,0,0,0.6)",
-    },
-  },
-};
-
-const FONT_SIZE_MAP = { small: "13px", medium: "15px", large: "17px" };
-
-function loadSettings() {
-  return { ...DEFAULT_SETTINGS };
-}
-
-// True until the user has an explicit `language` choice saved (either picked
-// manually in Settings, or previously auto-detected from hass.language below).
-function hasExplicitLanguage() {
-  return false;
-}
-
-function saveSettings() {}
-
-function loadRecentRecipes() {
-  return [];
-}
-
-function saveRecentRecipes() {}
-
-// ---------------------------------------------------------------------------
-// Timer persistence
-// ---------------------------------------------------------------------------
-
-function loadTimers() {
-  return [];
-}
-
-function saveTimers() {}
 
 // ---------------------------------------------------------------------------
 // Timer helpers
@@ -313,6 +91,7 @@ function playTimerSound(type) {
 export class UnifiedApp extends LitElement {
   static properties = {
     hass: { type: Object },
+    systemDark: { attribute: false },
     _config: { type: Object },
     _view: { type: String },
     _recipes: { type: Array },
@@ -349,10 +128,9 @@ export class UnifiedApp extends LitElement {
 
   constructor() {
     super();
-    // Captured immediately so the very first reactive update cycle (which
-    // fires before _init() finishes loading recipes) can't clobber it by
-    // saving the default 'grid' view over whatever was persisted.
-    this._pendingViewRestore = loadViewState();
+    // Restore actor-scoped view state only after the authenticated transport
+    // is ready; defaults must never overwrite a pending restore.
+    this._pendingViewRestore = null;
     this._view = "grid";
     this._recipes = [];
     this._tags = [];
@@ -361,14 +139,14 @@ export class UnifiedApp extends LitElement {
     this._error = null;
     this._searchQuery = "";
     this._activeTag = null;
-    this._settings = loadSettings();
-    this._languageAutoDetectPending = !hasExplicitLanguage();
+    this._settings = normalizeSettings();
+    this._languageAutoDetectPending = true;
     setActiveLocale(this._settings.language);
     this._wide = false;
     this._sidebarCollapsed = false;
     this._gridScrollPos = 0;
-    this._recentRecipeIds = loadRecentRecipes();
-    this._timers = loadTimers();
+    this._recentRecipeIds = [];
+    this._timers = [];
     this._timerAlarm = null;
     this._timerAlarmQueue = [];
     this._timersPrevView = null;
@@ -378,7 +156,7 @@ export class UnifiedApp extends LitElement {
     this._navDirection = "forward";
     this._closingDetail = false;
     this._gridFilterPreset = null;
-    this._timerPresets = loadTimerPresets();
+    this._timerPresets = [];
     this._presetNameInput = "";
     this._presetMinsInput = "";
     this._alarmAddInput = "";
@@ -469,7 +247,6 @@ export class UnifiedApp extends LitElement {
       this._timerAlarm = null;
     }
     this._timerAlarmQueue = [];
-    saveTimers(this._timers);
     if (this._globalWakeActive) releaseWakeLock(GLOBAL_WAKE_LOCK_REASON);
   }
 
@@ -494,11 +271,11 @@ export class UnifiedApp extends LitElement {
         ? detected
         : this._settings.language;
       this._settings = { ...this._settings, language: resolved };
-      saveSettings(this._settings);
       setActiveLocale(resolved);
     }
     if (changedProps.has("hass") && this._api) this._api.hass = this.hass;
-    if (changedProps.has("_settings")) this._applyTheme();
+    if (changedProps.has("_settings") || changedProps.has("systemDark"))
+      this._applyTheme();
     if (
       changedProps.has("_view") ||
       changedProps.has("_selectedRecipe") ||
@@ -551,45 +328,17 @@ export class UnifiedApp extends LitElement {
   }
 
   _applyTheme() {
-    const s = this._settings;
-    this.toggleAttribute("glass-wave", s.theme === "glass-wave");
-    const themeVars = THEME_VARS[s.theme] ?? THEME_VARS.soft;
-    const alwaysDark = !themeVars.light;
-    const alwaysLight = !themeVars.dark;
-    let isDark = alwaysDark;
-    if (!alwaysDark && !alwaysLight) {
-      if (s.darkMode === "on") isDark = true;
-      else if (s.darkMode === "off") isDark = false;
-      else isDark = this._darkModeQuery?.matches ?? false;
-    } else if (alwaysLight) {
-      isDark = false;
-    }
-    const vars = isDark
-      ? (themeVars.dark ?? themeVars.light)
-      : (themeVars.light ?? themeVars.dark);
-    for (const [k, v] of Object.entries(vars)) this.style.setProperty(k, v);
-    this.style.colorScheme = isDark ? "dark" : "light";
-    const channels = vars["--rm-accent"].match(/[a-f\d]{2}/gi).map((hex) => {
-      const value = parseInt(hex, 16) / 255;
-      return value <= 0.04045
-        ? value / 12.92
-        : ((value + 0.055) / 1.055) ** 2.4;
-    });
-    const luminance = channels.reduce(
-      (sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index],
-      0,
+    applyGlassWaveTheme(
+      this,
+      this._settings,
+      this.systemDark ?? this._darkModeQuery?.matches ?? false,
     );
-    this.style.setProperty(
-      "--rm-accent-text",
-      luminance > 0.179 ? "#000" : "#fff",
-    );
-    this.style.setProperty(
-      "--rm-font-size-base",
-      FONT_SIZE_MAP[s.fontSize] ?? "15px",
-    );
-    this.style.setProperty(
-      "--rm-grid-columns",
-      `repeat(${s.columns ?? 3}, minmax(0, 1fr))`,
+    this.dispatchEvent(
+      new CustomEvent("macromate-appearance", {
+        detail: { settings: this._settings },
+        bubbles: true,
+        composed: true,
+      }),
     );
   }
 
@@ -598,6 +347,7 @@ export class UnifiedApp extends LitElement {
   async _init() {
     this._loading = true;
     this._error = null;
+    if (!this.hass.user.is_admin) this._view = "nutrition";
     if (!this._cacheBootstrapped && this.hass.user.is_admin) {
       const cache = loadUI(this.transport);
       this._pendingViewRestore = cache;
@@ -605,28 +355,35 @@ export class UnifiedApp extends LitElement {
       this._timers = cache.timers || [];
       this._cacheBootstrapped = true;
     }
-    if (!this.hass.user.is_admin) {
-      this._view = "nutrition";
-      this._loading = false;
-      return;
-    }
     try {
+      let p;
+      try {
+        p = await this.transport.call("preferences_get");
+      } catch (error) {
+        // Appearance preferences must not prevent members from reaching their
+        // shared profiles. The transport still shows its failed-read status.
+        if (this.hass.user.is_admin) throw error;
+        return;
+      }
+      if (p.preferences?.recipe_settings) {
+        this._settings = normalizeSettings({
+          ...this._settings,
+          ...p.preferences.recipe_settings,
+        });
+        await setActiveLocale(this._settings.language);
+        this.transport.locale = this._settings.language;
+        this.hass = this.transport.facade();
+      }
+      if (!this.hass.user.is_admin) {
+        this._view = "nutrition";
+        return;
+      }
       await Promise.all([
         this._loadRecipes(),
         this._loadTags(),
         this._loadGlobalTimers(),
       ]);
       this._restoreViewState();
-      const p = await this.transport.call("preferences_get");
-      if (p.preferences?.recipe_settings) {
-        this._settings = {
-          ...this._settings,
-          ...p.preferences.recipe_settings,
-        };
-        await setActiveLocale(this._settings.language);
-        this.transport.locale = this._settings.language;
-        this.hass = this.transport.facade();
-      }
       await this._loadPresets();
       await this._subscribe();
     } catch (e) {
@@ -793,8 +550,7 @@ export class UnifiedApp extends LitElement {
 
   async _handleSettingsChange(e) {
     const prevLanguage = this._settings.language;
-    this._settings = e.detail.settings;
-    saveSettings(this._settings);
+    this._settings = normalizeSettings(e.detail.settings);
     if (this._settings.language !== prevLanguage) {
       await setActiveLocale(this._settings.language);
       this.transport.locale = this._settings.language;
@@ -862,10 +618,7 @@ export class UnifiedApp extends LitElement {
         running: newRemaining > 0,
       };
     });
-    if (changed) {
-      this._timers = updated;
-      saveTimers(this._timers);
-    }
+    if (changed) this._timers = updated;
     if (newAlarms.length) {
       if (!this._timerAlarm) {
         this._timerAlarm = newAlarms.shift();
@@ -920,7 +673,6 @@ export class UnifiedApp extends LitElement {
         presetId: presetId || null,
       },
     ];
-    saveTimers(this._timers);
   }
 
   async _stopTimer(id) {
@@ -1191,7 +943,6 @@ export class UnifiedApp extends LitElement {
         ...this._recentRecipeIds.filter((id) => id !== recipe.id),
       ].slice(0, 50);
       this._recentRecipeIds = ids;
-      saveRecentRecipes(ids);
     }
   }
 
@@ -1268,14 +1019,17 @@ export class UnifiedApp extends LitElement {
       >
         ${[1, 2, 3, 4, 5].map(
           (n) => html`
-            <span
+            <button
               class="hdr-star ${n <= display ? "filled" : ""}"
+              aria-label=${msg(str`Set rating: ${n}★`)}
+              aria-pressed=${n === r}
               @mouseover=${() => {
                 this._hdrStarHover = n;
               }}
               @click=${() => this._handleRateRecipe(n)}
-              >★</span
             >
+              ★
+            </button>
           `,
         )}
       </div>
@@ -1544,7 +1298,11 @@ export class UnifiedApp extends LitElement {
                 `
               : !wide && this._view !== "grid" && !inSettings && !inTimers
                 ? html`
-                    <button class="icon-btn" @click=${this._handleShowGrid}>
+                    <button
+                      class="icon-btn"
+                      aria-label=${msg("Back")}
+                      @click=${this._handleShowGrid}
+                    >
                       <ha-icon icon="mdi:arrow-left"></ha-icon>
                     </button>
                   `
@@ -1559,8 +1317,9 @@ export class UnifiedApp extends LitElement {
           <!-- Timer pills (compact, shown when timers are running, not in timer view) -->
           ${this._timers.length && this._view !== "timers"
             ? html`
-                <div
+                <button
                   class="timer-pills"
+                  aria-label=${msg("Timers")}
                   @click=${() => {
                     this._navDirection = "forward";
                     this._timersPrevView = this._view;
@@ -1580,7 +1339,7 @@ export class UnifiedApp extends LitElement {
                         >+${this._timers.length - 3}</span
                       >`
                     : ""}
-                </div>
+                </button>
               `
             : ""}
           ${inDetail ? this._renderStars(this._selectedRecipe.rating) : ""}
@@ -1608,7 +1367,11 @@ export class UnifiedApp extends LitElement {
 
           ${inSettings || inAdd || inTimers
             ? html`
-                <button class="icon-btn" @click=${this._handleShowGrid}>
+                <button
+                  class="icon-btn"
+                  aria-label=${msg("Close")}
+                  @click=${this._handleShowGrid}
+                >
                   <ha-icon icon="mdi:close"></ha-icon>
                 </button>
               `
@@ -2016,7 +1779,7 @@ export class UnifiedApp extends LitElement {
                     : p.seconds;
                   const total = activeTimer ? activeTimer.total : p.seconds;
                   const arcColor = isAlarming
-                    ? "var(--error-color, #cf6679)"
+                    ? "var(--rm-error)"
                     : remaining < 60 && activeTimer
                       ? "#f59e0b"
                       : "var(--rm-accent)";
@@ -2069,7 +1832,7 @@ export class UnifiedApp extends LitElement {
                             ? html`
                                 <span
                                   class="preset-arc-time"
-                                  style="color:var(--error-color,#cf6679)"
+                                  style="color:var(--rm-error)"
                                   >${msg("Done!")}</span
                                 >
                               `
@@ -2411,47 +2174,28 @@ export class UnifiedApp extends LitElement {
       height: 100vh;
       height: calc(var(--vh, 1vh) * 100);
       max-height: -webkit-fill-available;
-      --rm-bg-main: #fafbfc;
-      --rm-bg-surface: #ffffff;
-      --rm-bg-elevated: #ffffff;
-      --rm-text: #424242;
-      --rm-text-secondary: #757575;
-      --rm-text-muted: #9e9e9e;
-      --rm-accent: #9fa8da;
-      --rm-accent-soft: rgba(159, 168, 218, 0.15);
-      --rm-border: #e8eaf6;
-      --rm-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      --rm-radius: 12px;
-      --rm-radius-sm: 8px;
-      --rm-font-size-base: 15px;
-      --rm-grid-columns: repeat(3, minmax(0, 1fr));
-      font-size: var(--rm-font-size-base);
-    }
-
-    :host([glass-wave]) {
-      color-scheme: light;
-      --rm-dialog-bg: #f9efda;
-      --rm-success: #326044;
-      --rm-primary: #416f8f;
-      --rm-accent-text: #fff;
-      --rm-danger: #983d25;
-      --rm-touch-target: 44px;
-      --rm-warning: #765600;
-      --rm-error: #983d25;
-      --rm-disabled-bg: #e3ddd1;
-      --rm-disabled-text: #53666e;
-      --rm-disabled-opacity: 1;
+      --rm-bg-main: #f7f4ed;
+      --rm-bg-surface: rgba(255, 252, 246, 0.96);
+      --rm-bg-elevated: #fffdf8;
+      --rm-text: #233b47;
+      --rm-text-secondary: #4c626c;
+      --rm-text-muted: #536873;
+      --rm-accent: #326382;
+      --rm-accent-soft: #e2edf1;
+      --rm-border: #c6d1d0;
+      --rm-shadow: 0 8px 28px rgba(35, 59, 71, 0.08);
       --rm-radius: 18px;
       --rm-radius-sm: 12px;
+      --rm-font-size-base: 16px;
+      --rm-grid-columns: repeat(3, minmax(0, 1fr));
+      font-size: var(--rm-font-size-base);
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
-    :host([glass-wave]) ha-card.rm-card {
-      border: 1px solid var(--rm-border);
-      border-radius: 18px;
-      box-shadow: var(--rm-shadow);
-    }
-    :host([glass-wave]) button,
-    :host([glass-wave]) select {
-      min-height: 44px;
+
+    button,
+    select {
+      min-height: var(--rm-touch-target, 44px);
     }
 
     ha-card {
@@ -2466,7 +2210,9 @@ export class UnifiedApp extends LitElement {
     }
     ha-card.rm-card {
       background: var(--rm-bg-main);
-      border-radius: 0;
+      border: 1px solid var(--rm-border);
+      border-radius: var(--rm-radius-lg, 24px);
+      box-shadow: var(--rm-shadow);
       overflow: hidden;
       display: flex;
       flex-direction: row;
@@ -2479,11 +2225,13 @@ export class UnifiedApp extends LitElement {
     /* ── Sidebar ─────────────────────────────── */
 
     .rm-sidebar {
-      width: 200px;
-      min-width: 200px;
+      width: 216px;
+      min-width: 216px;
       display: flex;
       flex-direction: column;
-      background: var(--rm-bg-surface);
+      background:
+        linear-gradient(var(--rm-glass-highlight), transparent),
+        var(--rm-bg-surface);
       border-right: 1px solid var(--rm-border);
       overflow: hidden;
       transition:
@@ -2501,7 +2249,7 @@ export class UnifiedApp extends LitElement {
     }
 
     .sb-top {
-      padding: 12px 8px 8px;
+      padding: 20px 12px 12px;
       flex-shrink: 0;
     }
 
@@ -2517,8 +2265,9 @@ export class UnifiedApp extends LitElement {
       align-items: center;
       gap: 8px;
       font-weight: 700;
-      font-size: 15px;
-      color: var(--rm-accent);
+      font-size: 1em;
+      color: var(--rm-text);
+      letter-spacing: -0.025em;
       overflow: hidden;
     }
     .sb-logo ha-icon {
@@ -2569,7 +2318,7 @@ export class UnifiedApp extends LitElement {
       border: none;
       outline: none;
       color: var(--rm-text);
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       padding: 7px 0;
     }
     .sb-search-input::placeholder {
@@ -2597,8 +2346,8 @@ export class UnifiedApp extends LitElement {
       background: var(--rm-accent);
       color: var(--rm-accent-text, #fff);
       border: none;
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: var(--rm-radius-sm);
+      font-size: var(--rm-font-size-sm);
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.15s;
@@ -2634,7 +2383,7 @@ export class UnifiedApp extends LitElement {
     .sb-nav {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 6px 4px;
+      padding: 8px 10px 12px;
       scrollbar-width: none;
     }
     .sb-nav::-webkit-scrollbar {
@@ -2642,7 +2391,7 @@ export class UnifiedApp extends LitElement {
     }
 
     .sb-bottom {
-      padding: 4px 6px 12px;
+      padding: 12px 10px 16px;
       border-top: 1px solid var(--rm-border);
     }
 
@@ -2654,8 +2403,8 @@ export class UnifiedApp extends LitElement {
       padding: 9px 10px;
       background: none;
       border: none;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: var(--rm-radius-sm);
+      font-size: var(--rm-font-size-sm);
       color: var(--rm-text-secondary);
       cursor: pointer;
       text-align: left;
@@ -2691,7 +2440,7 @@ export class UnifiedApp extends LitElement {
       background: var(--rm-accent);
       color: var(--rm-accent-text, #fff);
       border-radius: 10px;
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 700;
       padding: 1px 6px;
       min-width: 18px;
@@ -2702,7 +2451,7 @@ export class UnifiedApp extends LitElement {
       top: 4px;
       right: 4px;
       margin-left: 0;
-      font-size: 9px;
+      font-size: var(--rm-font-size-xs);
       padding: 1px 4px;
     }
 
@@ -2718,9 +2467,10 @@ export class UnifiedApp extends LitElement {
 
     .rm-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 16px;
+      padding: 12px 20px;
       border-bottom: 1px solid var(--rm-border);
       background: var(--rm-bg-surface);
       flex-shrink: 0;
@@ -2740,14 +2490,17 @@ export class UnifiedApp extends LitElement {
     }
     .rm-header-right {
       flex-shrink: 0;
+      flex-wrap: wrap;
+      max-width: 100%;
+      margin-left: auto;
     }
 
     .rm-title {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 17px;
-      font-weight: 600;
+      font-size: 1.125em;
+      font-weight: 700;
       color: var(--rm-text);
       overflow: hidden;
       white-space: nowrap;
@@ -2771,22 +2524,27 @@ export class UnifiedApp extends LitElement {
       align-items: center;
     }
     .hdr-star {
-      font-size: 18px;
-      color: var(--rm-border, rgba(0, 0, 0, 0.2));
+      font-size: 20px;
+      width: var(--rm-touch-target, 44px);
+      padding: 0;
+      border: none;
+      border-radius: var(--rm-radius-sm);
+      background: transparent;
+      color: var(--rm-text-secondary);
       line-height: 1;
       cursor: pointer;
       transition:
         color 0.1s,
         transform 0.1s;
-      -webkit-text-stroke: 1px rgba(200, 150, 0, 0.3);
+      -webkit-text-stroke: 1px currentColor;
     }
     .hdr-star:hover {
       transform: scale(1.2);
-      color: #f5a623;
+      color: var(--rm-warning);
     }
     .hdr-star.filled {
-      color: #f5a623;
-      -webkit-text-stroke: 1px #c47f0a;
+      color: var(--rm-warning);
+      -webkit-text-stroke: 1px currentColor;
     }
 
     /* Timer pills */
@@ -2796,6 +2554,12 @@ export class UnifiedApp extends LitElement {
       gap: 4px;
       cursor: pointer;
       padding: 2px;
+      background: transparent;
+      border: none;
+      border-radius: var(--rm-radius-sm);
+      min-width: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
     .timer-pill {
       display: flex;
@@ -2805,18 +2569,20 @@ export class UnifiedApp extends LitElement {
       color: var(--rm-accent);
       border-radius: 10px;
       padding: 3px 8px;
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 700;
       white-space: nowrap;
     }
     .timer-pill.paused {
-      opacity: 0.6;
+      background: var(--rm-bg-elevated);
+      color: var(--rm-text-secondary);
+      border: 1px dashed var(--rm-border-strong);
     }
     .timer-pill ha-icon {
       --mdc-icon-size: 12px;
     }
     .timer-more {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs);
       color: var(--rm-text-secondary);
       padding: 0 4px;
     }
@@ -2835,8 +2601,8 @@ export class UnifiedApp extends LitElement {
       border: none;
       cursor: pointer;
       color: var(--rm-text-secondary);
-      width: 34px;
-      height: 34px;
+      width: var(--rm-touch-target, 44px);
+      height: var(--rm-touch-target, 44px);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -2848,7 +2614,7 @@ export class UnifiedApp extends LitElement {
       flex-shrink: 0;
     }
     .icon-btn:hover {
-      background: var(--rm-border);
+      background: var(--rm-accent-soft);
       color: var(--rm-text);
     }
     .icon-btn:disabled {
@@ -2870,7 +2636,7 @@ export class UnifiedApp extends LitElement {
       border-radius: var(--rm-radius-sm);
       padding: 8px 16px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm);
       font-weight: 500;
     }
 
@@ -2893,11 +2659,11 @@ export class UnifiedApp extends LitElement {
     }
     .rm-error ha-icon {
       --mdc-icon-size: 48px;
-      color: var(--error-color, #cf6679);
+      color: var(--rm-error);
     }
     .rm-error p {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm);
     }
 
     /* ── Timers view ─────────────────────────── */
@@ -2919,7 +2685,7 @@ export class UnifiedApp extends LitElement {
       padding: 40px 0 24px;
       color: var(--rm-text-secondary);
       text-align: center;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm);
     }
     .timer-empty ha-icon {
       --mdc-icon-size: 48px;
@@ -2929,7 +2695,7 @@ export class UnifiedApp extends LitElement {
       margin: 0;
     }
     .timer-empty-hint {
-      font-size: 12px !important;
+      font-size: var(--rm-font-size-xs) !important;
       color: var(--rm-text-muted) !important;
     }
 
@@ -2954,7 +2720,7 @@ export class UnifiedApp extends LitElement {
       box-sizing: border-box;
     }
     .timer-card-name {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 600;
       color: var(--rm-text);
       text-align: center;
@@ -2967,8 +2733,8 @@ export class UnifiedApp extends LitElement {
       background: none;
       border: 1px solid var(--rm-border);
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
+      width: var(--rm-touch-target, 44px);
+      height: var(--rm-touch-target, 44px);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -2987,9 +2753,9 @@ export class UnifiedApp extends LitElement {
       color: var(--rm-accent);
     }
     .timer-ctrl-btn.danger:hover {
-      background: rgba(207, 102, 121, 0.12);
-      color: var(--error-color, #cf6679);
-      border-color: var(--error-color, #cf6679);
+      background: var(--rm-error-soft);
+      color: var(--rm-error);
+      border-color: var(--rm-error);
     }
 
     /* Preset timer grid: square arc tiles */
@@ -3013,7 +2779,7 @@ export class UnifiedApp extends LitElement {
       box-sizing: border-box;
     }
     .timer-preset-card.alarming {
-      border-color: var(--error-color, #cf6679);
+      border-color: var(--rm-error);
       animation: alarm-pulse-border 0.8s ease-in-out infinite alternate;
     }
     @keyframes alarm-pulse-border {
@@ -3052,7 +2818,7 @@ export class UnifiedApp extends LitElement {
       font-variant-numeric: tabular-nums;
     }
     .preset-arc-name {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 600;
       color: var(--rm-text);
       text-align: center;
@@ -3072,7 +2838,7 @@ export class UnifiedApp extends LitElement {
       border: 1px solid var(--rm-border);
       border-radius: 10px;
       padding: 2px 6px;
-      font-size: 10px;
+      font-size: var(--rm-font-size-xs);
       color: var(--rm-text-secondary);
       cursor: pointer;
       transition: all 0.15s;
@@ -3083,18 +2849,18 @@ export class UnifiedApp extends LitElement {
       border-color: var(--rm-accent);
     }
     .preset-arc-btn.stop {
-      color: var(--error-color, #cf6679);
-      border-color: var(--error-color, #cf6679);
+      color: var(--rm-error);
+      border-color: var(--rm-error);
     }
     .preset-arc-btn.stop:hover {
-      background: rgba(207, 102, 121, 0.12);
+      background: var(--rm-error-soft);
     }
     .preset-arc-btn.play {
       background: var(--rm-accent);
       color: var(--rm-accent-text, #fff);
       border-color: var(--rm-accent);
       padding: 3px 12px;
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs);
       border-radius: 12px;
     }
     .preset-arc-btn.play:hover {
@@ -3115,7 +2881,8 @@ export class UnifiedApp extends LitElement {
       z-index: 1;
     }
     .timer-preset-card:hover .preset-remove,
-    .timer-card:hover .preset-remove {
+    .timer-card:hover .preset-remove,
+    .preset-remove:focus-visible {
       opacity: 1;
     }
     .preset-remove ha-icon {
@@ -3136,7 +2903,7 @@ export class UnifiedApp extends LitElement {
       justify-content: space-between;
     }
     .timer-add-title {
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 600;
       color: var(--rm-text-muted);
       text-transform: uppercase;
@@ -3150,13 +2917,19 @@ export class UnifiedApp extends LitElement {
       border-radius: 20px;
       border: 1px solid var(--rm-border);
       cursor: pointer;
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs);
       color: var(--rm-text-muted);
       transition: all 0.15s;
       user-select: none;
     }
     .timer-global-toggle input {
-      display: none;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--rm-accent);
+    }
+    .timer-global-toggle:focus-within {
+      outline: 3px solid var(--rm-focus);
+      outline-offset: 2px;
     }
     .timer-global-toggle ha-icon {
       --mdc-icon-size: 14px;
@@ -3172,10 +2945,9 @@ export class UnifiedApp extends LitElement {
       gap: 5px;
     }
     .timer-add-group-label {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 500;
       color: var(--rm-text-muted);
-      opacity: 0.7;
     }
     .timer-add-row {
       display: flex;
@@ -3189,7 +2961,7 @@ export class UnifiedApp extends LitElement {
       border-radius: 8px;
       color: var(--rm-text);
       padding: 6px 9px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       font-family: inherit;
       min-width: 0;
     }
@@ -3217,7 +2989,7 @@ export class UnifiedApp extends LitElement {
       color: var(--rm-text);
       padding: 8px 14px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm);
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -3283,7 +3055,7 @@ export class UnifiedApp extends LitElement {
     }
 
     .alarm-sub {
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       color: var(--rm-text-secondary);
       margin-bottom: 8px;
     }
@@ -3302,7 +3074,7 @@ export class UnifiedApp extends LitElement {
       color: var(--rm-text);
       padding: 10px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       font-weight: 500;
       transition: background 0.15s;
     }
@@ -3319,9 +3091,9 @@ export class UnifiedApp extends LitElement {
       border-color: var(--rm-accent);
     }
     .alarm-btn.stop {
-      background: var(--error-color, #cf6679);
-      color: #fff;
-      border-color: var(--error-color, #cf6679);
+      background: var(--rm-error);
+      color: var(--rm-error-text);
+      border-color: var(--rm-error);
       grid-column: 1 / -1;
     }
     .alarm-btn.stop:hover {
@@ -3339,7 +3111,7 @@ export class UnifiedApp extends LitElement {
       border-radius: 8px;
       color: var(--rm-text);
       padding: 8px 10px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       font-family: inherit;
     }
     .alarm-custom-input:focus {
@@ -3434,7 +3206,7 @@ export class UnifiedApp extends LitElement {
       border: none;
       cursor: pointer;
       color: var(--rm-text-muted);
-      font-size: 10px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 500;
       padding: 6px 4px;
       position: relative;
@@ -3474,8 +3246,8 @@ export class UnifiedApp extends LitElement {
       right: calc(50% - 20px);
       background: var(--rm-accent);
       color: var(--rm-accent-text, #fff);
-      border-radius: 8px;
-      font-size: 9px;
+      border-radius: var(--rm-radius-sm);
+      font-size: var(--rm-font-size-xs);
       font-weight: 700;
       padding: 1px 4px;
       min-width: 14px;
@@ -3528,7 +3300,7 @@ export class UnifiedApp extends LitElement {
     .rm-mm-title {
       flex: 1;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 1em;
       color: var(--rm-text);
     }
 
@@ -3548,7 +3320,7 @@ export class UnifiedApp extends LitElement {
       border: none;
       cursor: pointer;
       color: var(--rm-text-secondary);
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm);
       text-align: left;
       transition:
         background 0.12s,
@@ -3570,13 +3342,37 @@ export class UnifiedApp extends LitElement {
 
     .rm-mm-soon {
       margin-left: auto;
-      font-size: 10px;
+      font-size: var(--rm-font-size-xs);
       font-weight: 700;
       background: var(--rm-accent-soft);
       color: var(--rm-accent);
       border-radius: 6px;
       padding: 2px 6px;
     }
+    @media (hover: none) {
+      .preset-remove {
+        opacity: 1;
+      }
+    }
+    @media (max-width: 480px) {
+      .rm-header {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+      }
+      .rm-header-right {
+        max-width: 100%;
+        flex-wrap: wrap;
+        margin-left: auto;
+      }
+      .rm-title {
+        font-size: 1em;
+      }
+      .rm-title ha-icon {
+        display: none;
+      }
+    }
+
+    ${componentStyles}
   `;
 }
 

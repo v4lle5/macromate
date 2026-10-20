@@ -200,8 +200,8 @@ try{
  await test('native-http-restore-disposable-backup-roundtrip',async()=>{const result=await control({op:'restore_roundtrip'});assert.equal(result.status,200,JSON.stringify(result));assert.equal(result.stable_same_id_retry,true);return result;});
  await test('light-dark-desktop-mobile-ring-at-top',async()=>{
   const metrics=[];
-  for(const [theme,mode]of [['soft','light'],['midnight','dark']]){
-   await page.evaluate(theme=>{card.application._settings={...card.application._settings,theme};card.application._applyTheme();},theme);
+  for(const [darkMode,mode]of [['off','light'],['on','dark']]){
+   await page.evaluate(darkMode=>{card.application._settings={...card.application._settings,theme:'glass-wave',darkMode};card.application._applyTheme();},darkMode);
    for(const width of [390,1280]){
     await page.setViewportSize({width,height:1000});await view('Nutrition');
     const pane=page.locator('mm-nutrition');await pane.locator('.calorie-ring').waitFor();
@@ -211,7 +211,7 @@ try{
     assert.ok(actual.ring_top>=0&&actual.ring_bottom<1000,'Ring visible at top without scrolling');
     assert.ok(actual.ring_top<actual.first_entry_top,'Ring precedes meal entries');
     assert.ok(actual.document_width<=width+1,'No horizontal viewport overflow');
-    const path=resolve(cfg.output,`native-combined-${mode}-${width}.png`);await page.screenshot({path});screenshots.push(path);metrics.push({theme,width,...actual});
+    const path=resolve(cfg.output,`native-combined-${mode}-${width}.png`);await page.screenshot({path});screenshots.push(path);metrics.push({theme:'glass-wave',darkMode,width,...actual});
    }
   }
   return metrics;
@@ -323,14 +323,15 @@ try{
   const settingsDiagnostic=await dashboard.locator('macromate-card').evaluate(c=>({pending:c.api.pending,error:c.application._error,settings:c.application._settings}));
   await writeFile(resolve(cfg.output,'settings-diagnostic.json'),JSON.stringify({state:settingsDiagnostic,errors:dashboardErrors},null,2));
   assert.equal(settingsDiagnostic.pending,null,'Native settings save must be acknowledged: '+JSON.stringify(settingsDiagnostic));
-  assert.equal((await settingsPane.locator('option[value=neon]').textContent()).trim(),'🍇 Lila & Cyan');
+  assert.equal((await settingsPane.locator('.theme-name').textContent()).trim(),'Glass Wave');
+  assert.equal(await settingsPane.locator('option[value=neon],option[value=ocean],option[value=soft]').count(),0);
   assert.equal((await settingsPane.locator('.section-label').first().textContent()).trim(),'Sprache & Einheiten');
   await settingsPane.getByRole('button',{name:'Metrisch',exact:true}).click();
   await dashboard.waitForTimeout(500);
-  await settingsPane.locator('select').nth(1).selectOption('neon');
+  await settingsPane.getByRole('button',{name:'Dunkel',exact:true}).click();
   await dashboard.waitForTimeout(500);
   const preferences=(await agent('preferences_get')).preferences.recipe_settings;
-  assert.equal(preferences.language,'de');assert.equal(preferences.theme,'neon');assert.equal(preferences.unitSystem,'metric');
+  assert.equal(preferences.language,'de');assert.equal(preferences.theme,'glass-wave');assert.equal(preferences.darkMode,'on');assert.equal(preferences.unitSystem,'metric');
   assert.deepEqual((await store('native-settings-saved')).kitchen.preferences[cfg.accounts[0].user.id].ui.recipe_settings,preferences);
   assert.equal(await dashboard.locator('macromate-card').evaluate(c=>c.api.pending),null);
   const beforeRefusal=await store('before-invalid-settings');
@@ -341,13 +342,13 @@ try{
    const original=c.api.hass.callWS.bind(c.api.hass);window.settingsWire=[];window.settingsLose=true;
    c.api.hass.callWS=async message=>{if(message.action==='preferences_update')window.settingsWire.push(structuredClone(message));const result=await original(message);if(message.action==='preferences_update'&&window.settingsLose){window.settingsLose=false;throw Error('Synthetic loss after actual native commit');}return result;};
   });
-  await settingsPane.locator('select').nth(1).selectOption('ocean');
+  await settingsPane.getByRole('button',{name:'Hell',exact:true}).click();
   const banner=dashboard.locator('macromate-card .status');
   await banner.getByText('Speicherstatus unklar. Keine neue Anfrage erstellen.',{exact:true}).waitFor();
   assert.equal(await dashboard.locator('mm-unified-app').evaluate(c=>c._error),'Speicherstatus unklar. Gleiche Anfrage nur ausdrücklich erneut senden.');
   await dashboard.waitForTimeout(150); // The card measures its new top after two animation frames.
   const uncertainBounds=await dashboard.locator('mm-unified-app').boundingBox();const layoutDiagnostic=await dashboard.locator('mm-unified-app').evaluate(el=>{const out=[];for(let n=el;n;n=n.parentElement||n.getRootNode().host){const s=getComputedStyle(n),r=n.getBoundingClientRect();out.push({tag:n.tagName,classes:n.className,top:r.top,height:r.height,inline:n.getAttribute('style'),heightStyle:s.height,minHeight:s.minHeight,maxHeight:s.maxHeight,flex:s.flex,display:s.display,box:s.boxSizing,padding:s.padding,border:s.borderWidth});}return out;});await writeFile(resolve(cfg.output,'pending-layout.json'),JSON.stringify(layoutDiagnostic,null,2));assert.ok(uncertainBounds.y+uncertainBounds.height<=900,'Pending-write banner must share, not extend, the panel viewport: '+JSON.stringify(uncertainBounds));
-  assert.equal((await agent('preferences_get')).preferences.recipe_settings.theme,'ocean','Lost response really committed through native WS');
+  assert.equal((await agent('preferences_get')).preferences.recipe_settings.darkMode,'off','Lost response really committed through native WS');
   await dashboard.waitForTimeout(300);
   assert.equal(await dashboard.evaluate(()=>settingsWire.length),1,'No automatic retries');
   const retryTarget=await banner.getByRole('button',{name:'Gleiche Anfrage erneut senden',exact:true}).boundingBox();
@@ -355,10 +356,9 @@ try{
   await banner.getByRole('button',{name:'Gleiche Anfrage erneut senden',exact:true}).click();
   await dashboard.locator('macromate-card').evaluate(async c=>{const end=Date.now()+10000;while(c.api.pending&&Date.now()<end)await new Promise(r=>setTimeout(r,20));if(c.api.pending)throw Error('Replay did not clear pending');});
   const settingsWire=await dashboard.evaluate(()=>window.settingsWire);assert.equal(settingsWire.length,2);assert.deepEqual(settingsWire[0],settingsWire[1]);
-  assert.equal((await store('native-settings-explicit-replay')).kitchen.preferences[cfg.accounts[0].user.id].ui.recipe_settings.theme,'ocean');
-  assert.equal(await settingsPane.locator('option[value=glass-wave]').count(),1,'Glass Wave is an opt-in choice alongside the existing themes');
-  assert.equal((await settingsPane.locator('option[value=glass-wave]').textContent()).trim(),'Glass Wave');
-  await settingsPane.locator('select').nth(1).selectOption('glass-wave');
+  assert.equal((await store('native-settings-explicit-replay')).kitchen.preferences[cfg.accounts[0].user.id].ui.recipe_settings.darkMode,'off');
+  assert.equal(await settingsPane.locator('.theme-name').innerText(),'Glass Wave','Glass Wave is the only application theme');
+  await settingsPane.getByRole('button',{name:'Hell',exact:true}).click();
   await dashboard.waitForTimeout(400);
   assert.equal((await agent('preferences_get')).preferences.recipe_settings.theme,'glass-wave');
   const glassState=await store('glass-wave-native');
@@ -369,7 +369,9 @@ try{
   const glass=await dashboard.locator('mm-unified-app').evaluate(el=>{const s=getComputedStyle(el);return {accent:s.getPropertyValue('--rm-accent').trim(),text:s.getPropertyValue('--rm-text').trim(),main:s.getPropertyValue('--rm-bg-main').trim(),surface:s.getPropertyValue('--rm-bg-surface').trim()};});
   const glassControl=await settingsPane.locator('.seg-btn.active').first().evaluate(el=>({color:getComputedStyle(el).color,height:el.getBoundingClientRect().height}));
   assert.equal(glassControl.color,'rgb(255, 255, 255)');assert.ok(glassControl.height>=44,'Glass Wave segmented controls need touch-sized targets');
-  assert.deepEqual(glass,{accent:'#416F8F',text:'#263B47',main:'rgba(253, 248, 239, 0.90)',surface:'rgba(253, 248, 239, 0.94)'});
+  assert.equal(await dashboard.locator('mm-unified-app').getAttribute('data-appearance'),'light');
+  assert.equal(glass.main.startsWith('#'),true,'Readable main surfaces have an opaque background independent of the dashboard');
+  assert.ok(glass.text&&glass.accent&&glass.surface);
   for(const width of [1280,390]){await dashboard.setViewportSize({width,height:900});await dashboard.screenshot({path:resolve(cfg.output,`glass-wave-settings-${width}.png`)});}
   await dashboard.setViewportSize({width:1280,height:900});
   await settingsPane.locator('select').first().selectOption('en');

@@ -45,7 +45,7 @@ The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tes
 
 ## Dashboard card
 
-The local dashboard card opens the combined recipe, planner, timer and nutrition workspace. The optional **Glass Wave** theme is available in Settings → Appearance → Colour theme; existing themes and saved choices stay unchanged. It uses translucent warm cards without blur, with paper-colored dialogs and touch-sized controls. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
+The local dashboard card opens the combined recipe, planner, timer and nutrition workspace. **Glass Wave** is the single application theme, with light, dark and automatic appearance in Settings → Appearance. Earlier palette choices migrate to Glass Wave while retaining the other account preferences. Shared typography, readable text colors, opaque reading surfaces and touch-sized controls keep recipes, planning, timers and nutrition consistent. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
 
 The integration loads the card module automatically, just like Recipe Manager. No manual resource URL or YAML is needed for a normal storage dashboard:
 

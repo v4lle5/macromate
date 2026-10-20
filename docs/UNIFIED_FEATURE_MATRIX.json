@@ -2665,7 +2665,7 @@
     {
       "id": "recipe:ui.themes",
       "project": "recipe",
-      "feature": "Farbschemata, Dark-Mode, Schrift und Grid-Einstellungen",
+      "feature": "Glass Wave, Hell-/Dunkel-/Systemmodus, Schrift und Grid-Einstellungen",
       "upstream_status": "implemented",
       "upstream_sources": [
         {
@@ -2679,17 +2679,23 @@
       "upstream_commands": [],
       "integration_status": "partial_local_evidence",
       "implementation": [
-        "frontend/unified-src/components/rm-settings-view.js"
+        "frontend/unified-src/components/rm-settings-view.js",
+        "frontend/unified-src/services/theme.js"
       ],
       "executable_evidence": [
         {
           "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "eight palettes and seven locales",
+          "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
           "tier": "chromium-synthetic"
         },
         {
           "command": "node tests/frontend/macromate-unified-workflows.mjs",
-          "assertion": "all-theme-main-text-contrast",
+          "assertion": "glass-wave-rendered-settings-contrast",
+          "tier": "chromium-synthetic"
+        },
+        {
+          "command": "node tests/frontend/macromate-unified-contrast.mjs",
+          "assertion": "Rendered Glass Wave labels, placeholders and controls across core views meet 4.5:1 text contrast",
           "tier": "chromium-synthetic"
         }
       ],
@@ -2721,12 +2727,12 @@
       "executable_evidence": [
         {
           "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "eight palettes and seven locales",
+          "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
           "tier": "chromium-synthetic"
         },
         {
           "command": "node tests/frontend/macromate-unified-workflows.mjs",
-          "assertion": "all-theme-main-text-contrast",
+          "assertion": "glass-wave-rendered-settings-contrast",
           "tier": "chromium-synthetic"
         }
       ],
@@ -2764,12 +2770,12 @@
         },
         {
           "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "eight palettes and seven locales",
+          "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
           "tier": "chromium-synthetic"
         },
         {
           "command": "node tests/frontend/macromate-unified-workflows.mjs",
-          "assertion": "all-theme-main-text-contrast",
+          "assertion": "glass-wave-rendered-settings-contrast",
           "tier": "chromium-synthetic"
         }
       ],
@@ -6625,12 +6631,12 @@
       "executable_evidence": [
         {
           "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "eight palettes and seven locales",
+          "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
           "tier": "chromium-synthetic"
         },
         {
           "command": "node tests/frontend/macromate-unified-workflows.mjs",
-          "assertion": "all-theme-main-text-contrast",
+          "assertion": "glass-wave-rendered-settings-contrast",
           "tier": "chromium-synthetic"
         }
       ],

@@ -1,11 +1,13 @@
 /**
  * Recipe Manager — Settings panel.
- * Tabs: Appearance (theme, dark, font, grid, nav) | Advanced (sound, wake lock, units) | Sync | Help
+ * Tabs: Appearance (Glass Wave, dark, font, grid, nav) | Advanced (sound, wake lock, units) | Sync | Help
  */
 import { LitElement, html, css } from "lit";
 import { msg, str } from "@lit/localize";
 const CARD_VERSION = "unified";
 import { isWakeLockSupported } from "../services/wake-lock.js";
+import { normalizeSettings } from "../services/theme.js";
+import { componentStyles } from "./component-styles.js";
 
 const LANGUAGES = [
   ["en", "English"],
@@ -82,7 +84,7 @@ class RmSettingsView extends LitElement {
   }
 
   _update(patch) {
-    const next = { ...this.settings, ...patch };
+    const next = normalizeSettings({ ...this.settings, ...patch });
     this.dispatchEvent(
       new CustomEvent("rm-settings-change", {
         detail: { settings: next },
@@ -93,7 +95,7 @@ class RmSettingsView extends LitElement {
   }
 
   render() {
-    const s = this.settings;
+    const s = normalizeSettings(this.settings);
     return html`
       <div class="settings-root">
         <div class="tab-bar">
@@ -106,6 +108,7 @@ class RmSettingsView extends LitElement {
             ([id, icon, label]) => html`
               <button
                 class="tab-item ${this._activeTab === id ? "active" : ""}"
+                aria-pressed=${this._activeTab === id}
                 @click=${() => {
                   this._activeTab = id;
                 }}
@@ -127,14 +130,6 @@ class RmSettingsView extends LitElement {
   }
 
   _renderAppearance(s) {
-    const alwaysDark =
-      s.theme === "midnight" || s.theme === "ember" || s.theme === "neon";
-    const alwaysLight =
-      s.theme === "arctic" ||
-      s.theme === "meadow" ||
-      s.theme === "ocean" ||
-      s.theme === "glass-wave";
-    const noToggle = alwaysDark || alwaysLight;
     return html`
       <!-- ── Language & Units ── -->
       <div class="section">
@@ -143,7 +138,8 @@ class RmSettingsView extends LitElement {
         <div class="setting-row">
           <span class="setting-name">${msg("Language")}</span>
           <select
-            class="theme-select"
+            class="setting-select"
+            aria-label=${msg("Language")}
             @change=${(e) => this._update({ language: e.target.value })}
           >
             ${LANGUAGES.map(
@@ -171,6 +167,7 @@ class RmSettingsView extends LitElement {
                   class="seg-btn ${(s.unitSystem ?? "imperial") === val
                     ? "active"
                     : ""}"
+                  aria-pressed=${(s.unitSystem ?? "imperial") === val}
                   @click=${() => this._update({ unitSystem: val })}
                 >
                   ${lbl}
@@ -185,80 +182,31 @@ class RmSettingsView extends LitElement {
       <div class="section">
         <div class="section-label">${msg("Theme")}</div>
 
-        <div class="setting-row">
-          <span class="setting-name">${msg("Colour theme")}</span>
-          <select
-            class="theme-select"
-            @change=${(e) => this._update({ theme: e.target.value })}
-          >
-            <optgroup label="${msg("Adaptive")}">
-              <option value="soft" ?selected=${s.theme === "soft" || !s.theme}>
-                ${msg("🎨 Soft Pastel")}
-              </option>
-              <option value="blossom" ?selected=${s.theme === "blossom"}>
-                ${msg("🌸 Blossom")}
-              </option>
-            </optgroup>
-            <optgroup label="${msg("Light Themes")}">
-              <option value="glass-wave" ?selected=${s.theme === "glass-wave"}>
-                Glass Wave
-              </option>
-              <option value="arctic" ?selected=${s.theme === "arctic"}>
-                ${msg("🧊 Arctic")}
-              </option>
-              <option value="meadow" ?selected=${s.theme === "meadow"}>
-                ${msg("🌿 Meadow")}
-              </option>
-              <option value="ocean" ?selected=${s.theme === "ocean"}>
-                ${msg("🌊 Ocean Blue")}
-              </option>
-            </optgroup>
-            <optgroup label="${msg("Dark Themes")}">
-              <option value="midnight" ?selected=${s.theme === "midnight"}>
-                ${msg("🌙 Midnight Ocean")}
-              </option>
-              <option value="ember" ?selected=${s.theme === "ember"}>
-                ${msg("🔥 Ember")}
-              </option>
-              <option value="neon" ?selected=${s.theme === "neon"}>
-                ${msg("🍇 Purple & Cyan")}
-              </option>
-            </optgroup>
-          </select>
+        <div class="theme-identity">
+          <ha-icon icon="mdi:waves"></ha-icon>
+          <span class="theme-name">Glass Wave</span>
         </div>
 
-        ${noToggle
-          ? html`
-              <div class="setting-row muted-row">
-                <span class="setting-name">${msg("Dark mode")}</span>
-                <span class="muted-note"
-                  >${alwaysDark
-                    ? msg("Always dark for this theme")
-                    : msg("Always light for this theme")}</span
+        <div class="setting-row">
+          <span class="setting-name">${msg("Dark mode")}</span>
+          <div class="btn-group" role="group" aria-label=${msg("Dark mode")}>
+            ${[
+              ["off", msg("Light")],
+              ["system", msg("Auto")],
+              ["on", msg("Dark")],
+            ].map(
+              ([val, lbl]) => html`
+                <button
+                  class="seg-btn ${s.darkMode === val ? "active" : ""}"
+                  aria-pressed=${s.darkMode === val}
+                  @click=${() => this._update({ darkMode: val })}
                 >
-              </div>
-            `
-          : html`
-              <div class="setting-row">
-                <span class="setting-name">${msg("Dark mode")}</span>
-                <div class="btn-group">
-                  ${[
-                    ["off", msg("Light")],
-                    ["system", msg("Auto")],
-                    ["on", msg("Dark")],
-                  ].map(
-                    ([val, lbl]) => html`
-                      <button
-                        class="seg-btn ${s.darkMode === val ? "active" : ""}"
-                        @click=${() => this._update({ darkMode: val })}
-                      >
-                        ${lbl}
-                      </button>
-                    `,
-                  )}
-                </div>
-              </div>
-            `}
+                  ${lbl}
+                </button>
+              `,
+            )}
+          </div>
+        </div>
 
         <div class="setting-row">
           <span class="setting-name">${msg("Text size")}</span>
@@ -271,6 +219,7 @@ class RmSettingsView extends LitElement {
               ([val, lbl]) => html`
                 <button
                   class="seg-btn ${s.fontSize === val ? "active" : ""}"
+                  aria-pressed=${s.fontSize === val}
                   @click=${() => this._update({ fontSize: val })}
                 >
                   ${lbl}
@@ -292,6 +241,7 @@ class RmSettingsView extends LitElement {
               (n) => html`
                 <button
                   class="seg-btn ${s.columns === n ? "active" : ""}"
+                  aria-pressed=${s.columns === n}
                   @click=${() => this._update({ columns: n })}
                 >
                   ${n}
@@ -306,6 +256,7 @@ class RmSettingsView extends LitElement {
           <label class="toggle">
             <input
               type="checkbox"
+              aria-label=${msg("Favourites section")}
               ?checked=${s.showFavourites}
               @change=${(e) =>
                 this._update({ showFavourites: e.target.checked })}
@@ -326,6 +277,7 @@ class RmSettingsView extends LitElement {
               (n) => html`
                 <button
                   class="seg-btn ${(s.recentCount ?? 12) === n ? "active" : ""}"
+                  aria-pressed=${(s.recentCount ?? 12) === n}
                   @click=${() => this._update({ recentCount: n })}
                 >
                   ${n}
@@ -345,6 +297,7 @@ class RmSettingsView extends LitElement {
           <label class="toggle">
             <input
               type="checkbox"
+              aria-label=${msg("Meal planner")}
               ?checked=${s.showPlanner}
               @change=${(e) => this._update({ showPlanner: e.target.checked })}
             />
@@ -364,7 +317,8 @@ class RmSettingsView extends LitElement {
         <div class="setting-row">
           <span class="setting-name">${msg("Alarm sound")}</span>
           <select
-            class="theme-select"
+            class="setting-select"
+            aria-label=${msg("Alarm sound")}
             @change=${(e) => this._update({ timerSound: e.target.value })}
           >
             <option
@@ -446,6 +400,7 @@ class RmSettingsView extends LitElement {
           <label class="toggle">
             <input
               type="checkbox"
+              aria-label=${msg("Keep screen on while viewing a recipe")}
               ?checked=${s.keepScreenOn}
               @change=${(e) => this._update({ keepScreenOn: e.target.checked })}
             />
@@ -482,6 +437,7 @@ class RmSettingsView extends LitElement {
                         class="seg-btn ${(s.wakeLockDuration ?? 60) === n
                           ? "active"
                           : ""}"
+                        aria-pressed=${(s.wakeLockDuration ?? 60) === n}
                         @click=${() => this._update({ wakeLockDuration: n })}
                       >
                         ${n}m
@@ -512,6 +468,7 @@ class RmSettingsView extends LitElement {
           <label class="toggle">
             <input
               type="checkbox"
+              aria-label=${msg("Show metric conversion button")}
               ?checked=${s.showUnitConversion}
               @change=${(e) =>
                 this._update({ showUnitConversion: e.target.checked })}
@@ -541,6 +498,7 @@ class RmSettingsView extends LitElement {
                   class="seg-btn ${(s.slideshowInterval ?? 5) === n
                     ? "active"
                     : ""}"
+                  aria-pressed=${(s.slideshowInterval ?? 5) === n}
                   @click=${() => this._update({ slideshowInterval: n })}
                 >
                   ${n === 0 ? msg("Off") : `${n}s`}
@@ -664,8 +622,9 @@ class RmSettingsView extends LitElement {
 
         <a
           class="help-link"
-          href="https://github.com/thekiwismarthome/recipe-manager/wiki"
+          href="https://github.com/v4lle5/macromate#readme"
           target="_blank"
+          rel="noopener noreferrer"
         >
           <ha-icon icon="mdi:help-circle-outline"></ha-icon>
           <div class="help-link-content">
@@ -679,8 +638,9 @@ class RmSettingsView extends LitElement {
 
         <a
           class="help-link"
-          href="https://github.com/thekiwismarthome/recipe-manager/issues"
+          href="https://github.com/v4lle5/macromate/issues"
           target="_blank"
+          rel="noopener noreferrer"
         >
           <ha-icon icon="mdi:bug-outline"></ha-icon>
           <div class="help-link-content">
@@ -694,8 +654,9 @@ class RmSettingsView extends LitElement {
 
         <a
           class="help-link"
-          href="https://github.com/thekiwismarthome/recipe-manager"
+          href="https://github.com/v4lle5/macromate"
           target="_blank"
+          rel="noopener noreferrer"
         >
           <ha-icon icon="mdi:github"></ha-icon>
           <div class="help-link-content">
@@ -710,14 +671,14 @@ class RmSettingsView extends LitElement {
         <div class="section-label">${msg("About")}</div>
 
         <div class="setting-row">
-          <span class="setting-name">${msg("Recipe Manager")}</span>
+          <span class="setting-name">MacroMate</span>
           <span class="muted-note"
             >${msg(str`Integration version ${this._rmVersion}`)}</span
           >
         </div>
 
         <div class="setting-row">
-          <span class="setting-name">${msg("RM Card")}</span>
+          <span class="setting-name">MacroMate UI</span>
           <span class="muted-note"
             >${msg(str`Card version ${this._rmcVersion}`)}</span
           >
@@ -725,7 +686,11 @@ class RmSettingsView extends LitElement {
 
         <div class="setting-row">
           <span class="setting-name">${msg("Refresh versions")}</span>
-          <button class="seg-btn" @click=${() => this._fetchVersionsFromHacs()}>
+          <button
+            class="seg-btn"
+            aria-label=${msg("Refresh versions")}
+            @click=${() => this._fetchVersionsFromHacs()}
+          >
             <ha-icon icon="mdi:refresh"></ha-icon>
           </button>
         </div>
@@ -776,7 +741,7 @@ class RmSettingsView extends LitElement {
       border: none;
       border-bottom: 2px solid transparent;
       padding: 10px 14px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       font-weight: 500;
       color: var(--rm-text-secondary, #6b5c4a);
       cursor: pointer;
@@ -801,18 +766,41 @@ class RmSettingsView extends LitElement {
     .settings-body {
       flex: 1;
       overflow-y: auto;
-      padding-bottom: 24px;
+      padding: 8px 20px 32px;
+      background: var(--rm-bg-main);
     }
 
     .section {
-      margin-bottom: 8px;
+      max-width: 880px;
+      margin: 16px auto;
+      border: 1px solid var(--rm-border);
+      border-radius: var(--rm-radius);
+      background: var(--rm-bg-surface);
+      overflow: hidden;
+    }
+
+    .theme-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: var(--rm-accent);
+      background: var(--rm-accent-soft);
+      margin: 12px 20px 4px;
+      border-radius: var(--rm-radius-sm);
+    }
+    .theme-identity ha-icon {
+      --mdc-icon-size: 28px;
+    }
+    .theme-name {
+      font-size: 1.125em;
+      font-weight: 700;
     }
 
     .section-label {
-      font-size: 11px;
+      font-size: var(--rm-font-size-sm);
       font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      letter-spacing: 0.02em;
       color: var(--rm-text-muted, #a08060);
       padding: 16px 20px 6px;
     }
@@ -822,33 +810,37 @@ class RmSettingsView extends LitElement {
       align-items: center;
       justify-content: space-between;
       padding: 12px 20px;
-      border-bottom: 1px solid var(--rm-border, rgba(0, 0, 0, 0.08));
-      gap: 12px;
+      border-bottom: 1px solid var(--rm-border-subtle);
+      gap: 16px;
+    }
+    .setting-row:last-child {
+      border-bottom: none;
     }
     .setting-row.muted-row {
-      opacity: 0.5;
+      background: var(--rm-accent-soft);
     }
 
     .setting-name {
-      font-size: 15px;
-      font-weight: 500;
-      flex-shrink: 0;
+      font-size: 1em;
+      font-weight: 600;
+      flex-shrink: 1;
+      overflow-wrap: anywhere;
       color: var(--rm-text);
     }
 
     .setting-info {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
       min-width: 0;
     }
     .setting-hint {
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs);
       color: var(--rm-text-muted, #a08060);
     }
 
     .muted-note {
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       color: var(--rm-text-muted, #a08060);
     }
 
@@ -858,11 +850,11 @@ class RmSettingsView extends LitElement {
     }
     .backup-btn.done {
       background: var(--rm-success, #4caf50);
-      color: #fff;
+      color: var(--rm-success-text);
     }
     .backup-btn.error {
       background: var(--rm-danger, #e53935);
-      color: #fff;
+      color: var(--rm-danger-text);
     }
     .backup-btn.loading {
       opacity: 0.7;
@@ -873,7 +865,7 @@ class RmSettingsView extends LitElement {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 0;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--rm-border, rgba(0, 0, 0, 0.06));
       text-decoration: none;
       color: inherit;
@@ -893,33 +885,34 @@ class RmSettingsView extends LitElement {
     }
     .help-link-ext {
       --mdc-icon-size: 16px;
-      opacity: 0.4;
+      color: var(--rm-text-secondary);
     }
 
-    .theme-select {
+    .setting-select {
       background: var(--rm-bg-surface, #fff);
       color: var(--rm-text, #2d2016);
-      border: 1px solid var(--rm-border, rgba(0, 0, 0, 0.12));
+      border: 1px solid var(--rm-border-strong);
       border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 14px;
+      padding: 8px 12px;
+      font-size: var(--rm-font-size-sm);
       cursor: pointer;
       min-width: 160px;
-      flex-shrink: 0;
+      max-width: 100%;
+      flex-shrink: 1;
     }
 
     .btn-group {
       display: flex;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid var(--rm-border, rgba(0, 0, 0, 0.1));
-      flex-shrink: 0;
+      border: 1px solid var(--rm-border-strong);
+      flex-shrink: 1;
     }
     .seg-btn {
       background: transparent;
       border: none;
-      padding: 6px 14px;
-      font-size: 13px;
+      padding: 8px 14px;
+      font-size: var(--rm-font-size-sm);
       font-weight: 500;
       cursor: pointer;
       color: var(--rm-text-secondary, #6b5c4a);
@@ -941,12 +934,17 @@ class RmSettingsView extends LitElement {
       background: var(--rm-accent);
       color: var(--rm-accent-text, #111);
     }
-    .theme-select,
+    .tab-item,
+    .setting-select,
     .seg-btn,
+    .file-label,
     .toggle {
-      min-height: var(--rm-touch-target, auto);
+      min-height: var(--rm-touch-target, 44px);
     }
     @media (max-width: 480px) {
+      .settings-body {
+        padding: 4px 12px 24px;
+      }
       .setting-row {
         flex-wrap: wrap;
       }
@@ -954,9 +952,13 @@ class RmSettingsView extends LitElement {
         max-width: 100%;
         flex-wrap: wrap;
       }
+      .seg-btn {
+        flex: 1;
+        justify-content: center;
+      }
     }
     .seg-btn:hover:not(.active) {
-      background: var(--rm-border);
+      background: var(--rm-accent-soft);
       color: var(--rm-text);
     }
 
@@ -967,12 +969,19 @@ class RmSettingsView extends LitElement {
       flex-shrink: 0;
     }
     .toggle input {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+    .toggle input:focus-visible + .toggle-track {
+      outline: 3px solid var(--rm-focus);
+      outline-offset: 3px;
     }
     .toggle-track {
       width: 44px;
       height: 24px;
-      background: var(--rm-border, rgba(0, 0, 0, 0.15));
+      background: var(--rm-border-strong);
       border-radius: 12px;
       position: relative;
       transition: background 0.2s;
@@ -986,7 +995,7 @@ class RmSettingsView extends LitElement {
       left: 2px;
       width: 20px;
       height: 20px;
-      background: #fff;
+      background: var(--rm-bg-elevated);
       border-radius: 50%;
       transition: transform 0.2s;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -1003,7 +1012,7 @@ class RmSettingsView extends LitElement {
       border: 1px solid var(--rm-border);
       border-radius: 8px;
       padding: 6px 12px;
-      font-size: 13px;
+      font-size: var(--rm-font-size-sm);
       color: var(--rm-text);
       cursor: pointer;
       transition: background 0.15s;
@@ -1017,7 +1026,14 @@ class RmSettingsView extends LitElement {
       color: var(--rm-accent);
     }
     .file-input {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+    .file-label:focus-within {
+      outline: 3px solid var(--rm-focus);
+      outline-offset: 3px;
     }
 
     .placeholder-tab {
@@ -1040,10 +1056,11 @@ class RmSettingsView extends LitElement {
       color: var(--rm-text);
     }
     .placeholder-msg {
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm);
       max-width: 280px;
       line-height: 1.5;
     }
+    ${componentStyles}
   `;
 }
 

@@ -4,6 +4,7 @@ import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {measureTextContrast} from './macromate-contrast-helpers.mjs';
 const root=resolve(new URL('../..',import.meta.url).pathname);
 const {chromium}=await import(resolve(process.env.PLAYWRIGHT_DIR,'playwright/index.mjs'));
 const evidence=process.env.EVIDENCE_DIR;const rows=[];
@@ -58,18 +59,46 @@ try {
   await view('grid');const grid=page.locator('rm-recipe-grid');const actual=await grid.evaluate(g=>{const sample=[{id:'a',name:'Apple soup',tags:['Fruit'],courses:['Lunch'],categories:['Soup'],collections:['Quick'],rating:5,is_favourite:true},{id:'b',name:'Bread',tags:['Baking'],courses:['Dinner'],categories:['Baked'],collections:['Quick'],rating:2,is_favourite:true}];g.allRecipes=sample;g.recipes=sample;g.recentRecipes=sample;g.searchQuery='Apple';g._filterMode='favourites';const favorites=g._getFilteredList().map(r=>r.id);g._filterMode='recent';const recent=g._getFilteredList().map(r=>r.id);g.searchQuery='';g._filterMode='all';g._selectedCourses=new Set(['Lunch']);g._selectedCategories=new Set(['Soup']);const taxonomy=g._getFilteredList().map(r=>r.id);g._selectedCourses=new Set();g._selectedCategories=new Set();g._starFilter=3;g._sortByRating=true;return {favorites,recent,taxonomy,rating:g._getFilteredList().map(r=>r.id)};});
   assert.deepEqual(actual,{favorites:['a'],recent:['a'],taxonomy:['a'],rating:['a']},'Search applies in favorites/recent as well as AND-across taxonomy and rating modes');await grid.evaluate(g=>{g.allRecipes=card.application._recipes;g.recipes=card.application._recipes;g.searchQuery='';g._filterMode='all';g._starFilter=0;g._sortByRating=false;});return actual;
  });
+ await test('recipe-card-keyboard-navigation',async()=>{
+  await view('grid');
+  const recipe=page.locator('rm-recipe-grid .recipe-card').filter({hasText:'Garden Bowl'}).first();
+  await recipe.locator('.recipe-open').focus();await page.keyboard.press('Enter');
+  await page.locator('rm-recipe-detail').waitFor();
+  assert.equal(await page.evaluate(()=>card.application._selectedRecipe.id),'r1');
+  return {keyboard:'Enter',recipe:'r1'};
+ });
  await test('reduced-motion-navigation',async()=>{
   await open();const duration=await page.evaluate(()=>getComputedStyle(card.application.shadowRoot.querySelector('.rm-slide-track')).transitionDuration);assert.equal(duration,'0s','Reduced-motion preference disables the slide transition, not just hides document overflow');
   await page.evaluate(()=>card.application._handleBack());await page.waitForTimeout(40);assert.equal(await page.locator('rm-recipe-detail').count(),0,'Instant back navigation releases the retained detail without relying on transitionend');await open();return {transitionDuration:duration,detailReleased:true};
  });
  await test('responsive-core-views',async()=>{
   const layouts=[];
-  for(const width of [320,390,768,1280]){await page.setViewportSize({width,height:900});for(const name of ['grid','detail','planner','nutrition','settings']){await view(name);const metrics=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,cardWidth:card.getBoundingClientRect().width,wide:card.application._wide}));assert.ok(metrics.documentWidth<=width+1,`${name} overflows ${width}px`);assert.equal(metrics.wide,width>=620);layouts.push({width,view:name,...metrics});if(evidence&&width===320&&name==='detail')await page.screenshot({path:resolve(evidence,'workflow-mobile-detail.png')});}}
+  for(const darkMode of ['off','on'])for(const width of [320,390,768,1280]){
+   await page.setViewportSize({width,height:900});
+   await page.evaluate(darkMode=>{card.application._settings={...card.application._settings,darkMode,fontSize:'large'};},darkMode);
+   for(const name of ['grid','detail','planner','timers','nutrition','add','settings']){
+    await view(name);
+    const metrics=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,cardWidth:card.getBoundingClientRect().width,appWidth:card.application.scrollWidth,wide:card.application._wide}));
+    assert.ok(metrics.documentWidth<=width+1&&metrics.appWidth<=metrics.cardWidth+1,`${name}/${darkMode} overflows ${width}px: ${JSON.stringify(metrics)}`);
+    assert.equal(metrics.wide,width>=620);layouts.push({width,view:name,darkMode,fontSize:'large',...metrics});
+    if(evidence&&width===320&&name==='detail')await page.screenshot({path:resolve(evidence,`workflow-mobile-detail-${darkMode}.png`)});
+   }
+  }
+  await page.evaluate(()=>{card.application._settings={...card.application._settings,fontSize:'medium'};});
   if(evidence)await page.screenshot({path:resolve(evidence,'workflow-desktop.png'),fullPage:true});return layouts;
  });
- await test('all-theme-main-text-contrast',async()=>{
+ await test('glass-wave-rendered-settings-contrast',async()=>{
   const actual=[];
-  for(const theme of ['soft','blossom','arctic','meadow','ocean','midnight','ember','neon','glass-wave']){await page.evaluate(theme=>{card.application._settings={...card.application._settings,theme};card.application._applyTheme();},theme);await page.waitForTimeout(200);const colors=await page.evaluate(()=>{const style=getComputedStyle(card.application);return {background:style.getPropertyValue('--rm-bg-main').trim(),text:style.getPropertyValue('--rm-text').trim()};});const luminance=hex=>{const channels=hex.replace('#','').match(/../g).map(c=>parseInt(c,16)/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4);return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;};const l=[luminance(theme==='glass-wave'?'#F9EFDA':colors.background),luminance(colors.text)].sort((a,b)=>b-a);const contrast=(l[0]+0.05)/(l[1]+0.05);assert.ok(contrast>=4.5,`${theme} primary text contrast ${contrast}`);actual.push({theme,...colors,contrast});const selected=await page.locator('rm-settings-view .seg-btn.active').first().evaluate(n=>({color:getComputedStyle(n).color,background:getComputedStyle(n).backgroundColor}));const lum=rgb=>rgb.match(/[\d.]+/g).slice(0,3).map(v=>Number(v)/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);const pair=[lum(selected.color),lum(selected.background)].sort((a,b)=>b-a);const selectedContrast=(pair[0]+0.05)/(pair[1]+0.05);assert.ok(selectedContrast>=4.5,`${theme} selected-control contrast ${selectedContrast}`);actual.at(-1).selectedContrast=selectedContrast;}return actual;
+  await view('settings');
+  for(const darkMode of ['off','on']){
+   await page.evaluate(darkMode=>{card.application._settings={...card.application._settings,darkMode};},darkMode);
+   await page.waitForTimeout(200);
+   const measurements=await measureTextContrast(page.locator('rm-settings-view'),'.setting-name,.section-label,.seg-btn,.theme-name');
+   assert.ok(measurements.length>=12,'Settings labels and selected/unselected controls are rendered');
+   for(const measurement of measurements)assert.ok(measurement.contrast>=4.5,`${darkMode}: ${JSON.stringify(measurement)}`);
+   actual.push({theme:'glass-wave',darkMode,measurements});
+  }
+  return actual;
  });
  await test('custom-audio-rejects-remote-references',async()=>{
   await page.route('https://example.invalid/**',route=>route.abort());const before=external.length;

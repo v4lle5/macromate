@@ -4,6 +4,7 @@
  */
 import { LitElement, html, css } from "lit";
 import { msg, str } from "@lit/localize";
+import { componentStyles } from "./component-styles.js";
 
 class RmRecipeGrid extends LitElement {
   static properties = {
@@ -302,7 +303,7 @@ class RmRecipeGrid extends LitElement {
       (recipe.prep_time || 0) + (recipe.cook_time || 0) ||
       null;
     return html`
-      <div class="recipe-card" @click=${() => this._handleOpenRecipe(recipe)}>
+      <article class="recipe-card">
         <div class="recipe-thumb">
           ${recipe.image_url
             ? html`
@@ -330,7 +331,14 @@ class RmRecipeGrid extends LitElement {
           </button>
         </div>
         <div class="recipe-info">
-          <h3 class="recipe-name">${recipe.name}</h3>
+          <h3 class="recipe-name">
+            <button
+              class="recipe-open"
+              @click=${() => this._handleOpenRecipe(recipe)}
+            >
+              ${recipe.name}
+            </button>
+          </h3>
           ${this._renderStars(recipe.rating)}
           <div class="recipe-meta">
             ${totalTime
@@ -356,7 +364,7 @@ class RmRecipeGrid extends LitElement {
               : ""}
           </div>
         </div>
-      </div>
+      </article>
     `;
   }
 
@@ -725,6 +733,8 @@ class RmRecipeGrid extends LitElement {
       flex-direction: column;
       height: 100%;
       overflow: hidden;
+      min-width: 0;
+      min-height: 0;
     }
 
     /* Search (narrow only) */
@@ -739,6 +749,7 @@ class RmRecipeGrid extends LitElement {
       border-radius: 10px;
       padding: 0 10px;
       gap: 8px;
+      border: 1px solid var(--rm-border-strong, var(--rm-border));
     }
     .search-icon {
       color: var(--rm-text-secondary, #8e8e93);
@@ -750,8 +761,9 @@ class RmRecipeGrid extends LitElement {
       border: none;
       outline: none;
       color: var(--rm-text, #e5e5ea);
-      font-size: 14px;
-      padding: 9px 0;
+      font-size: var(--rm-font-size-base, 16px);
+      padding: 11px 0;
+      min-width: 0;
     }
     .search-input::placeholder {
       color: var(--rm-text-secondary, #8e8e93);
@@ -785,6 +797,7 @@ class RmRecipeGrid extends LitElement {
       flex: 1;
       overflow-x: auto;
       scrollbar-width: none;
+      min-width: 0;
     }
     .filter-tabs::-webkit-scrollbar {
       display: none;
@@ -797,8 +810,9 @@ class RmRecipeGrid extends LitElement {
       background: none;
       border: none;
       border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 13px;
+      padding: 8px 12px;
+      min-height: var(--rm-touch-target, 44px);
+      font-size: var(--rm-font-size-sm, 14px);
       font-weight: 500;
       color: var(--rm-text-secondary, #8e8e93);
       cursor: pointer;
@@ -849,6 +863,8 @@ class RmRecipeGrid extends LitElement {
       align-items: center;
       gap: 4px;
       position: relative;
+      min-width: var(--rm-touch-target, 44px);
+      min-height: var(--rm-touch-target, 44px);
       transition:
         background 0.12s,
         color 0.12s;
@@ -879,7 +895,7 @@ class RmRecipeGrid extends LitElement {
       position: absolute;
       top: calc(100% + 4px);
       right: 0;
-      background: var(--rm-bg-surface);
+      background: var(--rm-dialog-bg, var(--rm-bg-surface));
       border: 1px solid var(--rm-border);
       border-radius: 10px;
       box-shadow: var(--rm-shadow, 0 4px 12px rgba(0, 0, 0, 0.2));
@@ -889,7 +905,7 @@ class RmRecipeGrid extends LitElement {
       padding: 4px 0;
     }
     .rating-menu-section {
-      font-size: 10px;
+      font-size: var(--rm-font-size-xs, 12px);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -902,8 +918,9 @@ class RmRecipeGrid extends LitElement {
       background: none;
       border: none;
       text-align: left;
-      padding: 8px 14px;
-      font-size: 13px;
+      padding: 10px 14px;
+      font-size: var(--rm-font-size-sm, 14px);
+      min-height: var(--rm-touch-target, 44px);
       cursor: pointer;
       color: var(--rm-text-secondary);
       transition: background 0.12s;
@@ -923,7 +940,7 @@ class RmRecipeGrid extends LitElement {
       align-items: center;
       gap: 8px;
       padding: 4px 14px;
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs, 12px);
       color: var(--rm-accent);
       background: var(--rm-accent-soft);
       flex-shrink: 0;
@@ -936,7 +953,7 @@ class RmRecipeGrid extends LitElement {
       align-items: center;
       gap: 3px;
       color: var(--rm-text-secondary);
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs, 12px);
       cursor: pointer;
     }
     .clear-filter-btn ha-icon {
@@ -973,10 +990,11 @@ class RmRecipeGrid extends LitElement {
       border: 1px solid var(--rm-border);
       border-radius: 20px;
       color: var(--rm-text-secondary);
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs, 12px);
       padding: 4px 8px 4px 12px;
       cursor: pointer;
       white-space: nowrap;
+      min-height: 36px;
       transition: all 0.15s;
     }
     .sub-chip.active {
@@ -991,7 +1009,7 @@ class RmRecipeGrid extends LitElement {
       background: var(--rm-accent);
       color: var(--rm-accent-text, #fff);
       border-radius: 10px;
-      font-size: 10px;
+      font-size: var(--rm-font-size-xs, 12px);
       font-weight: 700;
       padding: 1px 5px;
       min-width: 16px;
@@ -1015,10 +1033,11 @@ class RmRecipeGrid extends LitElement {
       border: 1px solid var(--rm-border);
       border-radius: 20px;
       color: var(--rm-text-secondary);
-      font-size: 12px;
+      font-size: var(--rm-font-size-xs, 12px);
       padding: 4px 10px;
       cursor: pointer;
       white-space: nowrap;
+      min-height: 36px;
       transition: all 0.15s;
     }
     .tag-btn.active {
@@ -1030,6 +1049,7 @@ class RmRecipeGrid extends LitElement {
     /* Grid scroll area */
     .grid-scroll {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       padding: 4px 14px 16px;
       scrollbar-width: thin;
@@ -1037,7 +1057,7 @@ class RmRecipeGrid extends LitElement {
     }
 
     .section-label {
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs, 12px);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1054,6 +1074,7 @@ class RmRecipeGrid extends LitElement {
 
     /* Recipe card */
     .recipe-card {
+      position: relative;
       background: var(--rm-bg-surface);
       border-radius: var(--rm-radius, 12px);
       overflow: hidden;
@@ -1066,6 +1087,24 @@ class RmRecipeGrid extends LitElement {
     .recipe-card:hover {
       transform: translateY(-2px);
       box-shadow: var(--rm-shadow);
+    }
+    .recipe-card:focus-within {
+      outline: 3px solid var(--rm-focus, var(--rm-accent));
+      outline-offset: 2px;
+    }
+    .recipe-open {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .recipe-open::after {
+      content: "";
+      position: absolute;
+      inset: 0;
     }
 
     .recipe-thumb {
@@ -1098,29 +1137,30 @@ class RmRecipeGrid extends LitElement {
       background: rgba(0, 0, 0, 0.5);
       border: none;
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
+      width: 44px;
+      height: 44px;
+      z-index: 1;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255, 255, 255, 0.7);
+      color: #fff;
       transition: color 0.15s;
       padding: 0;
     }
     .fav-btn ha-icon {
-      --mdc-icon-size: 16px;
+      --mdc-icon-size: 22px;
     }
     .fav-btn.active {
-      color: var(--error-color, #cf6679);
+      color: #ffb5c0;
     }
 
     .recipe-info {
-      padding: 8px 10px 10px;
+      padding: 12px 14px 14px;
     }
     .recipe-name {
       margin: 0 0 4px;
-      font-size: 14px;
+      font-size: var(--rm-font-size-base, 16px);
       font-weight: 600;
       color: var(--rm-text);
       overflow: hidden;
@@ -1128,6 +1168,7 @@ class RmRecipeGrid extends LitElement {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+      line-height: 1.4;
     }
 
     /* Star rating on cards */
@@ -1137,7 +1178,7 @@ class RmRecipeGrid extends LitElement {
       margin-bottom: 5px;
     }
     .card-star {
-      font-size: 14px;
+      font-size: var(--rm-font-size-sm, 14px);
       line-height: 1;
       color: var(--rm-border, rgba(200, 150, 0, 0.25));
       -webkit-text-stroke: 1px rgba(200, 150, 0, 0.5);
@@ -1156,9 +1197,9 @@ class RmRecipeGrid extends LitElement {
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      font-size: 11px;
+      font-size: var(--rm-font-size-xs, 12px);
       color: var(--rm-text-secondary);
-      background: rgba(128, 128, 128, 0.08);
+      background: var(--rm-bg-elevated);
       border-radius: 6px;
       padding: 2px 6px;
     }
@@ -1187,8 +1228,9 @@ class RmRecipeGrid extends LitElement {
     }
     .empty-state p {
       margin: 0;
-      font-size: 15px;
+      font-size: var(--rm-font-size-base, 16px);
     }
+    ${componentStyles}
   `;
 }
 

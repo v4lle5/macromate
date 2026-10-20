@@ -19,7 +19,8 @@
     "coordinator-store-evidence.json",
     "verification.json",
     "recipe-workflow-readback.json",
-    "refresh-regression-evidence.json"
+    "refresh-regression-evidence.json",
+    "contrast.json"
   ],
   "targetedRegressions": [
     {
@@ -34,6 +35,17 @@
         "Deferred recipe reads resume after context closes, including closure during a read",
         "Uncertain write keeps stable UUID/payload until explicit same-request retry",
         "In-place account changes block stale reads; removal releases subscriptions"
+      ]
+    },
+    {
+      "name": "Glass Wave readable appearance and legacy palette migration",
+      "test": "tests/frontend/macromate-unified-contrast.mjs",
+      "evidence": "contrast.json",
+      "scope": "Rendered Chromium solid-color labels, placeholders and controls through shadow roots; synthetic data, not image-caption or physical-device acceptance",
+      "checks": [
+        "Light, dark and system appearance use the same theme",
+        "Rendered main/secondary/control text has at least 4.5:1 contrast",
+        "Import forms fit 320-pixel phones and desktop viewports"
       ]
     }
   ],
@@ -1399,12 +1411,12 @@
         "checks": [
           {
             "command": "node tests/frontend/macromate-unified-browser.mjs",
-            "assertion": "eight palettes and seven locales",
+            "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
             "tier": "chromium-synthetic"
           },
           {
             "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "all-theme-main-text-contrast",
+            "assertion": "glass-wave-rendered-settings-contrast",
             "tier": "chromium-synthetic"
           }
         ]
@@ -2412,23 +2424,29 @@
         ]
       },
       "implementation": [
-        "frontend/unified-src/components/rm-settings-view.js"
+        "frontend/unified-src/components/rm-settings-view.js",
+        "frontend/unified-src/services/theme.js"
       ],
       "standaloneRows": [
         "settings"
       ],
-      "adaptation": "See corresponding standalone rows; partial evidence does not establish every combined sub-workflow.",
+      "adaptation": "Glass Wave is the single theme with light/dark/system appearance; retired palette preferences normalize on read while preserving unrelated account settings.",
       "verification": {
         "status": "partial-local-evidence",
         "checks": [
           {
             "command": "node tests/frontend/macromate-unified-browser.mjs",
-            "assertion": "eight palettes and seven locales",
+            "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
             "tier": "chromium-synthetic"
           },
           {
             "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "all-theme-main-text-contrast",
+            "assertion": "glass-wave-rendered-settings-contrast",
+            "tier": "chromium-synthetic"
+          },
+          {
+            "command": "node tests/frontend/macromate-unified-contrast.mjs",
+            "assertion": "Rendered Glass Wave labels, placeholders and controls across core views meet 4.5:1 text contrast",
             "tier": "chromium-synthetic"
           }
         ]
@@ -2466,12 +2484,12 @@
         "checks": [
           {
             "command": "node tests/frontend/macromate-unified-browser.mjs",
-            "assertion": "eight palettes and seven locales",
+            "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
             "tier": "chromium-synthetic"
           },
           {
             "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "all-theme-main-text-contrast",
+            "assertion": "glass-wave-rendered-settings-contrast",
             "tier": "chromium-synthetic"
           }
         ]
@@ -2516,12 +2534,12 @@
           },
           {
             "command": "node tests/frontend/macromate-unified-browser.mjs",
-            "assertion": "eight palettes and seven locales",
+            "assertion": "Glass Wave only, legacy preference migration, light/dark/system appearance and seven locales",
             "tier": "chromium-synthetic"
           },
           {
             "command": "node tests/frontend/macromate-unified-workflows.mjs",
-            "assertion": "all-theme-main-text-contrast",
+            "assertion": "glass-wave-rendered-settings-contrast",
             "tier": "chromium-synthetic"
           }
         ]

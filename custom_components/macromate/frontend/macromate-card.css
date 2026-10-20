@@ -2,19 +2,16 @@
   display: block;
   min-width: 0;
   container-type: inline-size;
-  color: var(--primary-text-color, #253a32);
-  font: 14px/1.4
-    var(
-      --ha-font-family,
-      var(--paper-font-body1_-_font-family, Roboto, Arial, sans-serif)
-    );
-  --surface: var(--ha-card-background, var(--card-background-color, #fffefb));
-  --muted: var(--secondary-text-color, #62726a);
-  --line: var(--divider-color, #e9ede7);
-  --jade: #26936d;
-  --amber: #d0a34c;
-  --violet: #a18bcc;
-  --coral: #d88b79;
+  color: var(--rm-text, #233b47);
+  font: var(--rm-font-size-base, 16px) / var(--rm-line-height, 1.55)
+    var(--rm-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --surface: var(--rm-bg-main, #f7f4ed);
+  --muted: var(--rm-text-secondary, #4c626c);
+  --line: var(--rm-border, #c6d1d0);
+  --jade: var(--rm-success, #2e664a);
+  --amber: var(--rm-warning, #765500);
+  --violet: var(--rm-accent, #326382);
+  --coral: var(--rm-error, #9b3e2f);
 }
 * {
   box-sizing: border-box;
@@ -24,10 +21,9 @@ ha-card {
   padding: 22px 24px 8px;
   background: var(--surface);
   color: inherit;
-  border: var(--ha-card-border-width, 1px) solid
-    var(--ha-card-border-color, var(--line));
-  border-radius: var(--ha-card-border-radius, 24px);
-  box-shadow: var(--ha-card-box-shadow, none);
+  border: 1px solid var(--line);
+  border-radius: var(--rm-radius-lg, 24px);
+  box-shadow: var(--rm-shadow);
   overflow-wrap: anywhere;
 }
 header {
@@ -49,12 +45,12 @@ h2 {
 .subtitle {
   display: block;
   margin-top: 3px;
-  font-size: 12px;
+  font-size: var(--rm-font-size-sm, 14px);
   color: var(--muted);
 }
 time {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--rm-font-size-sm, 14px);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -94,7 +90,7 @@ time {
 .ring-label,
 .ring-unit {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--rm-font-size-sm, 14px);
 }
 .remaining {
   font-size: 43px;
@@ -109,7 +105,7 @@ time {
   margin: 5px 0;
 }
 .over-budget .ring-label {
-  color: var(--primary-text-color, #253a32);
+  color: var(--rm-text, #233b47);
   font-weight: 600;
 }
 .energy-detail {
@@ -126,12 +122,12 @@ time {
 }
 .energy-detail > div > span {
   display: block;
-  font-size: 11px;
+  font-size: var(--rm-font-size-xs, 13px);
   color: var(--muted);
   margin-bottom: 3px;
 }
 .energy-detail strong {
-  font-size: 14px;
+  font-size: var(--rm-font-size-base, 16px);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -163,7 +159,7 @@ time {
   gap: 8px;
 }
 .macro-label {
-  font-size: 12px;
+  font-size: var(--rm-font-size-sm, 14px);
 }
 .macro-label::before {
   content: "";
@@ -178,17 +174,17 @@ time {
 .macro-values {
   color: var(--muted);
   text-align: right;
-  font-size: 12px;
+  font-size: var(--rm-font-size-sm, 14px);
   font-variant-numeric: tabular-nums;
 }
 .macro-values strong {
-  color: var(--primary-text-color, #253a32);
+  color: var(--rm-text, #233b47);
   font-weight: 600;
 }
 small {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--rm-font-size-xs, 13px);
   margin-top: 4px;
 }
 progress {
@@ -220,7 +216,7 @@ progress::-moz-progress-bar {
 }
 h3 {
   margin: 0 0 6px;
-  font-size: 12px;
+  font-size: var(--rm-font-size-sm, 14px);
   font-weight: 600;
   color: var(--muted);
 }
@@ -229,23 +225,24 @@ h3 {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  min-height: 37px;
+  min-height: 44px;
 }
 .meal > div {
   display: flex;
   gap: 9px;
   align-items: baseline;
+  flex-wrap: wrap;
   min-width: 0;
 }
 .meal-name {
-  font-size: 13px;
+  font-size: var(--rm-font-size-sm, 14px);
 }
 .meal-count {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--rm-font-size-xs, 13px);
 }
 .meal strong {
-  font-size: 12px;
+  font-size: var(--rm-font-size-sm, 14px);
   font-weight: 550;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -260,8 +257,8 @@ h3 {
   margin-top: 10px;
   padding: 10px 2px;
   border-top: 1px solid var(--line);
-  color: var(--primary-text-color, #253a32);
-  font-size: 13px;
+  color: var(--rm-text, #233b47);
+  font-size: var(--rm-font-size-sm, 14px);
   font-weight: 600;
   text-decoration: none;
   transition: background-color 0.16s ease;
@@ -283,7 +280,7 @@ h3 {
 }
 .diary-link:focus-visible,
 button:focus-visible {
-  outline: 3px solid var(--primary-color, #187957);
+  outline: 3px solid var(--rm-focus, #326382);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -291,7 +288,7 @@ button:focus-visible {
   margin: 0;
   padding: 36px 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--rm-font-size-sm, 14px);
 }
 .notice p {
   margin: 0 0 16px;
@@ -302,7 +299,7 @@ button {
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  color: var(--primary-text-color, #253a32);
+  color: var(--rm-text, #233b47);
   background: var(--surface);
   font: inherit;
   cursor: pointer;
@@ -321,7 +318,7 @@ button:hover {
     font-size: 18px;
   }
   time {
-    font-size: 11px;
+    font-size: var(--rm-font-size-xs, 13px);
   }
   .energy {
     padding-top: 18px;
@@ -340,7 +337,7 @@ button:hover {
     gap: 6px;
   }
   .meal-count {
-    font-size: 10px;
+    font-size: var(--rm-font-size-xs, 13px);
   }
   .unknown-goal {
     display: block;

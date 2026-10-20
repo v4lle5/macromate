@@ -4,11 +4,28 @@ MacroMate is a full dashboard card in Home Assistant's **Panel (single card)** v
 
 ## Appearance
 
-**Glass Wave** is an optional light theme in Settings → Appearance → Colour theme. Existing themes and saved preferences are unchanged unless explicitly selected. The main application background is transparent so the dashboard background remains visible. Cards use `rgba(253, 248, 239, 0.72)`; dialogs use warm paper `#F9EFDA`. Accent, text and secondary text are `#416F8F`, `#263B47` and `#53666E`; semantic success, warning and error colors are `#576C65`, `#C19A3F` and `#B46F52`. There is no new gradient, blur or backdrop filter. Active segmented controls use white text and touch-sized targets. The explicit
-retry button and nested planner add buttons have at least 44 × 44 CSS-pixel
-targets, verified through the installed native panel. Existing photo-caption
-legibility and functional calorie-ring gradients are retained; no additional
-decorative gradient is introduced.
+**Glass Wave** is the application's only theme. Settings → Appearance offers
+Light, Auto (system preference) and Dark, plus small, medium and large text.
+Saved choices from removed palettes become Glass Wave when account preferences
+are loaded; language, units, text size and unrelated preferences remain intact.
+This normalization does not write settings until the user saves a change.
+Obsolete shared browser-local settings are not imported across accounts.
+
+The interface shares typography, color, spacing, focus and control tokens.
+Warm light surfaces and deep blue dark surfaces provide an opaque reading
+background independent of the Home Assistant dashboard. Translucency is used
+on supporting surfaces; labels and secondary text retain readable contrast.
+Primary controls have 44-pixel touch targets and visible keyboard focus;
+recipe tiles open with Enter or Space. The planner can scroll horizontally on
+narrow screens to keep day columns readable. Text sizes are 14, 16 and 18 pixels,
+with the same setting applied to nutrition forms and recipe components.
+
+`tests/frontend/macromate-unified-contrast.mjs` measures rendered labels,
+placeholders and controls across recipes, planning, timers, nutrition, settings
+and import forms in light, dark and automatic appearance. These checks require
+at least 4.5:1 text contrast and include alpha-composited surfaces across shadow
+roots. Image captions and gradients are outside these solid-color measurements.
+Responsive checks include 320-pixel phones with large text.
 
 Locale strings are plain text, not HTML entity fragments. Rendering continues to use Lit text bindings and DOM text nodes; no general HTML decoding or unsafe HTML insertion is needed for ampersands.
 

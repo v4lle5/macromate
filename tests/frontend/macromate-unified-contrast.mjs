@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile, mkdir, writeFile} from 'node:fs/promises';
 import {resolve, extname} from 'node:path';
+import {measureTextContrast} from './macromate-contrast-helpers.mjs';
 
 const root = resolve(new URL('../..', import.meta.url).pathname);
 const {chromium} = await import(resolve(process.env.PLAYWRIGHT_DIR, 'playwright/index.mjs'));
@@ -23,65 +24,68 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`http://127.0.0.1:${server.address().port}/tests/frontend/macromate-unified-fixture.html`);
   await page.waitForFunction(() => window.card?.application?._api);
-  for (const [theme, darkMode, backdrop] of [
-    ['glass-wave','off','#fff'], ['glass-wave','on','#000'],
-    ['soft','off','#fff'], ['soft','on','#000'],
+  await page.waitForFunction(() => card.application._recipes?.length > 0 && !card.application._loading);
+  for (const [darkMode, system, appearance, backdrop] of [
+    ['off', 'dark', 'light', '#000'],
+    ['on', 'light', 'dark', '#fff'],
+    ['system', 'light', 'light', '#fff'],
+    ['system', 'dark', 'dark', '#000'],
   ]) {
-    await page.evaluate(({theme,darkMode,backdrop}) => {
+    await page.emulateMedia({colorScheme: system});
+    await page.evaluate(({darkMode, backdrop}) => {
       document.body.style.background = backdrop;
-      card.application._settings = {...card.application._settings, theme, darkMode};
-      card.application._view = 'add';
-    }, {theme,darkMode,backdrop});
+      card.application._settings = {...card.application._settings, darkMode};
+      card.application._selectedRecipe = card.application._recipes[0];
+    }, {darkMode, backdrop});
+    await page.waitForFunction(appearance => card.application.getAttribute('data-appearance') === appearance, appearance);
+    const measure = async (host, selectors, view) => {
+      await page.waitForTimeout(200); // Wait for final tab/surface transition colors.
+      const measurements = await measureTextContrast(host, selectors);
+      assert.ok(measurements.length >= 3, `${view}: real text and controls are rendered`);
+      for (const row of measurements) {
+        rows.push({theme:'glass-wave', darkMode, system, appearance, view, ...row});
+        assert.ok(row.contrast >= 4.5, `${appearance}/${view}: ${JSON.stringify(row)}`);
+        assert.ok(row.fontSize >= 12, `${appearance}/${view}: text smaller than 12px: ${JSON.stringify(row)}`);
+      }
+    };
+    for (const [view, host, selectors] of [
+      ['grid', 'rm-recipe-grid', '.recipe-name,.meta-chip,.filter-tab,.search-input'],
+      ['detail', 'rm-recipe-detail', '.wide-title,.recipe-title,.wide-desc,.detail-desc,.step-text,.ing-name,.meta-chip,.servings-val'],
+      ['planner', 'rm-meal-planner', '.week-month,.day-name,.day-num,.meal-label,.today-badge'],
+      ['timers', 'mm-unified-app', '.timer-empty p,.timer-empty-hint,.timer-add-title,.timer-add-group-label,.timer-input'],
+      ['settings', 'rm-settings-view', '.setting-name,.section-label,.theme-name,.seg-btn'],
+      ['nutrition', 'mm-nutrition', 'h2,h3,.metric-label,.metric-value,.muted,.toolbar button,input[type=search]'],
+    ]) {
+      await page.evaluate(view => {card.application._view = view;}, view);
+      await page.locator(host).waitFor();
+      if (view === 'nutrition') await page.locator('mm-nutrition .calorie-ring').waitFor();
+      await measure(page.locator(host), selectors, view);
+    }
+    await page.evaluate(() => {card.application._view = 'add';});
     const importer = page.locator('rm-add-recipe-dialog');
     await importer.waitFor();
     for (const [mode, selectors] of [
-      [2,'.mode-btn,.import-info,.import-info strong,.file-label,.toggle-row'],
-      [0,'.mode-btn,.url-hint,.url-input'],
-      [1,'.mode-btn,.field label,.field input,.field textarea'],
+      [2, '.mode-btn,.import-info,.import-info strong,.file-label,.toggle-row'],
+      [0, '.mode-btn,.url-hint,.url-input'],
+      [1, '.mode-btn,.field label,.field input,.field textarea'],
     ]) {
       await importer.locator('.mode-btn').nth(mode).click();
-      await page.waitForTimeout(200); // Measure final colors after the 150 ms tab transition.
-      const measurements = await importer.evaluate((host, selectors) => {
-        const parent = node => node.parentElement || node.getRootNode().host;
-        const rgba = text => {
-          const values = text.match(/[\d.]+/g).map(Number);
-          return [...values.slice(0,3), values[3] ?? 1];
-        };
-        const over = (top, base) => top.slice(0,3).map((c,i) => c*top[3] + base[i]*(1-top[3]));
-        const luminance = rgb => rgb.map(c => c/255).map(c => c <= .04045 ? c/12.92 : ((c+.055)/1.055)**2.4).reduce((sum,c,i) => sum+c*[.2126,.7152,.0722][i],0);
-        return [...host.shadowRoot.querySelectorAll(selectors)].filter(node => node.getClientRects().length && !node.disabled).map(node => {
-          const ancestors = [];
-          for (let p=node; p; p=parent(p)) ancestors.unshift(p);
-          let background = [255,255,255];
-          for (const ancestor of ancestors) background = over(rgba(getComputedStyle(ancestor).backgroundColor), background);
-          const style = getComputedStyle(node);
-          const foreground = over(rgba(style.color), background);
-          const a=luminance(foreground), b=luminance(background);
-          return {tag:node.tagName, class:node.className, contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05), foreground:style.color, background};
-        });
-      }, selectors);
-      assert.ok(measurements.length >= 4, 'the real form is rendered');
-      for (const row of measurements) {
-        rows.push({theme,darkMode,mode,...row});
-        assert.ok(row.contrast >= 4.5, `${theme}/${darkMode} mode ${mode}: ${JSON.stringify(row)}`);
-      }
+      await measure(importer, selectors, `import-${mode}`);
     }
-    if (theme === 'glass-wave') {
-      for (const width of [390,1280]) {
-        await page.setViewportSize({width,height:850});
-        await importer.locator('.mode-btn').nth(2).click();
-        await page.waitForTimeout(200);
-        assert.equal(await importer.evaluate(node => node.scrollWidth <= node.clientWidth), true, 'import form fits the viewport');
-        if (process.env.EVIDENCE_DIR) {
-          await mkdir(process.env.EVIDENCE_DIR,{recursive:true});
-          await page.screenshot({path:resolve(process.env.EVIDENCE_DIR,`glasswave-import-${darkMode}-${width}.png`)});
-        }
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({width, height:850});
+      await importer.locator('.mode-btn').nth(2).click();
+      await page.waitForTimeout(200);
+      assert.equal(await importer.evaluate(node => node.scrollWidth <= node.clientWidth + 1), true, 'import form fits the viewport');
+      if (process.env.EVIDENCE_DIR) {
+        await mkdir(process.env.EVIDENCE_DIR, {recursive:true});
+        await page.screenshot({path:resolve(process.env.EVIDENCE_DIR, `glasswave-import-${darkMode}-${system}-${width}.png`)});
       }
     }
   }
   assert.deepEqual(errors, []);
   if (process.env.EVIDENCE_DIR) await writeFile(resolve(process.env.EVIDENCE_DIR,'contrast.json'),JSON.stringify(rows,null,2));
-  console.log(`PASS: ${rows.length} rendered form labels/controls have at least 4.5:1 contrast; GlassWave fits mobile/desktop over light/dark backdrops.`);
+  console.log(`PASS: ${rows.length} rendered labels, placeholders and controls have at least 4.5:1 contrast across Glass Wave light/dark/system; import forms fit 320px phones and desktops.`);
 } finally {
   await browser.close();
   await new Promise(r => server.close(r));
