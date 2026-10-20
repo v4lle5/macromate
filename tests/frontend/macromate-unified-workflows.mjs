@@ -68,8 +68,9 @@ try {
   return {keyboard:'Enter',recipe:'r1'};
  });
  await test('reduced-motion-navigation',async()=>{
-  await open();const duration=await page.evaluate(()=>getComputedStyle(card.application.shadowRoot.querySelector('.rm-slide-track')).transitionDuration);assert.equal(duration,'0s','Reduced-motion preference disables the slide transition, not just hides document overflow');
-  await page.evaluate(()=>card.application._handleBack());await page.waitForTimeout(40);assert.equal(await page.locator('rm-recipe-detail').count(),0,'Instant back navigation releases the retained detail without relying on transitionend');await open();return {transitionDuration:duration,detailReleased:true};
+  await open();const motion=await page.evaluate(()=>{const style=getComputedStyle(card.application.shadowRoot.querySelector('.rm-slide-track'));return {transitionDuration:style.transitionDuration,transitionProperty:style.transitionProperty,animationName:style.animationName};});assert.equal(motion.transitionDuration,'0s','Reduced-motion preference disables the slide transition, not just hides document overflow');
+  assert.equal(motion.transitionProperty,'none','Reduced-motion navigation does not schedule a transform transition');assert.equal(motion.animationName,'none','Reduced-motion navigation disables directional view animations');
+  await page.evaluate(async()=>{card.application._handleBack();await card.application.updateComplete;});assert.equal(await page.locator('rm-recipe-detail').count(),0,'Instant back navigation releases the retained detail without relying on transitionend');await open();return {...motion,detailReleased:true};
  });
  await test('responsive-core-views',async()=>{
   const layouts=[];

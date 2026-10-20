@@ -22,6 +22,32 @@ try {
   const page = await browser.newPage({viewport:{width:1280,height:850}});
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
+  await page.setContent('<div id="contrast-probe"></div>');
+  await page.locator('#contrast-probe').evaluate(host => {
+    const root = host.attachShadow({mode:'open'});
+    const style = document.createElement('style');
+    style.textContent = `
+      button { color:#000; background:#fff; font-size:0; }
+      .before::before { content:'+'; font-size:22px; }
+      .after::after { content:'+'; font-size:22px; color:#fff; }
+      .small { font-size:8px; }
+    `;
+    root.append(style);
+    for (const name of ['before', 'after', 'hidden', 'small']) {
+      const button = document.createElement('button');
+      button.className = name;
+      button.textContent = name === 'small' ? 'Small visible text' : 'Accessible icon label';
+      root.append(button);
+    }
+  });
+  const probe = await measureTextContrast(page.locator('#contrast-probe'), 'button');
+  assert.equal(probe.length, 3, 'Only rendered text and generated glyphs are measured');
+  assert.deepEqual(probe.map(row => [row.class, row.pseudo, row.fontSize]), [
+    ['before', '::before', 22], ['after', '::after', 22], ['small', null, 8],
+  ]);
+  assert.ok(probe[0].contrast >= 4.5, 'Visible generated glyphs retain their actual contrast');
+  assert.ok(probe[1].contrast < 4.5, 'A low-contrast glyph is still detected despite its hidden label');
+  assert.ok(probe[2].fontSize < 12, 'Small visible text is still detected');
   await page.goto(`http://127.0.0.1:${server.address().port}/tests/frontend/macromate-unified-fixture.html`);
   await page.waitForFunction(() => window.card?.application?._api);
   await page.waitForFunction(() => card.application._recipes?.length > 0 && !card.application._loading);
@@ -42,6 +68,9 @@ try {
       await page.waitForTimeout(200); // Wait for final tab/surface transition colors.
       const measurements = await measureTextContrast(host, selectors);
       assert.ok(measurements.length >= 3, `${view}: real text and controls are rendered`);
+      if (view === 'nutrition') {
+        for (const glyph of ['▥', '+']) assert.ok(measurements.some(row => row.pseudo === '::before' && row.text === glyph && row.fontSize === 22), 'Nutrition icon buttons remain covered by contrast and size checks');
+      }
       for (const row of measurements) {
         rows.push({theme:'glass-wave', darkMode, system, appearance, view, ...row});
         assert.ok(row.contrast >= 4.5, `${appearance}/${view}: ${JSON.stringify(row)}`);

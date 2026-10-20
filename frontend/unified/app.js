@@ -68,9 +68,8 @@ import{a as ze,b as Et,c as Dt,d as pe,e as h,f as ye,g as he,h as te,i as o,j a
     *,
     *::before,
     *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      animation: none !important;
+      transition: none !important;
       scroll-behavior: auto !important;
     }
   }
