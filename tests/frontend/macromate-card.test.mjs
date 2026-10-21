@@ -186,7 +186,7 @@ test('omitted or non-numeric totals and invalid goals never become zero or progr
   await page.close();
 });
 
-test('responsive themed styling provides a central jade ring and keyboard targets without overflow',async()=>{
+test('responsive Boho styling provides a central sage ring and keyboard targets without overflow',async()=>{
   const page=await open(320);await page.evaluate(()=>window.mount());await loaded(page);
   await page.waitForFunction(()=>!!window.card.shadowRoot.querySelector('link')?.sheet,null,{timeout:1500});
   for(const width of [320,390,768,1280]){
@@ -196,14 +196,14 @@ test('responsive themed styling provides a central jade ring and keyboard target
       return {overflow:document.documentElement.scrollWidth>innerWidth,ringWidth:ring.width,ringCenter:ring.x+ring.width/2,hostCenter:host.x+host.width/2,targetHeight:box.height,targetWidth:box.width,bg:getComputedStyle(root.querySelector('ha-card')).backgroundColor};
     });
     assert.equal(layout.overflow,false);assert.ok(layout.ringWidth>=170);assert.ok(Math.abs(layout.ringCenter-layout.hostCenter)<2);
-    assert.ok(layout.targetHeight>=44&&layout.targetWidth>=44);assert.equal(layout.bg,'rgb(247, 244, 237)');
+    assert.ok(layout.targetHeight>=44&&layout.targetWidth>=44);assert.equal(layout.bg,'rgb(249, 239, 218)');
     if(width===320||width===1280)await screenshot(page,String(width));
   }
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(()=>window.card.shadowRoot.activeElement?.tagName),'A');
   assert.notEqual(await card(page).getByRole('link').evaluate(el=>getComputedStyle(el).outlineStyle),'none');
   await page.evaluate(()=>{document.body.classList.add('dark');window.card.hass={...window.card.hass,themes:{darkMode:true}};});
-  assert.equal(await card(page).locator('ha-card').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(20, 38, 47)');
+  assert.equal(await card(page).locator('ha-card').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(48, 42, 36)');
   await page.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await card(page).getByRole('link').evaluate(el=>getComputedStyle(el).transitionDuration),'0s');
   await page.setViewportSize({width:390,height:900});await screenshot(page,'dark');
