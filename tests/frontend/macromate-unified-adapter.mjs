@@ -63,3 +63,100 @@ const retained=failureAPI.pending;const previousFailure=failureAPI.lastFailure;
 await assert.rejects(failureAPI.facade().callWS({type:'hacs/repositories/list'}),e=>e.code==='invalid_request');
 assert.equal(failureAPI.pending,retained,'An unrelated lookup must preserve an actual uncertain write');assert.equal(failureAPI.lastFailure,previousFailure);
 console.log('PASS: unrelated HACS queries and definitive HA command/schema errors never become uncertain MacroMate writes');
+
+// The Settings credential boundary uses the authenticated HA session without
+// placing one-time agent secrets in the ordinary mutation/replay state.
+const recipeScopes=['recipes.read','recipes.create','recipes.update'];
+const credentialId='a'.repeat(32),credentialToken=`mm1.${credentialId}.${'b'.repeat(43)}`;
+const credentialMetadata={id:credentialId,user_id:'admin',label:'Recipe assistant',scopes:recipeScopes,created_at:1730000000,expires_at:null,revoked:false};
+const credentialCalls=[];
+const credentialAPI=new MacroMateAPI({...hass,callWS:async()=>{throw new Error('Credential management must not reach WebSocket commands');},fetchWithAuth:async(url,options={})=>{
+ credentialCalls.push({url,options:structuredClone(options)});
+ const response=options.method==='POST'?{...credentialMetadata,token:credentialToken}:options.method==='DELETE'?{...credentialMetadata,revoked:true}:{credentials:[credentialMetadata]};
+ return {ok:true,status:200,json:async()=>structuredClone(response)};
+}});
+const credentialFacade=credentialAPI.facade();
+assert.deepEqual(await credentialFacade.credentials('list'),{credentials:[credentialMetadata]});
+assert.equal((await credentialFacade.credentials('create',{label:credentialMetadata.label})).token,credentialToken);
+assert.equal((await credentialFacade.credentials('revoke',{id:credentialId})).revoked,true);
+assert.deepEqual(credentialCalls.map(({url})=>url),['/api/macromate/agent/credentials','/api/macromate/agent/credentials',`/api/macromate/agent/credentials/${credentialId}`]);
+assert.equal(credentialCalls[1].options.method,'POST');
+assert.equal(credentialCalls[2].options.method,'DELETE');
+assert.deepEqual(JSON.parse(credentialCalls[1].options.body),{label:credentialMetadata.label,scopes:recipeScopes});
+assert.equal(credentialAPI.pending,null);
+assert.equal(credentialAPI.lastFailure,undefined);
+assert.ok(!JSON.stringify(credentialAPI).includes(credentialToken),'The one-time secret must not be retained in adapter state');
+const beforeInvalidCredentialRequests=credentialCalls.length;
+for(const [method,payload] of [['unknown',{}],['revoke',{id:'../other-resource'}],['revoke',{id:`${credentialId}?token=secret`}],['revoke',{id:''}],['revoke',{id:{toString:()=>credentialId}}]]){
+ await assert.rejects(credentialFacade.credentials(method,payload),e=>e.code==='invalid_request');
+}
+assert.equal(credentialCalls.length,beforeInvalidCredentialRequests,'The facade cannot send arbitrary authenticated paths');
+const beforeScopeEscalation=credentialCalls.length;
+try{
+ await credentialFacade.credentials('create',{label:'Narrow grant',scopes:['diary.delete'],url:'https://unrelated.invalid/credentials'});
+}catch(error){
+ assert.equal(error.code,'invalid_request');
+}
+for(const request of credentialCalls.slice(beforeScopeEscalation)){
+ assert.equal(request.url,'/api/macromate/agent/credentials');
+ assert.deepEqual(JSON.parse(request.options.body),{label:'Narrow grant',scopes:recipeScopes},'Caller-supplied scopes and destinations cannot broaden recipe delegation');
+}
+
+for(const operation of ['list','create','revoke']){
+ let calls=0;
+ const nonAdmin=new MacroMateAPI({...hass,user:{id:'member',is_admin:false},fetchWithAuth:async()=>{calls++;}});
+ await assert.rejects(nonAdmin.credentials(operation,{label:'Denied',id:credentialId}),e=>e.code==='unauthorized');
+ assert.equal(calls,0,'Credential reads and writes require an administrator before transport');
+}
+for(const change of [a=>{a.hass.user={id:'other-admin',is_admin:true};},a=>{a.hass.user={id:'admin',is_admin:false};},a=>{a.hass.connection={};},a=>a.dispose()]){
+ let calls=0;
+ const stale=new MacroMateAPI({...hass,user:{...hass.user},fetchWithAuth:async()=>{calls++;}});
+ change(stale);
+ await assert.rejects(stale.credentials('create',{label:'Stale'}),e=>e.code==='context_changed');
+ assert.equal(calls,0,'A changed session cannot issue credential requests');
+}
+
+for(const phase of ['fetch','json']){
+ let release,entered;
+ const reached=new Promise(resolve=>{entered=resolve;});
+ const held=new Promise(resolve=>{release=resolve;});
+ const response={ok:true,status:200,json:async()=>{
+  if(phase==='json'){entered();await held;}
+  return {...credentialMetadata,token:credentialToken};
+ }};
+ const lateCredential=new MacroMateAPI({...hass,user:{...hass.user},fetchWithAuth:async()=>{
+  if(phase==='fetch'){entered();await held;}
+  return response;
+ }});
+ const pending=lateCredential.credentials('create',{label:'Late response'});
+ await reached;
+ lateCredential.hass.user={id:'different-admin',is_admin:true};
+ release();
+ await assert.rejects(pending,e=>e.code==='context_changed'&&!e.message.includes(credentialToken));
+ assert.equal(lateCredential.pending,null);
+ assert.ok(!JSON.stringify(lateCredential).includes(credentialToken),'Late secrets cannot enter retained adapter state');
+}
+
+for(const operation of ['list','create','revoke']){
+ const failingCredentials=new MacroMateAPI({...hass,fetchWithAuth:async()=>{throw new Error(`private backend diagnostic ${credentialToken}`);}});
+ await assert.rejects(failingCredentials.credentials(operation,{label:'Uncertain',id:credentialId}),e=>e.code===(operation==='list'?'read_failed':'uncertain')&&!e.message.includes('private')&&!e.message.includes(credentialToken));
+ assert.equal(failingCredentials.pending,null,'Credential failure must not create a WebSocket replayable mutation');
+ assert.equal(failingCredentials.lastFailure,undefined,'Credential failures do not become unrelated app save banners');
+}
+for(const [status,code] of [[400,'invalid_request'],[401,'unauthorized'],[403,'unauthorized']]){
+ let bodyRead=false;
+ const refusedCredentials=new MacroMateAPI({...hass,fetchWithAuth:async()=>({ok:false,status,json:async()=>{bodyRead=true;return {error:credentialToken};}})});
+ await assert.rejects(refusedCredentials.credentials('create',{label:'Refused'}),e=>e.code===code&&!e.message.includes(credentialToken));
+ assert.equal(bodyRead,false,'Error response bodies cannot supply credential UI messages');
+ assert.equal(refusedCredentials.pending,null);
+}
+for(const response of [{},{id:credentialId,revoked:false},{id:'c'.repeat(32),revoked:true}]){
+ const unconfirmedRevoke=new MacroMateAPI({...hass,fetchWithAuth:async()=>({ok:true,status:200,json:async()=>response})});
+ await assert.rejects(unconfirmedRevoke.credentials('revoke',{id:credentialId}),e=>e.code==='uncertain','Only a matching confirmed revocation can report success');
+ assert.equal(unconfirmedRevoke.pending,null,'An unconfirmed credential revocation does not enter ordinary mutation replay');
+}
+failureAPI.hass.fetchWithAuth=async()=>({ok:true,status:200,json:async()=>({credentials:[]})});
+assert.deepEqual(await failureAPI.credentials('list'),{credentials:[]});
+assert.equal(failureAPI.pending,retained,'Credential management preserves an unrelated unresolved recipe/settings mutation');
+assert.equal(failureAPI.lastFailure,previousFailure);
+console.log('PASS: administrator credential management, fixed same-origin endpoints, recipe-only grants, transient secrets, stale-session rejection and sanitized nonreplaying failures');

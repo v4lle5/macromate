@@ -10,9 +10,10 @@ module alone registers nothing.
 
 Registration adds no HA services, authentication providers, WebSocket commands,
 users, refresh tokens or administrator credentials. It creates **no scoped
-credential**: an operator must separately approve and perform minting. No
-production token has been generated or distributed by this implementation/test
-handoff. Source publication is separate from deployment and credential activation.
+credential**: an operator must explicitly create one. The app's administrator-only
+**Settings → Agent** tab uses the current HA session for this action; it never
+asks for a separate HA administrator token. Opening the tab does not mint a
+credential. Source publication is separate from deployment and credential activation.
 
 Every action dynamically resolves exactly one loaded MacroMate coordinator.
 Entry unload fails closed with HTTP 503 for valid scoped data actions; reloading
@@ -67,8 +68,11 @@ nonempty array of supported scopes; omission uses read/create/update for each of
 future, at most 366 days away. No expiry is the explicit default. The issuing HA
 user cannot be supplied in the body. Labels are bounded to 100 characters.
 
-Mint returns metadata plus `token` exactly once. Store only that token in the
-agent's protected local secret file, never in chat, prompts, URLs or logs. Metadata
+Mint returns metadata plus `token` exactly once. The app shows a connection block
+for the operator's explicit one-time handoff to their chosen agent. That block
+contains a credential: keep it private and have the agent store the token in its
+protected secret configuration or owner-only local file, without echoing it in
+replies, URLs or logs. The list endpoint cannot retrieve the token later. Metadata
 contains `id`, `user_id`, `label`, `scopes`, `created_at`, `expires_at`, `revoked`.
 Native HA administrators can list and revoke all delegated credentials. Every
 list, mint and revoke freshly resolves the native request user inside the
@@ -182,13 +186,23 @@ firewall/rate-limit and access-log hygiene at the HA boundary. MacroMate's rate
 limit cannot protect unrelated native HA endpoints. HA auth/IP-ban behavior still
 applies if callers misuse scoped credentials against those endpoints. Do not
 record request bodies or Authorization headers in reverse-proxy diagnostics.
-Raw server mint responses contain the new token; use the local output helper,
-not browser screenshots, verbose curl, shared terminals or chat.
+Raw server mint responses contain the new token. Use the app's intentional
+connection handoff or the local output helper; do not include the token in
+screenshots, verbose HTTP diagnostics or shared logs.
 
 ## Protected local client
 
-For a complete recipe-only LAN setup, discovery, creation and exact readback, see
-[AGENT_LAN_SETUP_DE.md](AGENT_LAN_SETUP_DE.md).
+The simplest recipe-only setup is the app's **Settings → Agent** tab:
+[AGENT_LAN_SETUP_DE.md](AGENT_LAN_SETUP_DE.md). It supplies the same scoped API
+credential and instructions to the operator's chosen agent; it does not install
+or configure a remote agent automatically. The current HA origin is prefilled
+and can be changed to the address reachable from that agent. The tab supports
+**Verbindung kopieren** plus **Verbindungsdaten anzeigen** for manual selection
+when clipboard access is unavailable on LAN HTTP. **Trennen** revokes listed
+credentials through the existing administrator endpoints.
+
+The terminal workflow below is optional; a full German walkthrough is in
+[AGENT_LAN_SETUP_ADVANCED_DE.md](AGENT_LAN_SETUP_ADVANCED_DE.md).
 
 `tools/macromate_scoped_client.py` is separate from the older broad HA client.
 It requires HTTPS unless `--trusted-lan-http` is explicitly supplied. It rejects

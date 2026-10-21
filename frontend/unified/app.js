@@ -1,4 +1,4 @@
-import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCIAZV6Q.js";var M=class{constructor(e){this.hass=e}subscribe(e){return this.hass.connection.subscribeMessage(e,{type:"recipe_manager/subscribe"})}async getAllRecipes(){return this.hass.callWS({type:"recipe_manager/recipes/get_all"})}async getRecipe(e){return this.hass.callWS({type:"recipe_manager/recipes/get",recipe_id:e})}async scrapeRecipe(e,t=!1){return this.hass.callWS({type:"recipe_manager/recipes/scrape",url:e,enabled:t})}async addRecipe(e){return this.hass.callWS({type:"recipe_manager/recipes/add",...e})}async updateRecipe(e,t){return this.hass.callWS({type:"recipe_manager/recipes/update",recipe_id:e,...t})}async deleteRecipe(e){return this.hass.callWS({type:"recipe_manager/recipes/delete",recipe_id:e})}async toggleFavourite(e){return this.hass.callWS({type:"recipe_manager/recipes/toggle_favourite",recipe_id:e})}async downloadRecipeImage(e,t){if(!window.confirm("Allow MacroMate to download and privately normalize this remote image?"))throw{code:"invalid_request"};return this.hass.callWS({type:"recipe_manager/recipes/download_image",recipe_id:e,image_url:t,enabled:!0})}async getTags(){return this.hass.callWS({type:"recipe_manager/tags/get_all"})}async getMealPlan(e){let t={type:"recipe_manager/meal_plan/get"};return e&&(t.week_start=e),this.hass.callWS(t)}async addToMealPlan(e,t,i,a=1,s=null){let o={type:"recipe_manager/meal_plan/add",recipe_id:e,date:t,meal_type:i,servings:a};return s&&(o.notes=s),this.hass.callWS(o)}async removeFromMealPlan(e){return this.hass.callWS({type:"recipe_manager/meal_plan/remove",entry_id:e})}async clearMealPlanWeek(e){return this.hass.callWS({type:"recipe_manager/meal_plan/clear",week_start:e,confirm:!0})}async getGlobalTimers(){return this.hass.callWS({type:"recipe_manager/global_timers/get"})}async addGlobalTimer(e){return this.hass.callWS({type:"recipe_manager/global_timers/add",...e})}async updateGlobalTimer(e,t){return this.hass.callWS({type:"recipe_manager/global_timers/update",timer_id:e,...t})}async deleteGlobalTimer(e){return this.hass.callWS({type:"recipe_manager/global_timers/delete",timer_id:e})}async importRecipeKeeper(e){return this.hass.callWS({type:"recipe_manager/import/recipe_keeper",html_content:e})}async uploadRecipeImage(e,t){return this.hass.callWS({type:"recipe_manager/recipes/upload_image",recipe_id:e,image_data:t})}};var L=(l,e)=>`macromate:ui:${l.context.user}:${e}`;function de(l,e){try{let t=l.getItem(e);return t&&t.length<=131072?JSON.parse(t):null}catch{return null}}function pe(l){if(!l.current()||!l.context.admin)return{};let e=de(sessionStorage,L(l,"view"))||{},t=de(localStorage,L(l,"timers")),i=Date.now();return{view:typeof e.view=="string"?e.view:null,recipeId:typeof e.recipeId=="string"?e.recipeId:null,recentIds:Array.isArray(e.recentIds)?e.recentIds.filter(a=>typeof a=="string"&&a.length<=128).slice(0,200):[],timers:Array.isArray(t)?t.slice(0,100).filter(a=>a&&typeof a.id=="string"&&typeof a.label=="string"&&a.label.length<=300&&Number.isFinite(a.total)&&a.total>0&&a.total<=604800&&Number.isFinite(a.remaining)&&Number.isFinite(a.savedAt)).map(a=>({id:a.id,label:a.label,total:a.total,remaining:Math.max(0,a.remaining-(a.running?Math.max(0,Math.floor((i-a.savedAt)/1e3)):0)),running:a.running===!0,presetId:a.presetId||null})).filter(a=>a.remaining>0):[]}}function me(l,e,t){if(!(!l?.current()||!l.context.admin))try{sessionStorage.setItem(L(l,"view"),JSON.stringify(e)),localStorage.setItem(L(l,"timers"),JSON.stringify(t.filter(i=>!i.global).slice(0,100).map(i=>({id:i.id,label:i.label,total:i.total,remaining:i.remaining,running:i.running===!0,presetId:i.presetId||null,savedAt:Date.now()}))))}catch{}}var P=Object.freeze({theme:"glass-wave",darkMode:"system",fontSize:"medium",columns:3,showFavourites:!0,showPlanner:!0,recentCount:12,timerSound:"beep",keepScreenOn:!1,keepScreenOnMins:30,showUnitConversion:!1,language:"en",unitSystem:"metric"});function w(l={}){let e=l&&typeof l=="object"&&!Array.isArray(l)?l:{};return{...P,...e,theme:"glass-wave",unitSystem:"metric",showUnitConversion:!1,darkMode:["off","system","on"].includes(e.darkMode)?e.darkMode:P.darkMode,fontSize:["small","medium","large"].includes(e.fontSize)?e.fontSize:P.fontSize,columns:[2,3,4,5,8,10].includes(e.columns)?e.columns:P.columns}}var Fe={"--rm-font-family":'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',"--rm-font-size-sm":"calc(var(--rm-font-size-base) * 0.875)","--rm-font-size-xs":"max(12px, calc(var(--rm-font-size-base) * 0.8125))","--rm-line-height":"1.55","--rm-touch-target":"44px","--rm-radius":"18px","--rm-radius-sm":"12px","--rm-radius-lg":"24px","--rm-space-1":"4px","--rm-space-2":"8px","--rm-space-3":"12px","--rm-space-4":"16px","--rm-space-5":"24px","--rm-space-6":"32px","--rm-disabled-opacity":"1"},Me=Object.freeze({light:Object.freeze({"--rm-bg-canvas":"#F9EFDA","--rm-bg-main":"#F9EFDA","--rm-bg-surface":"rgba(253, 248, 239, 0.72)","--rm-bg-elevated":"#FDF8EF","--rm-dialog-bg":"#FDF8EF","--rm-text":"#263B47","--rm-text-secondary":"#53666E","--rm-text-muted":"#53666E","--rm-accent":"#DCCDB8","--rm-primary":"#DCCDB8","--rm-accent-text":"#263B47","--rm-accent-ink":"#263B47","--rm-accent-soft":"#EFE3CE","--rm-border":"#C5CBC7","--rm-border-subtle":"#EFE3CE","--rm-border-strong":"#576C65","--rm-focus":"#576C65","--rm-success":"#576C65","--rm-success-soft":"#C5CBC7","--rm-success-ink":"#263B47","--rm-success-text":"#ffffff","--rm-warning":"#735A1F","--rm-warning-soft":"#EFE3CE","--rm-warning-text":"#ffffff","--rm-danger":"#8C4936","--rm-danger-soft":"#E4A9A3","--rm-danger-text":"#ffffff","--rm-error":"#8C4936","--rm-error-soft":"#E4A9A3","--rm-error-ink":"#263B47","--rm-error-text":"#ffffff","--rm-terracotta":"#B46F52","--rm-rose":"#E4A9A3","--rm-ochre":"#C19A3F","--rm-sage":"#576C65","--rm-disabled-bg":"#EFE3CE","--rm-disabled-text":"#53666E","--rm-shadow":"0 8px 28px rgba(91, 67, 44, 0.10)","--rm-glass-highlight":"rgba(255, 255, 255, 0.7)"}),dark:Object.freeze({"--rm-bg-canvas":"#27231F","--rm-bg-main":"#302A24","--rm-bg-surface":"rgba(61, 52, 43, 0.90)","--rm-bg-elevated":"#40362D","--rm-dialog-bg":"#40362D","--rm-text":"#F9EFDA","--rm-text-secondary":"#DCCDB8","--rm-text-muted":"#C5CBC7","--rm-accent":"#DCCDB8","--rm-primary":"#DCCDB8","--rm-accent-text":"#263B47","--rm-accent-ink":"#DCCDB8","--rm-accent-soft":"#514336","--rm-border":"#776A5A","--rm-border-subtle":"#514336","--rm-border-strong":"#C5CBC7","--rm-focus":"#DCCDB8","--rm-success":"#a6d9b7","--rm-success-soft":"#244837","--rm-success-ink":"#a6d9b7","--rm-success-text":"#173524","--rm-warning":"#ecd28d","--rm-warning-soft":"#494021","--rm-warning-text":"#382b0e","--rm-danger":"#ffb9a7","--rm-danger-soft":"#55352f","--rm-danger-text":"#47251d","--rm-error":"#ffb9a7","--rm-error-soft":"#55352f","--rm-error-ink":"#ffb9a7","--rm-error-text":"#47251d","--rm-terracotta":"#B46F52","--rm-rose":"#E4A9A3","--rm-ochre":"#C19A3F","--rm-sage":"#C5CBC7","--rm-disabled-bg":"#514336","--rm-disabled-text":"#C5CBC7","--rm-shadow":"0 8px 28px rgba(0, 0, 0, 0.22)","--rm-glass-highlight":"rgba(253, 248, 239, 0.08)"})});function Le(l={},e=!1){let t=w(l),i=t.darkMode==="on"||t.darkMode==="system"&&e;return{...Fe,...Me[i?"dark":"light"],"--rm-font-size-base":{small:"14px",medium:"16px",large:"18px"}[t.fontSize],"--rm-grid-columns":`repeat(${t.columns}, minmax(0, 1fr))`}}function he(l,e={},t=!1){let i=w(e),a=i.darkMode==="on"||i.darkMode==="system"&&t?"dark":"light";for(let[s,o]of Object.entries(Le(i,t)))l.style.setProperty(s,o);l.toggleAttribute("glass-wave",!0),l.setAttribute("data-appearance",a),l.style.colorScheme=a}var ue=["de","es","fr","it","nl","pt"],N=["de","en","es","fr","it","nl","pt"];var{getLocale:Pe,setLocale:Ne}=le({sourceLocale:"en",targetLocales:ue,loadLocale:l=>({de:()=>import("./chunks/de-6NBW56XJ.js"),es:()=>import("./chunks/es-A3J7ZU3H.js"),fr:()=>import("./chunks/fr-GWNL7MIW.js"),it:()=>import("./chunks/it-NFOVWZSQ.js"),nl:()=>import("./chunks/nl-BCWQZI3N.js"),pt:()=>import("./chunks/pt-ARZFEKX4.js")})[l]()});async function R(l){let e=N.includes(l)?l:"en";e!==Pe()&&await Ne(e)}var A=new Set,q=new Set,y=null,I=null;function k(){return typeof navigator<"u"&&"wakeLock"in navigator}function U(){let l=!!y;q.forEach(e=>e(l))}async function be(){if(I)return I;if(!(!k()||y)&&!(typeof document<"u"&&document.visibilityState!=="visible"))return I=(async()=>{try{let l=await navigator.wakeLock.request("screen");if(!A.size||document.visibilityState!=="visible"){await l.release();return}y=l,y.addEventListener("release",()=>{y=null,U()}),U()}catch(l){console.warn("[RM] Wake Lock request failed:",l)}finally{I=null}})(),I}async function Oe(){if(y){try{await y.release()}catch{}y=null,U()}}async function ve(){A.size>0?await be():await Oe()}typeof document<"u"&&document.addEventListener("visibilitychange",()=>{document.visibilityState==="visible"&&A.size>0&&be()});async function O(l){A.add(l),await ve()}async function D(l){A.delete(l),await ve()}function fe(l){return q.add(l),()=>q.delete(l)}var f=b`
+import{a as b,b as s,c as z,d as v,e as p,f as r,g as de}from"./chunks/chunk-MCIAZV6Q.js";var F=class{constructor(e){this.hass=e}subscribe(e){return this.hass.connection.subscribeMessage(e,{type:"recipe_manager/subscribe"})}async getAllRecipes(){return this.hass.callWS({type:"recipe_manager/recipes/get_all"})}async getRecipe(e){return this.hass.callWS({type:"recipe_manager/recipes/get",recipe_id:e})}async scrapeRecipe(e,t=!1){return this.hass.callWS({type:"recipe_manager/recipes/scrape",url:e,enabled:t})}async addRecipe(e){return this.hass.callWS({type:"recipe_manager/recipes/add",...e})}async updateRecipe(e,t){return this.hass.callWS({type:"recipe_manager/recipes/update",recipe_id:e,...t})}async deleteRecipe(e){return this.hass.callWS({type:"recipe_manager/recipes/delete",recipe_id:e})}async toggleFavourite(e){return this.hass.callWS({type:"recipe_manager/recipes/toggle_favourite",recipe_id:e})}async downloadRecipeImage(e,t){if(!window.confirm("Allow MacroMate to download and privately normalize this remote image?"))throw{code:"invalid_request"};return this.hass.callWS({type:"recipe_manager/recipes/download_image",recipe_id:e,image_url:t,enabled:!0})}async getTags(){return this.hass.callWS({type:"recipe_manager/tags/get_all"})}async getMealPlan(e){let t={type:"recipe_manager/meal_plan/get"};return e&&(t.week_start=e),this.hass.callWS(t)}async addToMealPlan(e,t,i,a=1,n=null){let o={type:"recipe_manager/meal_plan/add",recipe_id:e,date:t,meal_type:i,servings:a};return n&&(o.notes=n),this.hass.callWS(o)}async removeFromMealPlan(e){return this.hass.callWS({type:"recipe_manager/meal_plan/remove",entry_id:e})}async clearMealPlanWeek(e){return this.hass.callWS({type:"recipe_manager/meal_plan/clear",week_start:e,confirm:!0})}async getGlobalTimers(){return this.hass.callWS({type:"recipe_manager/global_timers/get"})}async addGlobalTimer(e){return this.hass.callWS({type:"recipe_manager/global_timers/add",...e})}async updateGlobalTimer(e,t){return this.hass.callWS({type:"recipe_manager/global_timers/update",timer_id:e,...t})}async deleteGlobalTimer(e){return this.hass.callWS({type:"recipe_manager/global_timers/delete",timer_id:e})}async importRecipeKeeper(e){return this.hass.callWS({type:"recipe_manager/import/recipe_keeper",html_content:e})}async uploadRecipeImage(e,t){return this.hass.callWS({type:"recipe_manager/recipes/upload_image",recipe_id:e,image_data:t})}};var L=(l,e)=>`macromate:ui:${l.context.user}:${e}`;function pe(l,e){try{let t=l.getItem(e);return t&&t.length<=131072?JSON.parse(t):null}catch{return null}}function he(l){if(!l.current()||!l.context.admin)return{};let e=pe(sessionStorage,L(l,"view"))||{},t=pe(localStorage,L(l,"timers")),i=Date.now();return{view:typeof e.view=="string"?e.view:null,recipeId:typeof e.recipeId=="string"?e.recipeId:null,recentIds:Array.isArray(e.recentIds)?e.recentIds.filter(a=>typeof a=="string"&&a.length<=128).slice(0,200):[],timers:Array.isArray(t)?t.slice(0,100).filter(a=>a&&typeof a.id=="string"&&typeof a.label=="string"&&a.label.length<=300&&Number.isFinite(a.total)&&a.total>0&&a.total<=604800&&Number.isFinite(a.remaining)&&Number.isFinite(a.savedAt)).map(a=>({id:a.id,label:a.label,total:a.total,remaining:Math.max(0,a.remaining-(a.running?Math.max(0,Math.floor((i-a.savedAt)/1e3)):0)),running:a.running===!0,presetId:a.presetId||null})).filter(a=>a.remaining>0):[]}}function me(l,e,t){if(!(!l?.current()||!l.context.admin))try{sessionStorage.setItem(L(l,"view"),JSON.stringify(e)),localStorage.setItem(L(l,"timers"),JSON.stringify(t.filter(i=>!i.global).slice(0,100).map(i=>({id:i.id,label:i.label,total:i.total,remaining:i.remaining,running:i.running===!0,presetId:i.presetId||null,savedAt:Date.now()}))))}catch{}}var P=Object.freeze({theme:"glass-wave",darkMode:"system",fontSize:"medium",columns:3,showFavourites:!0,showPlanner:!0,recentCount:12,timerSound:"beep",keepScreenOn:!1,keepScreenOnMins:30,showUnitConversion:!1,language:"en",unitSystem:"metric"});function w(l={}){let e=l&&typeof l=="object"&&!Array.isArray(l)?l:{};return{...P,...e,theme:"glass-wave",unitSystem:"metric",showUnitConversion:!1,darkMode:["off","system","on"].includes(e.darkMode)?e.darkMode:P.darkMode,fontSize:["small","medium","large"].includes(e.fontSize)?e.fontSize:P.fontSize,columns:[2,3,4,5,8,10].includes(e.columns)?e.columns:P.columns}}var Fe={"--rm-font-family":'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',"--rm-font-size-sm":"calc(var(--rm-font-size-base) * 0.875)","--rm-font-size-xs":"max(12px, calc(var(--rm-font-size-base) * 0.8125))","--rm-line-height":"1.55","--rm-touch-target":"44px","--rm-radius":"18px","--rm-radius-sm":"12px","--rm-radius-lg":"24px","--rm-space-1":"4px","--rm-space-2":"8px","--rm-space-3":"12px","--rm-space-4":"16px","--rm-space-5":"24px","--rm-space-6":"32px","--rm-disabled-opacity":"1"},Le=Object.freeze({light:Object.freeze({"--rm-bg-canvas":"#F9EFDA","--rm-bg-main":"#F9EFDA","--rm-bg-surface":"rgba(253, 248, 239, 0.72)","--rm-bg-elevated":"#FDF8EF","--rm-dialog-bg":"#FDF8EF","--rm-text":"#263B47","--rm-text-secondary":"#53666E","--rm-text-muted":"#53666E","--rm-accent":"#DCCDB8","--rm-primary":"#DCCDB8","--rm-accent-text":"#263B47","--rm-accent-ink":"#263B47","--rm-accent-soft":"#EFE3CE","--rm-border":"#C5CBC7","--rm-border-subtle":"#EFE3CE","--rm-border-strong":"#576C65","--rm-focus":"#576C65","--rm-success":"#576C65","--rm-success-soft":"#C5CBC7","--rm-success-ink":"#263B47","--rm-success-text":"#ffffff","--rm-warning":"#735A1F","--rm-warning-soft":"#EFE3CE","--rm-warning-text":"#ffffff","--rm-danger":"#8C4936","--rm-danger-soft":"#E4A9A3","--rm-danger-text":"#ffffff","--rm-error":"#8C4936","--rm-error-soft":"#E4A9A3","--rm-error-ink":"#263B47","--rm-error-text":"#ffffff","--rm-terracotta":"#B46F52","--rm-rose":"#E4A9A3","--rm-ochre":"#C19A3F","--rm-sage":"#576C65","--rm-disabled-bg":"#EFE3CE","--rm-disabled-text":"#53666E","--rm-shadow":"0 8px 28px rgba(91, 67, 44, 0.10)","--rm-glass-highlight":"rgba(255, 255, 255, 0.7)"}),dark:Object.freeze({"--rm-bg-canvas":"#27231F","--rm-bg-main":"#302A24","--rm-bg-surface":"rgba(61, 52, 43, 0.90)","--rm-bg-elevated":"#40362D","--rm-dialog-bg":"#40362D","--rm-text":"#F9EFDA","--rm-text-secondary":"#DCCDB8","--rm-text-muted":"#C5CBC7","--rm-accent":"#DCCDB8","--rm-primary":"#DCCDB8","--rm-accent-text":"#263B47","--rm-accent-ink":"#DCCDB8","--rm-accent-soft":"#514336","--rm-border":"#776A5A","--rm-border-subtle":"#514336","--rm-border-strong":"#C5CBC7","--rm-focus":"#DCCDB8","--rm-success":"#a6d9b7","--rm-success-soft":"#244837","--rm-success-ink":"#a6d9b7","--rm-success-text":"#173524","--rm-warning":"#ecd28d","--rm-warning-soft":"#494021","--rm-warning-text":"#382b0e","--rm-danger":"#ffb9a7","--rm-danger-soft":"#55352f","--rm-danger-text":"#47251d","--rm-error":"#ffb9a7","--rm-error-soft":"#55352f","--rm-error-ink":"#ffb9a7","--rm-error-text":"#47251d","--rm-terracotta":"#B46F52","--rm-rose":"#E4A9A3","--rm-ochre":"#C19A3F","--rm-sage":"#C5CBC7","--rm-disabled-bg":"#514336","--rm-disabled-text":"#C5CBC7","--rm-shadow":"0 8px 28px rgba(0, 0, 0, 0.22)","--rm-glass-highlight":"rgba(253, 248, 239, 0.08)"})});function Pe(l={},e=!1){let t=w(l),i=t.darkMode==="on"||t.darkMode==="system"&&e;return{...Fe,...Le[i?"dark":"light"],"--rm-font-size-base":{small:"14px",medium:"16px",large:"18px"}[t.fontSize],"--rm-grid-columns":`repeat(${t.columns}, minmax(0, 1fr))`}}function ue(l,e={},t=!1){let i=w(e),a=i.darkMode==="on"||i.darkMode==="system"&&t?"dark":"light";for(let[n,o]of Object.entries(Pe(i,t)))l.style.setProperty(n,o);l.toggleAttribute("glass-wave",!0),l.setAttribute("data-appearance",a),l.style.colorScheme=a}var ge=["de","es","fr","it","nl","pt"],N=["de","en","es","fr","it","nl","pt"];var{getLocale:Ne,setLocale:Oe}=de({sourceLocale:"en",targetLocales:ge,loadLocale:l=>({de:()=>import("./chunks/de-6NBW56XJ.js"),es:()=>import("./chunks/es-A3J7ZU3H.js"),fr:()=>import("./chunks/fr-GWNL7MIW.js"),it:()=>import("./chunks/it-NFOVWZSQ.js"),nl:()=>import("./chunks/nl-BCWQZI3N.js"),pt:()=>import("./chunks/pt-ARZFEKX4.js")})[l]()});async function A(l){let e=N.includes(l)?l:"en";e!==Ne()&&await Oe(e)}var I=new Set,q=new Set,k=null,R=null;function y(){return typeof navigator<"u"&&"wakeLock"in navigator}function U(){let l=!!k;q.forEach(e=>e(l))}async function ve(){if(R)return R;if(!(!y()||k)&&!(typeof document<"u"&&document.visibilityState!=="visible"))return R=(async()=>{try{let l=await navigator.wakeLock.request("screen");if(!I.size||document.visibilityState!=="visible"){await l.release();return}k=l,k.addEventListener("release",()=>{k=null,U()}),U()}catch(l){console.warn("[RM] Wake Lock request failed:",l)}finally{R=null}})(),R}async function je(){if(k){try{await k.release()}catch{}k=null,U()}}async function fe(){I.size>0?await ve():await je()}typeof document<"u"&&document.addEventListener("visibilitychange",()=>{document.visibilityState==="visible"&&I.size>0&&ve()});async function O(l){I.add(l),await fe()}async function D(l){I.delete(l),await fe()}function xe(l){return q.add(l),()=>q.delete(l)}var f=b`
   :host {
     min-width: 0;
     min-height: 0;
@@ -72,22 +72,22 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
       scroll-behavior: auto !important;
     }
   }
-`;var V=class extends v{static properties={recipes:{type:Array},allRecipes:{type:Array},tags:{type:Array},searchQuery:{type:String},activeTag:{type:String},columns:{type:Number},showFavourites:{type:Boolean},hideSidebar:{type:Boolean},scrollPos:{type:Number},recentRecipes:{type:Array},recentCount:{type:Number},_filterMode:{type:String},_starFilter:{type:Number},_sortByRating:{type:Boolean},_showRatingMenu:{type:Boolean},_selectedCourses:{type:Object},_selectedCategories:{type:Object},_selectedCollections:{type:Object},filterPreset:{type:Object}};constructor(){super(),this.recipes=[],this.allRecipes=[],this.tags=[],this.searchQuery="",this.activeTag=null,this.columns=3,this.showFavourites=!0,this.hideSidebar=!1,this.scrollPos=0,this.recentRecipes=[],this.recentCount=12,this._filterMode="all",this._starFilter=0,this._sortByRating=!1,this._showRatingMenu=!1,this._selectedCourses=new Set,this._selectedCategories=new Set,this._selectedCollections=new Set,this._lastScrollPos=0,this._hasRestoredScroll=!1,this.filterPreset=null}_toggleChip(e,t){let i=e==="courses"?"_selectedCourses":e==="categories"?"_selectedCategories":"_selectedCollections",a=new Set(this[i]);a.has(t)?a.delete(t):a.add(t),this[i]=a}updated(e){if(e.has("filterPreset")&&this.filterPreset){let{filterMode:t,selectedValues:i}=this.filterPreset;this._filterMode=t,this._selectedCourses=new Set,this._selectedCategories=new Set,this._selectedCollections=new Set,t==="courses"&&(this._selectedCourses=new Set(i)),t==="categories"&&(this._selectedCategories=new Set(i)),t==="collections"&&(this._selectedCollections=new Set(i))}e.has("scrollPos")&&(this._hasRestoredScroll=!1),this.scrollPos!=null&&!this._hasRestoredScroll&&(this._hasRestoredScroll=!0,this.updateComplete.then(()=>{requestAnimationFrame(()=>{let t=this.shadowRoot?.querySelector(".grid-scroll");t&&(t.scrollTop=this.scrollPos)})}))}_handleSearchInput(e){this.dispatchEvent(new CustomEvent("rm-search",{detail:{query:e.target.value},bubbles:!0,composed:!0}))}_handleClearSearch(){this.dispatchEvent(new CustomEvent("rm-search",{detail:{query:""},bubbles:!0,composed:!0}))}_handleTagClick(e){this.dispatchEvent(new CustomEvent("rm-tag-filter",{detail:{tag:e},bubbles:!0,composed:!0}))}_handleOpenRecipe(e){this.dispatchEvent(new CustomEvent("rm-open-recipe",{detail:{recipe:e},bubbles:!0,composed:!0}))}_handleToggleFavourite(e,t){e.stopPropagation(),this.dispatchEvent(new CustomEvent("rm-toggle-favourite",{detail:{recipeId:t.id},bubbles:!0,composed:!0}))}_recipeMatchesTag(e,t){return t?e.tags?.includes(t)||e.courses?.includes(t)||e.categories?.includes(t)||e.collections?.includes(t):!0}_recipeMatchesSearch(e,t){let i=(t||"").trim().toLowerCase();return i?e.name?.toLowerCase().includes(i)||e.description?.toLowerCase().includes(i)||e.tags?.some(a=>a.toLowerCase().includes(i)):!0}_formatTime(e){if(!e)return null;if(e<60)return`${e}m`;let t=Math.floor(e/60),i=e%60;return i?`${t}h ${i}m`:`${t}h`}_getFilteredList(){let e=this._selectedCourses.size>0,t=this._selectedCategories.size>0,i=this._selectedCollections.size>0,a=e||t||i,s;switch(a?s=this.allRecipes.filter(o=>{let c=!e||(o.courses||[]).some(u=>this._selectedCourses.has(u)),d=!t||(o.categories||[]).some(u=>this._selectedCategories.has(u)),h=!i||(o.collections||[]).some(u=>this._selectedCollections.has(u));return c&&d&&h&&this._recipeMatchesSearch(o,this.searchQuery)}):s=this.recipes,this._filterMode){case"favourites":s=this.allRecipes.filter(o=>o.is_favourite).filter(o=>!a||s.some(c=>c.id===o.id));break;case"recent":s=this.recentRecipes.slice(0,this.recentCount).filter(o=>!a||s.some(c=>c.id===o.id));break}return s=s.filter(o=>this._recipeMatchesSearch(o,this.searchQuery)&&this._recipeMatchesTag(o,this.activeTag)),this._starFilter>0&&(s=s.filter(o=>(o.rating||0)>=this._starFilter)),this._sortByRating&&(s=[...s].sort((o,c)=>(c.rating||0)-(o.rating||0))),s}get _allCourses(){let e=new Set;return this.allRecipes.forEach(t=>(t.courses||[]).forEach(i=>e.add(i))),[...e].sort()}get _coursecounts(){let e={};return this.allRecipes.forEach(t=>(t.courses||[]).forEach(i=>{e[i]=(e[i]||0)+1})),e}get _allCategories(){let e=new Set;return this.allRecipes.forEach(t=>(t.categories||[]).forEach(i=>e.add(i))),[...e].sort()}get _categorycounts(){let e={};return this.allRecipes.forEach(t=>(t.categories||[]).forEach(i=>{e[i]=(e[i]||0)+1})),e}get _allCollections(){let e=new Set;return this.allRecipes.forEach(t=>(t.collections||[]).forEach(i=>e.add(i))),[...e].sort()}get _collectioncounts(){let e={};return this.allRecipes.forEach(t=>(t.collections||[]).forEach(i=>{e[i]=(e[i]||0)+1})),e}_renderStars(e){let t=e||0;return n`
+`;var V=class extends v{static properties={recipes:{type:Array},allRecipes:{type:Array},tags:{type:Array},searchQuery:{type:String},activeTag:{type:String},columns:{type:Number},showFavourites:{type:Boolean},hideSidebar:{type:Boolean},scrollPos:{type:Number},recentRecipes:{type:Array},recentCount:{type:Number},_filterMode:{type:String},_starFilter:{type:Number},_sortByRating:{type:Boolean},_showRatingMenu:{type:Boolean},_selectedCourses:{type:Object},_selectedCategories:{type:Object},_selectedCollections:{type:Object},filterPreset:{type:Object}};constructor(){super(),this.recipes=[],this.allRecipes=[],this.tags=[],this.searchQuery="",this.activeTag=null,this.columns=3,this.showFavourites=!0,this.hideSidebar=!1,this.scrollPos=0,this.recentRecipes=[],this.recentCount=12,this._filterMode="all",this._starFilter=0,this._sortByRating=!1,this._showRatingMenu=!1,this._selectedCourses=new Set,this._selectedCategories=new Set,this._selectedCollections=new Set,this._lastScrollPos=0,this._hasRestoredScroll=!1,this.filterPreset=null}_toggleChip(e,t){let i=e==="courses"?"_selectedCourses":e==="categories"?"_selectedCategories":"_selectedCollections",a=new Set(this[i]);a.has(t)?a.delete(t):a.add(t),this[i]=a}updated(e){if(e.has("filterPreset")&&this.filterPreset){let{filterMode:t,selectedValues:i}=this.filterPreset;this._filterMode=t,this._selectedCourses=new Set,this._selectedCategories=new Set,this._selectedCollections=new Set,t==="courses"&&(this._selectedCourses=new Set(i)),t==="categories"&&(this._selectedCategories=new Set(i)),t==="collections"&&(this._selectedCollections=new Set(i))}e.has("scrollPos")&&(this._hasRestoredScroll=!1),this.scrollPos!=null&&!this._hasRestoredScroll&&(this._hasRestoredScroll=!0,this.updateComplete.then(()=>{requestAnimationFrame(()=>{let t=this.shadowRoot?.querySelector(".grid-scroll");t&&(t.scrollTop=this.scrollPos)})}))}_handleSearchInput(e){this.dispatchEvent(new CustomEvent("rm-search",{detail:{query:e.target.value},bubbles:!0,composed:!0}))}_handleClearSearch(){this.dispatchEvent(new CustomEvent("rm-search",{detail:{query:""},bubbles:!0,composed:!0}))}_handleTagClick(e){this.dispatchEvent(new CustomEvent("rm-tag-filter",{detail:{tag:e},bubbles:!0,composed:!0}))}_handleOpenRecipe(e){this.dispatchEvent(new CustomEvent("rm-open-recipe",{detail:{recipe:e},bubbles:!0,composed:!0}))}_handleToggleFavourite(e,t){e.stopPropagation(),this.dispatchEvent(new CustomEvent("rm-toggle-favourite",{detail:{recipeId:t.id},bubbles:!0,composed:!0}))}_recipeMatchesTag(e,t){return t?e.tags?.includes(t)||e.courses?.includes(t)||e.categories?.includes(t)||e.collections?.includes(t):!0}_recipeMatchesSearch(e,t){let i=(t||"").trim().toLowerCase();return i?e.name?.toLowerCase().includes(i)||e.description?.toLowerCase().includes(i)||e.tags?.some(a=>a.toLowerCase().includes(i)):!0}_formatTime(e){if(!e)return null;if(e<60)return`${e}m`;let t=Math.floor(e/60),i=e%60;return i?`${t}h ${i}m`:`${t}h`}_getFilteredList(){let e=this._selectedCourses.size>0,t=this._selectedCategories.size>0,i=this._selectedCollections.size>0,a=e||t||i,n;switch(a?n=this.allRecipes.filter(o=>{let c=!e||(o.courses||[]).some(u=>this._selectedCourses.has(u)),d=!t||(o.categories||[]).some(u=>this._selectedCategories.has(u)),m=!i||(o.collections||[]).some(u=>this._selectedCollections.has(u));return c&&d&&m&&this._recipeMatchesSearch(o,this.searchQuery)}):n=this.recipes,this._filterMode){case"favourites":n=this.allRecipes.filter(o=>o.is_favourite).filter(o=>!a||n.some(c=>c.id===o.id));break;case"recent":n=this.recentRecipes.slice(0,this.recentCount).filter(o=>!a||n.some(c=>c.id===o.id));break}return n=n.filter(o=>this._recipeMatchesSearch(o,this.searchQuery)&&this._recipeMatchesTag(o,this.activeTag)),this._starFilter>0&&(n=n.filter(o=>(o.rating||0)>=this._starFilter)),this._sortByRating&&(n=[...n].sort((o,c)=>(c.rating||0)-(o.rating||0))),n}get _allCourses(){let e=new Set;return this.allRecipes.forEach(t=>(t.courses||[]).forEach(i=>e.add(i))),[...e].sort()}get _coursecounts(){let e={};return this.allRecipes.forEach(t=>(t.courses||[]).forEach(i=>{e[i]=(e[i]||0)+1})),e}get _allCategories(){let e=new Set;return this.allRecipes.forEach(t=>(t.categories||[]).forEach(i=>e.add(i))),[...e].sort()}get _categorycounts(){let e={};return this.allRecipes.forEach(t=>(t.categories||[]).forEach(i=>{e[i]=(e[i]||0)+1})),e}get _allCollections(){let e=new Set;return this.allRecipes.forEach(t=>(t.collections||[]).forEach(i=>e.add(i))),[...e].sort()}get _collectioncounts(){let e={};return this.allRecipes.forEach(t=>(t.collections||[]).forEach(i=>{e[i]=(e[i]||0)+1})),e}_renderStars(e){let t=e||0;return s`
       <div class="card-stars">
-        ${[1,2,3,4,5].map(i=>n`<span class="card-star ${i<=t?"filled":""}"
+        ${[1,2,3,4,5].map(i=>s`<span class="card-star ${i<=t?"filled":""}"
               >${i<=t?"\u2605":"\u2606"}</span
             >`)}
       </div>
-    `}_renderRecipeCard(e){let t=e.total_time||(e.prep_time||0)+(e.cook_time||0)||null;return n`
+    `}_renderRecipeCard(e){let t=e.total_time||(e.prep_time||0)+(e.cook_time||0)||null;return s`
       <article class="recipe-card">
         <div class="recipe-thumb">
-          ${e.image_url?n`
+          ${e.image_url?s`
                 <img
                   src="${e.image_url}"
                   alt="${e.name}"
                   loading="lazy"
                 />
-              `:n`
+              `:s`
                 <div class="recipe-thumb-placeholder">
                   <ha-icon icon="mdi:food"></ha-icon>
                 </div>
@@ -113,28 +113,28 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </h3>
           ${this._renderStars(e.rating)}
           <div class="recipe-meta">
-            ${t?n`
+            ${t?s`
                   <span class="meta-chip">
                     <ha-icon icon="mdi:clock-outline"></ha-icon>
                     ${this._formatTime(t)}
                   </span>
                 `:""}
-            ${e.servings?n`
+            ${e.servings?s`
                   <span class="meta-chip">
                     <ha-icon icon="mdi:account-group-outline"></ha-icon>
                     ${e.servings}
                   </span>
                 `:""}
-            ${e.tags?.length?n`
+            ${e.tags?.length?s`
                   <span class="meta-chip tag-chip">${e.tags[0]}</span>
                 `:""}
           </div>
         </div>
       </article>
-    `}_renderRatingMenu(){return n`
+    `}_renderRatingMenu(){return s`
       <div class="rating-menu" @click=${e=>e.stopPropagation()}>
         <div class="rating-menu-section">${r("Filter by rating")}</div>
-        ${[0,1,2,3,4,5].map(e=>n`
+        ${[0,1,2,3,4,5].map(e=>s`
             <button
               class="rating-menu-item ${this._starFilter===e?"active":""}"
               @click=${()=>{this._starFilter=e,this._showRatingMenu=!1}}
@@ -152,13 +152,13 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           ${r(p`${this._sortByRating?"\u2713 ":""}Sort by rating`)}
         </button>
       </div>
-    `}render(){let e=this._getFilteredList(),t=this._filterMode==="all"&&this.showFavourites&&!this.activeTag&&!this.searchQuery&&!this._starFilter&&!this._sortByRating,i=t?e.filter(c=>c.is_favourite):[],a=t&&i.length?e.filter(c=>!c.is_favourite):e,s=`grid-template-columns: var(--rm-grid-columns, repeat(${this.columns}, minmax(0, 1fr)));`,o=this._starFilter>0||this._sortByRating;return n`
+    `}render(){let e=this._getFilteredList(),t=this._filterMode==="all"&&this.showFavourites&&!this.activeTag&&!this.searchQuery&&!this._starFilter&&!this._sortByRating,i=t?e.filter(c=>c.is_favourite):[],a=t&&i.length?e.filter(c=>!c.is_favourite):e,n=`grid-template-columns: var(--rm-grid-columns, repeat(${this.columns}, minmax(0, 1fr)));`,o=this._starFilter>0||this._sortByRating;return s`
       <div
         class="grid-container"
         @click=${()=>{this._showRatingMenu&&(this._showRatingMenu=!1)}}
       >
         <!-- Search bar — only shown on narrow (sidebar-less) view -->
-        ${this.hideSidebar?"":n`
+        ${this.hideSidebar?"":s`
               <div class="search-row">
                 <div class="search-wrap">
                   <ha-icon icon="mdi:magnify" class="search-icon"></ha-icon>
@@ -169,7 +169,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                     .value=${this.searchQuery}
                     @input=${this._handleSearchInput}
                   />
-                  ${this.searchQuery?n`
+                  ${this.searchQuery?s`
                         <button
                           class="clear-btn"
                           @click=${this._handleClearSearch}
@@ -182,17 +182,17 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             `}
 
         <!-- Filter tabs + rating filter button (wide view) -->
-        ${this.hideSidebar?n`
+        ${this.hideSidebar?s`
               <div class="filter-tabs-row">
                 <div class="filter-tabs">
-                  ${[["all","mdi:view-grid",r("All"),null],["courses","mdi:silverware-fork-knife",r("Courses"),"_selectedCourses"],["categories","mdi:tag-multiple-outline",r("Categories"),"_selectedCategories"],["collections","mdi:folder-multiple-outline",r("Collections"),"_selectedCollections"],["favourites","mdi:heart-outline",r("Favourites"),null],["recent","mdi:history",r("Recent"),null]].map(([c,d,h,u])=>n`
+                  ${[["all","mdi:view-grid",r("All"),null],["courses","mdi:silverware-fork-knife",r("Courses"),"_selectedCourses"],["categories","mdi:tag-multiple-outline",r("Categories"),"_selectedCategories"],["collections","mdi:folder-multiple-outline",r("Collections"),"_selectedCollections"],["favourites","mdi:heart-outline",r("Favourites"),null],["recent","mdi:history",r("Recent"),null]].map(([c,d,m,u])=>s`
                       <button
                         class="filter-tab ${this._filterMode===c?"active":""}"
                         @click=${()=>{this._filterMode=c,c==="all"&&(this._selectedCourses=new Set,this._selectedCategories=new Set,this._selectedCollections=new Set)}}
                       >
                         <ha-icon icon="${d}"></ha-icon>
-                        <span>${h}</span>
-                        ${u&&this[u]?.size>0?n`<span class="tab-badge"></span>`:""}
+                        <span>${m}</span>
+                        ${u&&this[u]?.size>0?s`<span class="tab-badge"></span>`:""}
                       </button>
                     `)}
                 </div>
@@ -204,7 +204,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                     title="${r("Filter/sort by rating")}"
                   >
                     <ha-icon icon="mdi:filter-menu-outline"></ha-icon>
-                    ${o?n`<span class="rating-filter-badge"></span>`:""}
+                    ${o?s`<span class="rating-filter-badge"></span>`:""}
                   </button>
                   ${this._showRatingMenu?this._renderRatingMenu():""}
                 </div>
@@ -212,7 +212,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             `:""}
 
         <!-- Sub-filter chips for Courses / Categories / Collections (multi-select) -->
-        ${this.hideSidebar&&this._filterMode==="courses"&&this._allCourses.length?n`
+        ${this.hideSidebar&&this._filterMode==="courses"&&this._allCourses.length?s`
               <div class="sub-filter-row">
                 <button
                   class="sub-chip ${this._selectedCourses.size?"":"active"}"
@@ -220,7 +220,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 >
                   ${r("All")}
                 </button>
-                ${this._allCourses.map(c=>n`
+                ${this._allCourses.map(c=>s`
                     <button
                       class="sub-chip ${this._selectedCourses.has(c)?"active":""}"
                       @click=${()=>this._toggleChip("courses",c)}
@@ -232,7 +232,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                   `)}
               </div>
             `:""}
-        ${this.hideSidebar&&this._filterMode==="categories"&&this._allCategories.length?n`
+        ${this.hideSidebar&&this._filterMode==="categories"&&this._allCategories.length?s`
               <div class="sub-filter-row">
                 <button
                   class="sub-chip ${this._selectedCategories.size?"":"active"}"
@@ -240,7 +240,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 >
                   ${r("All")}
                 </button>
-                ${this._allCategories.map(c=>n`
+                ${this._allCategories.map(c=>s`
                     <button
                       class="sub-chip ${this._selectedCategories.has(c)?"active":""}"
                       @click=${()=>this._toggleChip("categories",c)}
@@ -252,7 +252,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                   `)}
               </div>
             `:""}
-        ${this.hideSidebar&&this._filterMode==="collections"&&this._allCollections.length?n`
+        ${this.hideSidebar&&this._filterMode==="collections"&&this._allCollections.length?s`
               <div class="sub-filter-row">
                 <button
                   class="sub-chip ${this._selectedCollections.size?"":"active"}"
@@ -260,7 +260,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 >
                   ${r("All")}
                 </button>
-                ${this._allCollections.map(c=>n`
+                ${this._allCollections.map(c=>s`
                     <button
                       class="sub-chip ${this._selectedCollections.has(c)?"active":""}"
                       @click=${()=>this._toggleChip("collections",c)}
@@ -274,9 +274,9 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             `:""}
 
         <!-- Tag chips (narrow view only) -->
-        ${!this.hideSidebar&&this.tags.length?n`
+        ${!this.hideSidebar&&this.tags.length?s`
               <div class="tags-row">
-                ${this.tags.map(c=>n`
+                ${this.tags.map(c=>s`
                     <button
                       class="tag-btn ${this.activeTag===c?"active":""}"
                       @click=${()=>this._handleTagClick(c)}
@@ -288,12 +288,12 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             `:""}
 
         <!-- Active filter hint -->
-        ${o?n`
+        ${o?s`
               <div class="active-filter-bar">
-                ${this._starFilter>0?n`<span
+                ${this._starFilter>0?s`<span
                       >${r(p`⭐ ${this._starFilter}+ stars`)}</span
                     >`:""}
-                ${this._sortByRating?n`<span>${r("Sorted by rating")}</span>`:""}
+                ${this._sortByRating?s`<span>${r("Sorted by rating")}</span>`:""}
                 <button
                   class="clear-filter-btn"
                   @click=${()=>{this._starFilter=0,this._sortByRating=!1}}
@@ -308,25 +308,25 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           class="grid-scroll"
           @scroll=${c=>{this._lastScrollPos=c.target.scrollTop}}
         >
-          ${e.length===0?n`
+          ${e.length===0?s`
                 <div class="empty-state">
                   <ha-icon icon="mdi:pot-steam-outline"></ha-icon>
                   <p>
                     ${this.searchQuery||this.activeTag?r("No matching recipes"):this._starFilter>0?r(p`No recipes with ${this._starFilter}+ stars`):this._filterMode==="favourites"?r("No favourites yet \u2014 heart a recipe!"):this._filterMode==="recent"?r("No recently viewed recipes yet."):r("No recipes found")}
                   </p>
                 </div>
-              `:n`
-                ${t&&i.length?n`
+              `:s`
+                ${t&&i.length?s`
                       <div class="section-label">${r("Favourites")}</div>
-                      <div class="recipe-grid" style=${s}>
+                      <div class="recipe-grid" style=${n}>
                         ${i.map(c=>this._renderRecipeCard(c))}
                       </div>
-                      ${a.length?n`<div class="section-label">
+                      ${a.length?s`<div class="section-label">
                             ${r("All Recipes")}
                           </div>`:""}
                     `:""}
 
-                <div class="recipe-grid" style=${s}>
+                <div class="recipe-grid" style=${n}>
                   ${a.map(c=>this._renderRecipeCard(c))}
                 </div>
               `}
@@ -842,10 +842,10 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
       font-size: var(--rm-font-size-base, 16px);
     }
     ${f}
-  `};try{customElements.define("rm-recipe-grid",V)}catch{}var je={"\xBD":.5,"\xBC":.25,"\xBE":.75,"\u2153":.3333333333333333,"\u2154":.6666666666666666,"\u215B":.125,"\u215C":.375,"\u215D":.625,"\u215E":.875};function G(l){if(l==null)return null;let e=String(l).trim().replace(",","."),t,i=e.match(/^(\d+)?\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/),a=e.match(/^(?:(\d+)\s+)?(\d+)\/(\d+)$/);if(i)t=Number(i[1]||0)+je[i[2]];else if(a){if(Number(a[3])===0)return null;t=Number(a[1]||0)+Number(a[2])/Number(a[3])}else if(/^\d+(?:\.\d+)?$/.test(e))t=Number(e);else return null;return Number.isFinite(t)&&t>=0&&t<=1e6?t:null}function xe(l,e){let t=G(l);if(t===null||!Number.isFinite(e)||e<=0||e>1e4)return l;let i=t*e;return!Number.isFinite(i)||i>1e10?l:String(Number(i.toFixed(4)))}function E(l){return String(l).split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g).map(e=>e.startsWith("**")?n`<strong>${e.slice(2,-2)}</strong>`:e.startsWith("`")?n`<code>${e.slice(1,-1)}</code>`:e.startsWith("*")?n`<em>${e.slice(1,-1)}</em>`:e)}function F(l){return String(l||"").split(`
-`).map(e=>e.startsWith("### ")?n`<h3>${E(e.slice(4))}</h3>`:e.startsWith("## ")?n`<h2>${E(e.slice(3))}</h2>`:e.startsWith("# ")?n`<h1>${E(e.slice(2))}</h1>`:/^[-*] /.test(e)?n`<ul>
+  `};try{customElements.define("rm-recipe-grid",V)}catch{}var We={"\xBD":.5,"\xBC":.25,"\xBE":.75,"\u2153":.3333333333333333,"\u2154":.6666666666666666,"\u215B":.125,"\u215C":.375,"\u215D":.625,"\u215E":.875};function G(l){if(l==null)return null;let e=String(l).trim().replace(",","."),t,i=e.match(/^(\d+)?\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/),a=e.match(/^(?:(\d+)\s+)?(\d+)\/(\d+)$/);if(i)t=Number(i[1]||0)+We[i[2]];else if(a){if(Number(a[3])===0)return null;t=Number(a[1]||0)+Number(a[2])/Number(a[3])}else if(/^\d+(?:\.\d+)?$/.test(e))t=Number(e);else return null;return Number.isFinite(t)&&t>=0&&t<=1e6?t:null}function _e(l,e){let t=G(l);if(t===null||!Number.isFinite(e)||e<=0||e>1e4)return l;let i=t*e;return!Number.isFinite(i)||i>1e10?l:String(Number(i.toFixed(4)))}function E(l){return String(l).split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g).map(e=>e.startsWith("**")?s`<strong>${e.slice(2,-2)}</strong>`:e.startsWith("`")?s`<code>${e.slice(1,-1)}</code>`:e.startsWith("*")?s`<em>${e.slice(1,-1)}</em>`:e)}function M(l){return String(l||"").split(`
+`).map(e=>e.startsWith("### ")?s`<h3>${E(e.slice(4))}</h3>`:e.startsWith("## ")?s`<h2>${E(e.slice(3))}</h2>`:e.startsWith("# ")?s`<h1>${E(e.slice(2))}</h1>`:/^[-*] /.test(e)?s`<ul>
                   <li>${E(e.slice(2))}</li>
-                </ul>`:n`<p>${E(e)}</p>`)}var _e=b`
+                </ul>`:s`<p>${E(e)}</p>`)}var we=b`
   :host {
     display: block;
     height: 100%;
@@ -961,15 +961,15 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
     }
   }
   ${f}
-`;var H=class extends v{static properties={api:{attribute:!1},recipe:{attribute:!1},servings:{type:Number},open:{state:!0},error:{state:!0},result:{state:!0}};static styles=_e;constructor(){super(),this.servings=1,this.open=!1,this.error="",this.result=null}get de(){return this.api?.hass?.language?.startsWith("de")}async submit(e){e.preventDefault();let t=e.target,i={recipe_id:this.recipe.id,servings:Number(t.elements.servings.value),meal_type:t.elements.meal_type.value};t.elements.date.value&&(i.date=t.elements.date.value);try{this.result=await this.api.call("recipe_log",i),this.error="",this.open=!1}catch(a){this.error=a.message}}render(){let e=["per_serving","per_recipe"].includes(this.recipe?.nutrition_basis)&&Number.isFinite(this.recipe?.declared_nutrition?.calories);return n`<section style="padding:8px">
+`;var H=class extends v{static properties={api:{attribute:!1},recipe:{attribute:!1},servings:{type:Number},open:{state:!0},error:{state:!0},result:{state:!0}};static styles=we;constructor(){super(),this.servings=1,this.open=!1,this.error="",this.result=null}get de(){return this.api?.hass?.language?.startsWith("de")}async submit(e){e.preventDefault();let t=e.target,i={recipe_id:this.recipe.id,servings:Number(t.elements.servings.value),meal_type:t.elements.meal_type.value};t.elements.date.value&&(i.date=t.elements.date.value);try{this.result=await this.api.call("recipe_log",i),this.error="",this.open=!1}catch(a){this.error=a.message}}render(){let e=["per_serving","per_recipe"].includes(this.recipe?.nutrition_basis)&&Number.isFinite(this.recipe?.declared_nutrition?.calories);return s`<section style="padding:8px">
       <button
         @click=${()=>{this.open=!this.open}}
         ?disabled=${!e||!!this.api?.pending}
       >
         ${this.de?"Portionen eintragen":"Log servings"}</button
-      >${e?"":n`<small>
+      >${e?"":s`<small>
             ${this.de?"Deklarierte Kalorien und bekannte N\xE4hrwertbasis erforderlich.":"Declared calories and a known nutrition basis are required."}</small
-          >`}${this.open?n`<form @submit=${this.submit}>
+          >`}${this.open?s`<form @submit=${this.submit}>
             <label
               >${this.de?"Rezeptportionen":"Recipe servings"}<input
                 aria-label="Recipe servings"
@@ -1004,10 +1004,10 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             <button type="submit" ?disabled=${!!this.api?.pending}>
               ${this.de?"Best\xE4tigen und eintragen":"Confirm and log"}
             </button>
-          </form>`:""}${this.error?n`<p role="alert">${this.error}</p>`:""}${this.result?n`<p role="status">
+          </form>`:""}${this.error?s`<p role="alert">${this.error}</p>`:""}${this.result?s`<p role="status">
             ${this.de?"Tagebucheintrag gespeichert.":"Diary entry saved."}
           </p>`:""}
-    </section>`}};customElements.define("mm-recipe-log",H);function we(l,e){return n`<fieldset>
+    </section>`}};customElements.define("mm-recipe-log",H);function ye(l,e){return s`<fieldset>
     <legend>Declared nutrition for diary logging</legend>
     <p>
       Original nutrition text is retained separately. Enter numeric values only
@@ -1023,7 +1023,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         <option value="per_serving">Per serving</option>
         <option value="per_recipe">Whole recipe</option>
       </select></label
-    >${["calories","protein","carbs","fat","fiber","sugar","sodium","saturated_fat"].map(t=>n`<label
+    >${["calories","protein","carbs","fat","fiber","sugar","sodium","saturated_fat"].map(t=>s`<label
           >Declared ${t.replaceAll("_"," ")}
           (${t==="calories"?"kcal":t==="sodium"?"mg":"g"})<input
             aria-label=${`Declared ${t.replaceAll("_"," ")} (${t==="calories"?"kcal":t==="sodium"?"mg":"g"})`}
@@ -1033,13 +1033,13 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             .value=${l.declared_nutrition?.[t]??""}
             @input=${i=>e("declared_nutrition",{...l.declared_nutrition,[t]:i.target.value})}
         /></label>`)}
-  </fieldset>`}function ke(l){return Object.fromEntries(Object.entries(l||{}).filter(([,e])=>e!==""&&e!==void 0).map(([e,t])=>[e,t===null?null:Number(t)]))}var ye=l=>class extends l{_startEdit(){let e=this.recipe.nutrition||{};this._editData={nutrition_basis:this.recipe.nutrition_basis||"unknown",declared_nutrition:{...this.recipe.declared_nutrition||{}},name:this.recipe.name||"",description:this.recipe.description||"",source_url:this.recipe.source_url||"",servings:this.recipe.servings||"",prep_time:this.recipe.prep_time||"",cook_time:this.recipe.cook_time||"",tags:[...this.recipe.tags||[]],courses:[...this.recipe.courses||[]],categories:[...this.recipe.categories||[]],collections:[...this.recipe.collections||[]],notes:this.recipe.notes||"",rating:this.recipe.rating||0,image_url:this.recipe.media_refs?.image_url??this.recipe.image_url??"",photos:[...this.recipe.media_refs?.photos??this.recipe.photos??[]],ingredients:[...this.recipe.ingredients||[]],instructions:[...this.recipe.instructions||[]],cal:e.calories??"",fat:e.fat??"",satf:e.saturated_fat??"",chol:e.cholesterol??"",sod:e.sodium??"",carb:e.carbohydrates??"",fib:e.fiber??"",sug:e.sugar??"",prot:e.protein??""},this._editing=!0}_cancelEdit(){this._editing=!1,this._editData={}}_handleEditField(e,t){this._editData={...this._editData,[e]:t}}_renderListPicker(e,t,i){let a=this._editData[e]||[],s=this._tagPickerField===e,o=(i||[]).filter(d=>!a.includes(d)),c=s?this._tagPickerInput:"";return n`
+  </fieldset>`}function ke(l){return Object.fromEntries(Object.entries(l||{}).filter(([,e])=>e!==""&&e!==void 0).map(([e,t])=>[e,t===null?null:Number(t)]))}var $e=l=>class extends l{_startEdit(){let e=this.recipe.nutrition||{};this._editData={nutrition_basis:this.recipe.nutrition_basis||"unknown",declared_nutrition:{...this.recipe.declared_nutrition||{}},name:this.recipe.name||"",description:this.recipe.description||"",source_url:this.recipe.source_url||"",servings:this.recipe.servings||"",prep_time:this.recipe.prep_time||"",cook_time:this.recipe.cook_time||"",tags:[...this.recipe.tags||[]],courses:[...this.recipe.courses||[]],categories:[...this.recipe.categories||[]],collections:[...this.recipe.collections||[]],notes:this.recipe.notes||"",rating:this.recipe.rating||0,image_url:this.recipe.media_refs?.image_url??this.recipe.image_url??"",photos:[...this.recipe.media_refs?.photos??this.recipe.photos??[]],ingredients:[...this.recipe.ingredients||[]],instructions:[...this.recipe.instructions||[]],cal:e.calories??"",fat:e.fat??"",satf:e.saturated_fat??"",chol:e.cholesterol??"",sod:e.sodium??"",carb:e.carbohydrates??"",fib:e.fiber??"",sug:e.sugar??"",prot:e.protein??""},this._editing=!0}_cancelEdit(){this._editing=!1,this._editData={}}_handleEditField(e,t){this._editData={...this._editData,[e]:t}}_renderListPicker(e,t,i){let a=this._editData[e]||[],n=this._tagPickerField===e,o=(i||[]).filter(d=>!a.includes(d)),c=n?this._tagPickerInput:"";return s`
         <div class="edit-field list-picker-field">
           <label>${t}</label>
           <div class="list-picker-wrap">
             <!-- Selected chips -->
             <div class="list-picker-chips">
-              ${a.map(d=>n`
+              ${a.map(d=>s`
                   <span class="list-chip selected">
                     ${d}
                     <button
@@ -1053,18 +1053,18 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 `)}
               <button
                 class="list-chip-add-btn"
-                @click=${()=>{this._tagPickerField=s?null:e,this._tagPickerInput=""}}
+                @click=${()=>{this._tagPickerField=n?null:e,this._tagPickerInput=""}}
                 title="${r(p`Add ${t.toLowerCase()}`)}"
               >
                 <ha-icon icon="mdi:plus"></ha-icon>
               </button>
             </div>
             <!-- Picker dropdown -->
-            ${s?n`
+            ${n?s`
                   <div class="list-picker-dropdown">
-                    ${o.length?n`
+                    ${o.length?s`
                           <div class="list-picker-existing">
-                            ${o.map(d=>n`
+                            ${o.map(d=>s`
                                 <span
                                   class="list-chip available"
                                   @click=${()=>{this._toggleListValue(e,d)}}
@@ -1095,7 +1095,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 `:""}
           </div>
         </div>
-      `}_toggleListValue(e,t){let i=this._editData[e]||[],a=i.includes(t)?i.filter(s=>s!==t):[...i,t];this._editData={...this._editData,[e]:a}}_addListValue(e,t){let i=(t||"").trim();if(!i)return;let a=this._editData[e]||[];a.includes(i)||(this._editData={...this._editData,[e]:[...a,i]}),this._tagPickerInput="",this._tagPickerField=null}_startEditIngredient(e){let t=(this._editData.ingredients||[])[e];if(t)if(t.is_heading||t.name?.startsWith("#")){let i=t.name?.startsWith("#")?t.name.slice(1).trim():t.name;this._editIngEdit={idx:e,heading:!0,name:i}}else this._editIngEdit={idx:e,heading:!1,amount:t.amount||"",unit:t.unit||"",name:t.name||""}}_saveEditIngredient(){let e=this._editIngEdit;if(!e)return;let t=[...this._editData.ingredients||[]];e.heading?t[e.idx]={name:`# ${e.name}`,is_heading:!0}:t[e.idx]={amount:e.amount,unit:e.unit,name:e.name},this._editData={...this._editData,ingredients:t},this._editIngEdit=null}_cancelEditIngredient(){this._editIngEdit=null}_editAddIngredient(){let e=this._editIngInput.trim();if(!e)return;let t;if(e.startsWith("#"))t={name:e,is_heading:!0};else{let i=e.split(/\s+/),a="",s="",o="";i.length>=3&&!isNaN(parseFloat(i[0]))?(a=i[0],s=i[1],o=i.slice(2).join(" ")):i.length===2&&!isNaN(parseFloat(i[0]))?(a=i[0],o=i[1]):o=e,t={amount:a,unit:s,name:o}}this._editData={...this._editData,ingredients:[...this._editData.ingredients||[],t]},this._editIngInput=""}_editRemoveIngredient(e){this._editData={...this._editData,ingredients:(this._editData.ingredients||[]).filter((t,i)=>i!==e)}}_editMoveIngredient(e,t){let i=[...this._editData.ingredients||[]],a=e+t;a<0||a>=i.length||([i[e],i[a]]=[i[a],i[e]],this._editData={...this._editData,ingredients:i})}_editMoveStep(e,t){let i=[...this._editData.instructions||[]],a=e+t;a<0||a>=i.length||([i[e],i[a]]=[i[a],i[e]],this._editData={...this._editData,instructions:i})}_editDropIngredient(e,t){if(e===t||e<0||t<0)return;let i=[...this._editData.ingredients||[]],[a]=i.splice(e,1);i.splice(t,0,a),this._editData={...this._editData,ingredients:i},this._dragIngOver=-1,this._dragIngFrom=-1}_editDropStep(e,t){if(e===t||e<0||t<0)return;let i=[...this._editData.instructions||[]],[a]=i.splice(e,1);i.splice(t,0,a),this._editData={...this._editData,instructions:i},this._dragStepOver=-1,this._dragStepFrom=-1}_editAddStep(e){e.trim()&&(this._editData={...this._editData,instructions:[...this._editData.instructions||[],e.trim()]})}_editRemoveStep(e){this._editData={...this._editData,instructions:(this._editData.instructions||[]).filter((t,i)=>i!==e)}}async _editUploadImage(e){if(!e||!this.recipe?.id)return;this._editImageUploading=!0;let t=new FileReader;t.onload=async i=>{let a=i.target.result.split(",")[1];try{let s=await this.api.uploadRecipeImage(this.recipe.id,a),o=s?.image_url||s?.local_url;o&&(this._editData={...this._editData,image_url:this._editData.image_url||o,photos:[...new Set([...this._editData.photos||[],o])]})}catch(s){console.warn("Image upload failed:",s)}finally{this._editImageUploading=!1}},t.readAsDataURL(e)}async _saveEdit(){let e=this._editData,t={},i={cal:"calories",fat:"fat",satf:"saturated_fat",chol:"cholesterol",sod:"sodium",carb:"carbohydrates",fib:"fiber",sug:"sugar",prot:"protein"},a=!1;for(let[o,c]of Object.entries(i))e[o]!==""&&e[o]!=null&&(t[c]=e[o],a=!0);let s={name:e.name,description:e.description,source_url:e.source_url,image_url:e.image_url||null,servings:e.servings===""?null:Number(e.servings),prep_time:e.prep_time===""?null:Number(e.prep_time),cook_time:e.cook_time===""?null:Number(e.cook_time),tags:Array.isArray(e.tags)?e.tags:[],courses:Array.isArray(e.courses)?e.courses:[],categories:Array.isArray(e.categories)?e.categories:[],collections:Array.isArray(e.collections)?e.collections:[],notes:e.notes,rating:e.rating||null,photos:e.photos||[],ingredients:e.ingredients||[],instructions:e.instructions||[],nutrition:a?t:null,nutrition_basis:e.nutrition_basis||"unknown",declared_nutrition:ke(e.declared_nutrition)};try{await this.api.updateRecipe(this.recipe.id,s),this._editing=!1,this.dispatchEvent(new CustomEvent("rm-recipe-saved",{bubbles:!0,composed:!0}))}catch(o){this._saveError=o.message,this.requestUpdate()}}_renderEditPanel(){let e=this._editData;return n`
+      `}_toggleListValue(e,t){let i=this._editData[e]||[],a=i.includes(t)?i.filter(n=>n!==t):[...i,t];this._editData={...this._editData,[e]:a}}_addListValue(e,t){let i=(t||"").trim();if(!i)return;let a=this._editData[e]||[];a.includes(i)||(this._editData={...this._editData,[e]:[...a,i]}),this._tagPickerInput="",this._tagPickerField=null}_startEditIngredient(e){let t=(this._editData.ingredients||[])[e];if(t)if(t.is_heading||t.name?.startsWith("#")){let i=t.name?.startsWith("#")?t.name.slice(1).trim():t.name;this._editIngEdit={idx:e,heading:!0,name:i}}else this._editIngEdit={idx:e,heading:!1,amount:t.amount||"",unit:t.unit||"",name:t.name||""}}_saveEditIngredient(){let e=this._editIngEdit;if(!e)return;let t=[...this._editData.ingredients||[]];e.heading?t[e.idx]={name:`# ${e.name}`,is_heading:!0}:t[e.idx]={amount:e.amount,unit:e.unit,name:e.name},this._editData={...this._editData,ingredients:t},this._editIngEdit=null}_cancelEditIngredient(){this._editIngEdit=null}_editAddIngredient(){let e=this._editIngInput.trim();if(!e)return;let t;if(e.startsWith("#"))t={name:e,is_heading:!0};else{let i=e.split(/\s+/),a="",n="",o="";i.length>=3&&!isNaN(parseFloat(i[0]))?(a=i[0],n=i[1],o=i.slice(2).join(" ")):i.length===2&&!isNaN(parseFloat(i[0]))?(a=i[0],o=i[1]):o=e,t={amount:a,unit:n,name:o}}this._editData={...this._editData,ingredients:[...this._editData.ingredients||[],t]},this._editIngInput=""}_editRemoveIngredient(e){this._editData={...this._editData,ingredients:(this._editData.ingredients||[]).filter((t,i)=>i!==e)}}_editMoveIngredient(e,t){let i=[...this._editData.ingredients||[]],a=e+t;a<0||a>=i.length||([i[e],i[a]]=[i[a],i[e]],this._editData={...this._editData,ingredients:i})}_editMoveStep(e,t){let i=[...this._editData.instructions||[]],a=e+t;a<0||a>=i.length||([i[e],i[a]]=[i[a],i[e]],this._editData={...this._editData,instructions:i})}_editDropIngredient(e,t){if(e===t||e<0||t<0)return;let i=[...this._editData.ingredients||[]],[a]=i.splice(e,1);i.splice(t,0,a),this._editData={...this._editData,ingredients:i},this._dragIngOver=-1,this._dragIngFrom=-1}_editDropStep(e,t){if(e===t||e<0||t<0)return;let i=[...this._editData.instructions||[]],[a]=i.splice(e,1);i.splice(t,0,a),this._editData={...this._editData,instructions:i},this._dragStepOver=-1,this._dragStepFrom=-1}_editAddStep(e){e.trim()&&(this._editData={...this._editData,instructions:[...this._editData.instructions||[],e.trim()]})}_editRemoveStep(e){this._editData={...this._editData,instructions:(this._editData.instructions||[]).filter((t,i)=>i!==e)}}async _editUploadImage(e){if(!e||!this.recipe?.id)return;this._editImageUploading=!0;let t=new FileReader;t.onload=async i=>{let a=i.target.result.split(",")[1];try{let n=await this.api.uploadRecipeImage(this.recipe.id,a),o=n?.image_url||n?.local_url;o&&(this._editData={...this._editData,image_url:this._editData.image_url||o,photos:[...new Set([...this._editData.photos||[],o])]})}catch(n){console.warn("Image upload failed:",n)}finally{this._editImageUploading=!1}},t.readAsDataURL(e)}async _saveEdit(){let e=this._editData,t={},i={cal:"calories",fat:"fat",satf:"saturated_fat",chol:"cholesterol",sod:"sodium",carb:"carbohydrates",fib:"fiber",sug:"sugar",prot:"protein"},a=!1;for(let[o,c]of Object.entries(i))e[o]!==""&&e[o]!=null&&(t[c]=e[o],a=!0);let n={name:e.name,description:e.description,source_url:e.source_url,image_url:e.image_url||null,servings:e.servings===""?null:Number(e.servings),prep_time:e.prep_time===""?null:Number(e.prep_time),cook_time:e.cook_time===""?null:Number(e.cook_time),tags:Array.isArray(e.tags)?e.tags:[],courses:Array.isArray(e.courses)?e.courses:[],categories:Array.isArray(e.categories)?e.categories:[],collections:Array.isArray(e.collections)?e.collections:[],notes:e.notes,rating:e.rating||null,photos:e.photos||[],ingredients:e.ingredients||[],instructions:e.instructions||[],nutrition:a?t:null,nutrition_basis:e.nutrition_basis||"unknown",declared_nutrition:ke(e.declared_nutrition)};try{await this.api.updateRecipe(this.recipe.id,n),this._editing=!1,this.dispatchEvent(new CustomEvent("rm-recipe-saved",{bubbles:!0,composed:!0}))}catch(o){this._saveError=o.message,this.requestUpdate()}}_renderEditPanel(){let e=this._editData;return s`
         <div
           class="edit-overlay"
           @click=${t=>{t.target===t.currentTarget&&this._cancelEdit()}}
@@ -1113,8 +1113,8 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               <!-- Image section -->
               <div class="edit-section-label">${r("Image")}</div>
               <div class="edit-photo-row">
-                ${(()=>{let t=[...new Set([e.image_url,...e.photos||[]].filter(Boolean))];return n`
-                    ${t.map(i=>n`
+                ${(()=>{let t=[...new Set([e.image_url,...e.photos||[]].filter(Boolean))];return s`
+                    ${t.map(i=>s`
                         <div
                           class="edit-photo-thumb ${i===e.image_url?"selected":""}"
                           @click=${()=>this._handleEditField("image_url",i)}
@@ -1124,7 +1124,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                             src="${this.api.transport.previewURL(i)||z}"
                             alt=""
                           />
-                          ${i===e.image_url?n`<span class="edit-thumb-badge"
+                          ${i===e.image_url?s`<span class="edit-thumb-badge"
                                 ><ha-icon icon="mdi:check"></ha-icon
                               ></span>`:""}
                         </div>
@@ -1157,8 +1157,8 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
 
               ${this._renderField(r("Description"),"description","textarea")}
               ${this._renderField(r("Source URL"),"source_url","url")}
-              ${this._saveError?n`<p role="alert">${this._saveError}</p>`:""}
-              ${we(e,(t,i)=>this._handleEditField(t,i))}
+              ${this._saveError?s`<p role="alert">${this._saveError}</p>`:""}
+              ${ye(e,(t,i)=>this._handleEditField(t,i))}
 
               <div class="edit-row-3">
                 ${this._renderField(r("Prep (min)"),"prep_time","number")}
@@ -1170,7 +1170,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               <div class="edit-field">
                 <label>${r("Rating")}</label>
                 <div class="edit-stars">
-                  ${[1,2,3,4,5].map(t=>n`
+                  ${[1,2,3,4,5].map(t=>s`
                       <span
                         class="edit-star ${t<=(e.rating||0)?"filled":""}"
                         @click=${()=>this._handleEditField("rating",e.rating===t?0:t)}
@@ -1190,13 +1190,13 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               <div class="edit-section-label">
                 ${r(p`Ingredients (${(e.ingredients||[]).length})`)}
               </div>
-              ${(e.ingredients||[]).length?n`
+              ${(e.ingredients||[]).length?s`
                     <ul class="edit-ing-list">
-                      ${(e.ingredients||[]).map((t,i)=>{let a=this._editIngEdit?.idx===i,s=t.is_heading||t.name?.startsWith("#");if(a){let o=this._editIngEdit;return n`
+                      ${(e.ingredients||[]).map((t,i)=>{let a=this._editIngEdit?.idx===i,n=t.is_heading||t.name?.startsWith("#");if(a){let o=this._editIngEdit;return s`
                             <li
-                              class="edit-ing-inline-edit ${s?"edit-ing-heading":""}"
+                              class="edit-ing-inline-edit ${n?"edit-ing-heading":""}"
                             >
-                              ${o.heading?n`
+                              ${o.heading?s`
                                     <input
                                       class="ing-inline-input ing-inline-name"
                                       type="text"
@@ -1205,7 +1205,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                                       @input=${c=>{this._editIngEdit={...o,name:c.target.value}}}
                                       @keydown=${c=>{c.key==="Enter"&&this._saveEditIngredient(),c.key==="Escape"&&this._cancelEditIngredient()}}
                                     />
-                                  `:n`
+                                  `:s`
                                     <input
                                       class="ing-inline-input ing-inline-amt"
                                       type="text"
@@ -1246,10 +1246,10 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                                 <ha-icon icon="mdi:close"></ha-icon>
                               </button>
                             </li>
-                          `}return n`
+                          `}return s`
                           <li
                             draggable="true"
-                            class="${s?"edit-ing-heading":""} ${this._dragIngOver===i?"drag-over":""}"
+                            class="${n?"edit-ing-heading":""} ${this._dragIngOver===i?"drag-over":""}"
                             @dragstart=${o=>{this._dragIngFrom=i,o.dataTransfer.effectAllowed="move",o.dataTransfer.setData("text/plain",String(i))}}
                             @dragover=${o=>{o.preventDefault(),o.dataTransfer.dropEffect="move",this._dragIngOver!==i&&(this._dragIngOver=i)}}
                             @dragleave=${()=>{this._dragIngOver===i&&(this._dragIngOver=-1)}}
@@ -1265,9 +1265,9 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                               @click=${()=>this._startEditIngredient(i)}
                               title="${r("Click to edit")}"
                             >
-                              ${s?n`<strong
+                              ${n?s`<strong
                                     >${t.name?.startsWith("#")?t.name.slice(1).trim():t.name}</strong
-                                  >`:n`${t.amount?`${t.amount}${t.unit?" "+t.unit:""} `:""}${t.name}`}
+                                  >`:s`${t.amount?`${t.amount}${t.unit?" "+t.unit:""} `:""}${t.name}`}
                             </span>
                             <div class="edit-reorder-btns">
                               <button
@@ -1314,9 +1314,9 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               <div class="edit-section-label">
                 ${r(p`Directions (${(e.instructions||[]).length} steps)`)}
               </div>
-              ${(e.instructions||[]).length?n`
+              ${(e.instructions||[]).length?s`
                     <ol class="edit-steps-list">
-                      ${(e.instructions||[]).map((t,i)=>n`
+                      ${(e.instructions||[]).map((t,i)=>s`
                           <li
                             draggable="true"
                             class="${this._dragStepOver===i?"drag-over":""}"
@@ -1417,25 +1417,25 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             </div>
           </div>
         </div>
-      `}_renderField(e,t,i){let a=this._editData[t]??"";return i==="textarea"?n`
+      `}_renderField(e,t,i){let a=this._editData[t]??"";return i==="textarea"?s`
           <div class="edit-field">
             <label>${e}</label>
             <textarea
               .value=${a}
-              @input=${s=>this._handleEditField(t,s.target.value)}
+              @input=${n=>this._handleEditField(t,n.target.value)}
               rows="3"
             ></textarea>
           </div>
-        `:n`
+        `:s`
         <div class="edit-field">
           <label>${e}</label>
           <input
             type="${i}"
             .value=${String(a)}
-            @input=${s=>this._handleEditField(t,s.target.value)}
+            @input=${n=>this._handleEditField(t,n.target.value)}
           />
         </div>
-      `}};var $e=b`
+      `}};var Se=b`
   :host {
     display: block;
     height: 100%;
@@ -3579,21 +3579,21 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
     }
   }
   ${f}
-`;var Se="recipe-detail",ze=[{key:"calories",label:r("Calories"),unit:"kcal",bold:!0},{key:"fat",label:r("Total Fat"),unit:"g"},{key:"saturated_fat",label:r("Saturated Fat"),unit:"g",indent:!0},{key:"cholesterol",label:r("Cholesterol"),unit:"mg"},{key:"sodium",label:r("Sodium"),unit:"mg"},{key:"carbohydrates",label:r("Total Carbohydrate"),unit:"g"},{key:"fiber",label:r("Dietary Fiber"),unit:"g",indent:!0},{key:"sugar",label:r("Total Sugars"),unit:"g",indent:!0},{key:"protein",label:r("Protein"),unit:"g"}],Te=/(\d+\s*(?:hours?|hrs?)\s*(?:and\s*)?\d*\s*(?:minutes?|mins?)?|\d+\s*(?:minutes?|mins?|seconds?|secs?|hours?|hrs?))/gi;function We(l){let e=l.toLowerCase(),t=0,i=e.match(/(\d+)\s*h(?:ours?|rs?)?/);i&&(t+=parseInt(i[1])*3600);let a=e.match(/(\d+)\s*m(?:in(?:utes?)?)?(?!\s*l)/);a&&(t+=parseInt(a[1])*60);let s=e.match(/(\d+)\s*s(?:ec(?:onds?)?)?/);if(s&&(t+=parseInt(s[1])),!t){let o=e.match(/^(\d+)$/);o&&(t=parseInt(o[1])*60)}return t||0}var Be={calories:{label:r("Calories"),val:2e3,unit:"kcal"},fat:{label:r("Total Fat"),val:65,unit:"g"},saturated_fat:{label:r("Saturated Fat"),val:20,unit:"g"},cholesterol:{label:r("Cholesterol"),val:300,unit:"mg"},sodium:{label:r("Sodium"),val:2300,unit:"mg"},carbohydrates:{label:r("Total Carbohydrate"),val:300,unit:"g"},fiber:{label:r("Dietary Fiber"),val:28,unit:"g"},sugar:{label:r("Added Sugars"),val:50,unit:"g"},protein:{label:r("Protein"),val:50,unit:"g"}},qe={oz:{factor:28.3495,to:"g",toFull:"g"},lb:{factor:453.592,to:"g",toFull:"g",thresholdKg:500},cup:{factor:250,to:"ml",toFull:"ml"},cups:{factor:250,to:"ml",toFull:"ml"},"fl oz":{factor:29.5735,to:"ml",toFull:"ml"},pt:{factor:473.176,to:"ml",toFull:"ml"},qt:{factor:946.353,to:"ml",toFull:"ml"}};function Ue(l,e){if(!l||!e)return null;let t=G(l);if(t===null)return null;let i=e.toLowerCase().trim(),a=qe[i];if(!a)return null;let s=t*a.factor,o=a.to;i==="lb"&&s>=500&&(s=s/1e3,o="kg"),o==="ml"&&s>=1e3&&(s=s/1e3,o="L");let c=s>=10?Math.round(s):Math.round(s*10)/10;return{amount:String(c),unit:o}}var Q=class extends ye(v){static properties={recipe:{type:Object},api:{type:Object},settings:{type:Object},wide:{type:Boolean},_editing:{type:Boolean},_editData:{type:Object},_servingMult:{type:Number},_activeTab:{type:String},_confirmDelete:{type:Boolean},_downloading:{type:Boolean},_photoUrlInput:{type:String},_addingPhotoUrl:{type:Boolean},_wakeActive:{type:Boolean},_completedSteps:{type:Object},_editIngInput:{type:String},_editStepInput:{type:String},_nutritionExpanded:{type:Boolean},_dragIngOver:{type:Number},_dragStepOver:{type:Number},_editImageUploading:{type:Boolean},_slideIdx:{type:Number},allTags:{type:Array},allCourses:{type:Array},allCategories:{type:Array},allCollections:{type:Array},_tagPickerField:{type:String},_tagPickerInput:{type:String},_editIngEdit:{type:Object}};constructor(){super(),this.recipe=null,this.api=null,this.settings={},this.wide=!1,this._editing=!1,this._editData={},this._servingMult=1,this._activeTab="ingredients",this._confirmDelete=!1,this._downloading=!1,this._photoUrlInput="",this._addingPhotoUrl=!1,this._wakeActive=!1,this._completedSteps=new Set,this._editIngInput="",this._editStepInput="",this._nutritionExpanded=!1,this._dragIngOver=-1,this._dragStepOver=-1,this._dragIngFrom=-1,this._dragStepFrom=-1,this._editImageUploading=!1,this._slideIdx=0,this.allTags=[],this.allCourses=[],this.allCategories=[],this.allCollections=[],this._tagPickerField=null,this._tagPickerInput="",this._editIngEdit=null,this._slideTimer=null,this._slideTouchStartX=null,this._wakeLockTimeout=null,this._wakeLockUnsubscribeFn=null}connectedCallback(){super.connectedCallback(),this._wakeLockUnsubscribeFn=fe(e=>{this._wakeActive=e})}disconnectedCallback(){super.disconnectedCallback(),this._releaseWakeLock(),this._wakeLockUnsubscribeFn?.(),this._wakeLockUnsubscribeFn=null,this._stopSlideTimer()}async _requestWakeLock(){this._wakeLockTimeout&&(clearTimeout(this._wakeLockTimeout),this._wakeLockTimeout=null),await O(Se);let e=this.settings?.wakeLockDuration??60;this._wakeLockTimeout=setTimeout(()=>this._releaseWakeLock(),e*6e4)}async _releaseWakeLock(){this._wakeLockTimeout&&(clearTimeout(this._wakeLockTimeout),this._wakeLockTimeout=null),await D(Se)}updated(e){if(e.has("recipe")&&this.recipe){let t=e.get("recipe"),i=!t||t.id!==this.recipe.id;this._servingMult=1,i&&(this._editing=!1,this._confirmDelete=!1,this._photoUrlInput="",this._completedSteps=new Set),this._slideIdx=0,this._startSlideTimer()}e.has("settings")&&this._startSlideTimer(),(e.has("recipe")||e.has("settings"))&&this.recipe&&(this.settings?.keepScreenOn?this._requestWakeLock():this._releaseWakeLock()),e.has("recipe")&&!this.recipe&&this._releaseWakeLock()}_formatTime(e){if(!e)return null;if(e<60)return r(p`${e} min`);let t=Math.floor(e/60),i=e%60;return i?r(p`${t}h ${i}m`):r(p`${t}h`)}_scaleAmount(e){return xe(e,this._servingMult)}_handleToggleFav(){this.dispatchEvent(new CustomEvent("rm-toggle-favourite",{detail:{recipeId:this.recipe.id},bubbles:!0,composed:!0}))}async _handleDownloadImage(){if(this.recipe.image_url){this._downloading=!0;try{let e=await this.api.downloadRecipeImage(this.recipe.id,this.recipe.image_url);e?.local_url&&this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:{image_url:e.local_url}},bubbles:!0,composed:!0}))}catch(e){console.warn("Image download failed:",e)}finally{this._downloading=!1}}}_handleDeleteRecipe(){if(!this._confirmDelete){this._confirmDelete=!0,setTimeout(()=>{this._confirmDelete=!1},3e3);return}this.dispatchEvent(new CustomEvent("rm-delete-recipe",{detail:{recipeId:this.recipe.id},bubbles:!0,composed:!0}))}_handleQuickRate(e){let t=this.recipe.rating===e?null:e;this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:{rating:t}},bubbles:!0,composed:!0}))}_handleShowPlanner(){this.dispatchEvent(new CustomEvent("rm-show-planner",{bubbles:!0,composed:!0}))}_handleChipNav(e,t){this.dispatchEvent(new CustomEvent("rm-chip-nav",{detail:{filterMode:e,value:t},bubbles:!0,composed:!0}))}_fireTimer(e,t){let i=this.recipe?.name,a=i?r(p`${i} — ${t}`):t;this.dispatchEvent(new CustomEvent("rm-start-timer",{detail:{seconds:e,label:a},bubbles:!0,composed:!0}))}async _handleAddPhotoUrl(){let e=this._photoUrlInput.trim();if(e){this._addingPhotoUrl=!0;try{let a={photos:[...this.recipe.photos||[],e]};this.recipe.image_url||(a.image_url=e),this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:a},bubbles:!0,composed:!0})),this._photoUrlInput=""}finally{this._addingPhotoUrl=!1}}}_handleCameraCapture(e){let t=e.target.files?.[0];if(!t)return;let i=new FileReader;i.onload=async a=>{let s=a.target.result.split(",")[1];try{await this.api.uploadRecipeImage(this.recipe.id,s)}catch(o){console.warn("Camera upload failed:",o)}},i.readAsDataURL(t)}_setMainPhoto(e){this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:{image_url:e}},bubbles:!0,composed:!0}))}_removePhoto(e){let t=(this.recipe.photos||[]).filter(a=>a!==e),i={photos:t};this.recipe.image_url===e&&(i.image_url=t[0]||null),this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:i},bubbles:!0,composed:!0}))}_getSlideImages(){let e=this.recipe;if(!e)return[];let t=[e.image_url,...e.photos||[]].filter(Boolean);return[...new Set(t)]}_prevSlide(){let e=this._getSlideImages();e.length<2||(this._slideIdx=(this._slideIdx-1+e.length)%e.length,this._startSlideTimer())}_nextSlide(){let e=this._getSlideImages();e.length<2||(this._slideIdx=(this._slideIdx+1)%e.length,this._startSlideTimer())}_startSlideTimer(){this._stopSlideTimer();let e=this.settings?.slideshowInterval??5;e<=0||this._getSlideImages().length<2||(this._slideTimer=setInterval(()=>{this._slideIdx=(this._slideIdx+1)%this._getSlideImages().length},e*1e3))}_stopSlideTimer(){this._slideTimer&&(clearInterval(this._slideTimer),this._slideTimer=null)}_slideTouchStart(e){this._slideTouchStartX=e.touches[0]?.clientX??null}_slideTouchEnd(e){if(this._slideTouchStartX==null)return;let t=(e.changedTouches[0]?.clientX??0)-this._slideTouchStartX;this._slideTouchStartX=null,!(Math.abs(t)<50)&&(t<0?this._nextSlide():this._prevSlide())}_renderSlideshow(e){let t=this._getSlideImages(),i=Math.min(this._slideIdx,t.length-1),a=t.length>1,s=t[i]||null;return n`
+`;var ze="recipe-detail",Te=[{key:"calories",label:r("Calories"),unit:"kcal",bold:!0},{key:"fat",label:r("Total Fat"),unit:"g"},{key:"saturated_fat",label:r("Saturated Fat"),unit:"g",indent:!0},{key:"cholesterol",label:r("Cholesterol"),unit:"mg"},{key:"sodium",label:r("Sodium"),unit:"mg"},{key:"carbohydrates",label:r("Total Carbohydrate"),unit:"g"},{key:"fiber",label:r("Dietary Fiber"),unit:"g",indent:!0},{key:"sugar",label:r("Total Sugars"),unit:"g",indent:!0},{key:"protein",label:r("Protein"),unit:"g"}],Ce=/(\d+\s*(?:hours?|hrs?)\s*(?:and\s*)?\d*\s*(?:minutes?|mins?)?|\d+\s*(?:minutes?|mins?|seconds?|secs?|hours?|hrs?))/gi;function Be(l){let e=l.toLowerCase(),t=0,i=e.match(/(\d+)\s*h(?:ours?|rs?)?/);i&&(t+=parseInt(i[1])*3600);let a=e.match(/(\d+)\s*m(?:in(?:utes?)?)?(?!\s*l)/);a&&(t+=parseInt(a[1])*60);let n=e.match(/(\d+)\s*s(?:ec(?:onds?)?)?/);if(n&&(t+=parseInt(n[1])),!t){let o=e.match(/^(\d+)$/);o&&(t=parseInt(o[1])*60)}return t||0}var qe={calories:{label:r("Calories"),val:2e3,unit:"kcal"},fat:{label:r("Total Fat"),val:65,unit:"g"},saturated_fat:{label:r("Saturated Fat"),val:20,unit:"g"},cholesterol:{label:r("Cholesterol"),val:300,unit:"mg"},sodium:{label:r("Sodium"),val:2300,unit:"mg"},carbohydrates:{label:r("Total Carbohydrate"),val:300,unit:"g"},fiber:{label:r("Dietary Fiber"),val:28,unit:"g"},sugar:{label:r("Added Sugars"),val:50,unit:"g"},protein:{label:r("Protein"),val:50,unit:"g"}},Ue={oz:{factor:28.3495,to:"g",toFull:"g"},lb:{factor:453.592,to:"g",toFull:"g",thresholdKg:500},cup:{factor:250,to:"ml",toFull:"ml"},cups:{factor:250,to:"ml",toFull:"ml"},"fl oz":{factor:29.5735,to:"ml",toFull:"ml"},pt:{factor:473.176,to:"ml",toFull:"ml"},qt:{factor:946.353,to:"ml",toFull:"ml"}};function Ve(l,e){if(!l||!e)return null;let t=G(l);if(t===null)return null;let i=e.toLowerCase().trim(),a=Ue[i];if(!a)return null;let n=t*a.factor,o=a.to;i==="lb"&&n>=500&&(n=n/1e3,o="kg"),o==="ml"&&n>=1e3&&(n=n/1e3,o="L");let c=n>=10?Math.round(n):Math.round(n*10)/10;return{amount:String(c),unit:o}}var Q=class extends $e(v){static properties={recipe:{type:Object},api:{type:Object},settings:{type:Object},wide:{type:Boolean},_editing:{type:Boolean},_editData:{type:Object},_servingMult:{type:Number},_activeTab:{type:String},_confirmDelete:{type:Boolean},_downloading:{type:Boolean},_photoUrlInput:{type:String},_addingPhotoUrl:{type:Boolean},_wakeActive:{type:Boolean},_completedSteps:{type:Object},_editIngInput:{type:String},_editStepInput:{type:String},_nutritionExpanded:{type:Boolean},_dragIngOver:{type:Number},_dragStepOver:{type:Number},_editImageUploading:{type:Boolean},_slideIdx:{type:Number},allTags:{type:Array},allCourses:{type:Array},allCategories:{type:Array},allCollections:{type:Array},_tagPickerField:{type:String},_tagPickerInput:{type:String},_editIngEdit:{type:Object}};constructor(){super(),this.recipe=null,this.api=null,this.settings={},this.wide=!1,this._editing=!1,this._editData={},this._servingMult=1,this._activeTab="ingredients",this._confirmDelete=!1,this._downloading=!1,this._photoUrlInput="",this._addingPhotoUrl=!1,this._wakeActive=!1,this._completedSteps=new Set,this._editIngInput="",this._editStepInput="",this._nutritionExpanded=!1,this._dragIngOver=-1,this._dragStepOver=-1,this._dragIngFrom=-1,this._dragStepFrom=-1,this._editImageUploading=!1,this._slideIdx=0,this.allTags=[],this.allCourses=[],this.allCategories=[],this.allCollections=[],this._tagPickerField=null,this._tagPickerInput="",this._editIngEdit=null,this._slideTimer=null,this._slideTouchStartX=null,this._wakeLockTimeout=null,this._wakeLockUnsubscribeFn=null}connectedCallback(){super.connectedCallback(),this._wakeLockUnsubscribeFn=xe(e=>{this._wakeActive=e})}disconnectedCallback(){super.disconnectedCallback(),this._releaseWakeLock(),this._wakeLockUnsubscribeFn?.(),this._wakeLockUnsubscribeFn=null,this._stopSlideTimer()}async _requestWakeLock(){this._wakeLockTimeout&&(clearTimeout(this._wakeLockTimeout),this._wakeLockTimeout=null),await O(ze);let e=this.settings?.wakeLockDuration??60;this._wakeLockTimeout=setTimeout(()=>this._releaseWakeLock(),e*6e4)}async _releaseWakeLock(){this._wakeLockTimeout&&(clearTimeout(this._wakeLockTimeout),this._wakeLockTimeout=null),await D(ze)}updated(e){if(e.has("recipe")&&this.recipe){let t=e.get("recipe"),i=!t||t.id!==this.recipe.id;this._servingMult=1,i&&(this._editing=!1,this._confirmDelete=!1,this._photoUrlInput="",this._completedSteps=new Set),this._slideIdx=0,this._startSlideTimer()}e.has("settings")&&this._startSlideTimer(),(e.has("recipe")||e.has("settings"))&&this.recipe&&(this.settings?.keepScreenOn?this._requestWakeLock():this._releaseWakeLock()),e.has("recipe")&&!this.recipe&&this._releaseWakeLock()}_formatTime(e){if(!e)return null;if(e<60)return r(p`${e} min`);let t=Math.floor(e/60),i=e%60;return i?r(p`${t}h ${i}m`):r(p`${t}h`)}_scaleAmount(e){return _e(e,this._servingMult)}_handleToggleFav(){this.dispatchEvent(new CustomEvent("rm-toggle-favourite",{detail:{recipeId:this.recipe.id},bubbles:!0,composed:!0}))}async _handleDownloadImage(){if(this.recipe.image_url){this._downloading=!0;try{let e=await this.api.downloadRecipeImage(this.recipe.id,this.recipe.image_url);e?.local_url&&this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:{image_url:e.local_url}},bubbles:!0,composed:!0}))}catch(e){console.warn("Image download failed:",e)}finally{this._downloading=!1}}}_handleDeleteRecipe(){if(!this._confirmDelete){this._confirmDelete=!0,setTimeout(()=>{this._confirmDelete=!1},3e3);return}this.dispatchEvent(new CustomEvent("rm-delete-recipe",{detail:{recipeId:this.recipe.id},bubbles:!0,composed:!0}))}_handleQuickRate(e){let t=this.recipe.rating===e?null:e;this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:{rating:t}},bubbles:!0,composed:!0}))}_handleShowPlanner(){this.dispatchEvent(new CustomEvent("rm-show-planner",{bubbles:!0,composed:!0}))}_handleChipNav(e,t){this.dispatchEvent(new CustomEvent("rm-chip-nav",{detail:{filterMode:e,value:t},bubbles:!0,composed:!0}))}_fireTimer(e,t){let i=this.recipe?.name,a=i?r(p`${i} — ${t}`):t;this.dispatchEvent(new CustomEvent("rm-start-timer",{detail:{seconds:e,label:a},bubbles:!0,composed:!0}))}async _handleAddPhotoUrl(){let e=this._photoUrlInput.trim();if(e){this._addingPhotoUrl=!0;try{let a={photos:[...this.recipe.photos||[],e]};this.recipe.image_url||(a.image_url=e),this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:a},bubbles:!0,composed:!0})),this._photoUrlInput=""}finally{this._addingPhotoUrl=!1}}}_handleCameraCapture(e){let t=e.target.files?.[0];if(!t)return;let i=new FileReader;i.onload=async a=>{let n=a.target.result.split(",")[1];try{await this.api.uploadRecipeImage(this.recipe.id,n)}catch(o){console.warn("Camera upload failed:",o)}},i.readAsDataURL(t)}_setMainPhoto(e){this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:{image_url:e}},bubbles:!0,composed:!0}))}_removePhoto(e){let t=(this.recipe.photos||[]).filter(a=>a!==e),i={photos:t};this.recipe.image_url===e&&(i.image_url=t[0]||null),this.dispatchEvent(new CustomEvent("rm-update-recipe",{detail:{recipeId:this.recipe.id,data:i},bubbles:!0,composed:!0}))}_getSlideImages(){let e=this.recipe;if(!e)return[];let t=[e.image_url,...e.photos||[]].filter(Boolean);return[...new Set(t)]}_prevSlide(){let e=this._getSlideImages();e.length<2||(this._slideIdx=(this._slideIdx-1+e.length)%e.length,this._startSlideTimer())}_nextSlide(){let e=this._getSlideImages();e.length<2||(this._slideIdx=(this._slideIdx+1)%e.length,this._startSlideTimer())}_startSlideTimer(){this._stopSlideTimer();let e=this.settings?.slideshowInterval??5;e<=0||this._getSlideImages().length<2||(this._slideTimer=setInterval(()=>{this._slideIdx=(this._slideIdx+1)%this._getSlideImages().length},e*1e3))}_stopSlideTimer(){this._slideTimer&&(clearInterval(this._slideTimer),this._slideTimer=null)}_slideTouchStart(e){this._slideTouchStartX=e.touches[0]?.clientX??null}_slideTouchEnd(e){if(this._slideTouchStartX==null)return;let t=(e.changedTouches[0]?.clientX??0)-this._slideTouchStartX;this._slideTouchStartX=null,!(Math.abs(t)<50)&&(t<0?this._nextSlide():this._prevSlide())}_renderSlideshow(e){let t=this._getSlideImages(),i=Math.min(this._slideIdx,t.length-1),a=t.length>1,n=t[i]||null;return s`
       <div
         class="wide-image-square"
         @touchstart=${a?this._slideTouchStart:null}
         @touchend=${a?this._slideTouchEnd:null}
       >
-        ${s?n`<img
-              src="${this.api.transport.previewURL(s)||z}"
+        ${n?s`<img
+              src="${this.api.transport.previewURL(n)||z}"
               alt="${e.name}"
-            />`:n`
+            />`:s`
               <div class="hero-placeholder">
                 <ha-icon icon="mdi:food"></ha-icon>
               </div>
             `}
-        ${a?n`
+        ${a?s`
               <button
                 class="slide-btn slide-prev"
                 @click=${this._prevSlide}
@@ -3609,80 +3609,80 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 <ha-icon icon="mdi:chevron-right"></ha-icon>
               </button>
               <div class="slide-dots">
-                ${t.map((o,c)=>n`<span
+                ${t.map((o,c)=>s`<span
                       class="slide-dot ${c===i?"active":""}"
                     ></span>`)}
               </div>
             `:""}
       </div>
-    `}_renderChipGroup(e,t,i){return t?.length?n`
+    `}_renderChipGroup(e,t,i){return t?.length?s`
       <div class="chip-group">
         <span class="chip-group-label">${e}:</span>
-        ${t.map(a=>n`<span class="chip ${i}">${a}</span>`)}
+        ${t.map(a=>s`<span class="chip ${i}">${a}</span>`)}
       </div>
-    `:""}_renderChipGroups(e){let t=e.courses||[],i=e.categories||[],a=e.collections||[];return!t.length&&!i.length&&!a.length?"":n`
+    `:""}_renderChipGroups(e){let t=e.courses||[],i=e.categories||[],a=e.collections||[];return!t.length&&!i.length&&!a.length?"":s`
       <div class="chips-area">
-        ${t.length?n` <div class="chip-group-row">
+        ${t.length?s` <div class="chip-group-row">
               <span class="chip chip-label">${r("Course:")}</span>
-              ${t.map(s=>n`<button
+              ${t.map(n=>s`<button
                     class="chip chip-course chip-nav"
-                    @click=${()=>this._handleChipNav("courses",s)}
-                    title="${r(p`Filter by course: ${s}`)}"
+                    @click=${()=>this._handleChipNav("courses",n)}
+                    title="${r(p`Filter by course: ${n}`)}"
                   >
-                    ${s}
+                    ${n}
                   </button>`)}
             </div>`:""}
-        ${i.length?n` <div class="chip-group-row">
+        ${i.length?s` <div class="chip-group-row">
               <span class="chip chip-label">${r("Category:")}</span>
-              ${i.map(s=>n`<button
+              ${i.map(n=>s`<button
                     class="chip chip-category chip-nav"
-                    @click=${()=>this._handleChipNav("categories",s)}
-                    title="${r(p`Filter by category: ${s}`)}"
+                    @click=${()=>this._handleChipNav("categories",n)}
+                    title="${r(p`Filter by category: ${n}`)}"
                   >
-                    ${s}
+                    ${n}
                   </button>`)}
             </div>`:""}
-        ${a.length?n` <div class="chip-group-row">
+        ${a.length?s` <div class="chip-group-row">
               <span class="chip chip-label">${r("Collection:")}</span>
-              ${a.map(s=>n`<button
+              ${a.map(n=>s`<button
                     class="chip chip-collection chip-nav"
-                    @click=${()=>this._handleChipNav("collections",s)}
-                    title="${r(p`Filter by collection: ${s}`)}"
+                    @click=${()=>this._handleChipNav("collections",n)}
+                    title="${r(p`Filter by collection: ${n}`)}"
                   >
-                    ${s}
+                    ${n}
                   </button>`)}
             </div>`:""}
       </div>
-    `}_renderMetaRow(e){if(!(e.servings||e.prep_time||e.cook_time||e.total_time))return"";let i=e.total_time||(e.prep_time||0)+(e.cook_time||0)||null,a=(e.prep_time||0)+(e.cook_time||0),s=i&&i!==a;return n`
+    `}_renderMetaRow(e){if(!(e.servings||e.prep_time||e.cook_time||e.total_time))return"";let i=e.total_time||(e.prep_time||0)+(e.cook_time||0)||null,a=(e.prep_time||0)+(e.cook_time||0),n=i&&i!==a;return s`
       <div class="meta-chips">
-        ${e.servings?n`
+        ${e.servings?s`
               <span class="meta-chip-icon">
                 <ha-icon icon="mdi:silverware-fork-knife"></ha-icon>
                 ${e.servings_text||e.servings}
               </span>
             `:""}
-        ${e.prep_time?n`
+        ${e.prep_time?s`
               <span class="meta-chip-icon">
                 <ha-icon icon="mdi:pencil-outline"></ha-icon>
                 ${this._formatTime(e.prep_time)}
               </span>
             `:""}
-        ${e.cook_time?n`
+        ${e.cook_time?s`
               <span class="meta-chip-icon">
                 <ha-icon icon="mdi:pot-steam-outline"></ha-icon>
                 ${this._formatTime(e.cook_time)}
               </span>
             `:""}
-        ${s?n`
+        ${n?s`
               <span class="meta-chip-icon">
                 <ha-icon icon="mdi:clock-outline"></ha-icon>
                 ${this._formatTime(i)}
               </span>
             `:""}
       </div>
-    `}_renderQuickRating(e){let t=e.rating||0;return n`
+    `}_renderQuickRating(e){let t=e.rating||0;return s`
       <div class="quick-rating">
-        ${[1,2,3,4,5].map(i=>n`
+        ${[1,2,3,4,5].map(i=>s`
             <span
               class="qr-star ${i<=t?"filled":""}"
               @click=${()=>this._handleQuickRate(i)}
@@ -3690,7 +3690,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             >
           `)}
       </div>
-    `}_renderActionButtons(e){return n`
+    `}_renderActionButtons(e){return s`
       <div class="action-btns-row">
         <button
           class="action-icon-btn ${e.is_favourite?"fav-active":""}"
@@ -3714,7 +3714,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           ></span>
           <span>${r("Plan")}</span>
         </button>
-        ${e.source_url?n`
+        ${e.source_url?s`
               <a
                 class="action-icon-btn"
                 href="${e.source_url}"
@@ -3739,7 +3739,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           <span>${r("Edit")}</span>
         </button>
       </div>
-    `}_renderScaler(){return this.recipe?.servings?n`
+    `}_renderScaler(){return this.recipe?.servings?s`
       <div class="scaler-row">
         <ha-icon class="scaler-icon" icon="mdi:silverware-fork-knife"></ha-icon>
         <div class="scaler-ctrl">
@@ -3758,7 +3758,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </button>
         </div>
       </div>
-    `:""}_renderWakeLock(){return this.settings?.keepScreenOn?k()?n`
+    `:""}_renderWakeLock(){return this.settings?.keepScreenOn?y()?s`
       <div class="wakelock-row">
         <button
           class="wakelock-btn ${this._wakeActive?"active":""}"
@@ -3771,7 +3771,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           ${this._wakeActive?r("Screen on"):r("Keep screen on")}
         </button>
       </div>
-    `:n`
+    `:s`
         <div class="wakelock-row">
           <span
             class="wakelock-unsupported"
@@ -3781,7 +3781,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             ${r("Screen lock unavailable")}
           </span>
         </div>
-      `:""}render(){if(!this.recipe)return n``;let e=this.recipe;return this.wide?this._renderWide(e):this._renderNarrow(e)}_renderWide(e){let t=this._groupIngredients(e.ingredients);return n`
+      `:""}render(){if(!this.recipe)return s``;let e=this.recipe;return this.wide?this._renderWide(e):this._renderNarrow(e)}_renderWide(e){let t=this._groupIngredients(e.ingredients);return s`
       <div class="detail-container wide">
         <!--
           CSS grid: 2 cols (1fr 2fr) × auto rows
@@ -3804,8 +3804,8 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 .recipe=${e}
                 .servings=${(e.servings||1)*this._servingMult}
               ></mm-recipe-log>
-              ${e.description?n`<div class="wide-desc md-content">
-                    ${F(e.description)}
+              ${e.description?s`<div class="wide-desc md-content">
+                    ${M(e.description)}
                   </div>`:""}
               ${this._renderMetaRow(e)} ${this._renderChipGroups(e)}
             </div>
@@ -3819,18 +3819,18 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               <!-- Ingredient serving controls -->
               <div class="wide-ing-controls">${this._renderScaler()}</div>
 
-              ${t.map(i=>n`
+              ${t.map(i=>s`
                   <div class="wide-section-card">
-                    ${i.header?n`<div class="wide-section-title">${i.header}</div>`:""}
-                    ${i.items.length?n`
+                    ${i.header?s`<div class="wide-section-title">${i.header}</div>`:""}
+                    ${i.items.length?s`
                           <ul class="ingredient-list">
-                            ${i.items.map(a=>{let{amount:s,unit:o}=this._getDisplayAmount(a);return n`
+                            ${i.items.map(a=>{let{amount:n,unit:o}=this._getDisplayAmount(a);return s`
                                 <li class="ingredient-item">
                                   <span class="ing-amount"
-                                    >${s} ${o}</span
+                                    >${n} ${o}</span
                                   >
                                   <span class="ing-name"
-                                    >${a.name}${a.notes?n` <em class="ing-notes"
+                                    >${a.name}${a.notes?s` <em class="ing-notes"
                                           >(${a.notes})</em
                                         >`:""}</span
                                   >
@@ -3850,28 +3850,28 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             <div class="wide-dir-col">
               <div class="wide-dir-spacer"></div>
               ${this._renderWakeLock()}
-              ${(e.instructions||[]).length?(e.instructions||[]).map((i,a)=>{let s=this._completedSteps.has(a);return n`
+              ${(e.instructions||[]).length?(e.instructions||[]).map((i,a)=>{let n=this._completedSteps.has(a);return s`
                       <div
-                        class="wide-section-card wide-step-card ${s?"step-done":""}"
+                        class="wide-section-card wide-step-card ${n?"step-done":""}"
                       >
                         <span
-                          class="step-num ${s?"done":""}"
+                          class="step-num ${n?"done":""}"
                           @click=${o=>{o.stopPropagation(),this._toggleStepComplete(a)}}
-                          title="${s?r("Mark incomplete"):r("Mark complete")}"
-                          >${s?n`<ha-icon icon="mdi:check"></ha-icon>`:a+1}</span
+                          title="${n?r("Mark incomplete"):r("Mark complete")}"
+                          >${n?s`<ha-icon icon="mdi:check"></ha-icon>`:a+1}</span
                         >
                         <span class="step-text"
                           >${this._renderStepWithTimers(i)}</span
                         >
                       </div>
-                    `}):n`<p class="empty-tab">
+                    `}):s`<p class="empty-tab">
                     ${r("No directions listed.")}
                   </p>`}
-              ${e.notes?n`
+              ${e.notes?s`
                     <div class="wide-section-card">
                       <div class="wide-section-title">${r("Notes")}</div>
                       <div class="notes-text md-content">
-                        ${F(e.notes)}
+                        ${M(e.notes)}
                       </div>
                     </div>
                   `:""}
@@ -3883,17 +3883,17 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         <!-- Edit overlay -->
         ${this._editing?this._renderEditPanel():""}
       </div>
-    `}_renderNarrow(e){let t=e.total_time||(e.prep_time||0)+(e.cook_time||0)||null;return n`
+    `}_renderNarrow(e){let t=e.total_time||(e.prep_time||0)+(e.cook_time||0)||null;return s`
       <div class="detail-container">
         <!-- Hero image -->
         <div class="hero ${e.image_url?"":"no-image"}">
-          ${e.image_url?n`
+          ${e.image_url?s`
                 <img
                   src="${this.api.transport.previewURL(e.image_url)||z}"
                   alt="${e.name}"
                 />
                 <div class="hero-overlay"></div>
-              `:n`
+              `:s`
                 <div class="hero-placeholder">
                   <ha-icon icon="mdi:food"></ha-icon>
                 </div>
@@ -3908,7 +3908,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 icon="${e.is_favourite?"mdi:heart":"mdi:heart-outline"}"
               ></ha-icon>
             </button>
-            ${e.source_url?n`
+            ${e.source_url?s`
                   <a
                     class="hero-btn"
                     href="${e.source_url}"
@@ -3932,12 +3932,12 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               .recipe=${e}
               .servings=${(e.servings||1)*this._servingMult}
             ></mm-recipe-log>
-            ${e.description?n`<div class="detail-desc md-content">
-                  ${F(e.description)}
+            ${e.description?s`<div class="detail-desc md-content">
+                  ${M(e.description)}
                 </div>`:""}
 
             <div class="meta-row">
-              ${e.prep_time?n`
+              ${e.prep_time?s`
                     <div class="meta-item">
                       <span class="meta-label">${r("Prep")}</span>
                       <span class="meta-val"
@@ -3945,7 +3945,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                       >
                     </div>
                   `:""}
-              ${e.cook_time?n`
+              ${e.cook_time?s`
                     <div class="meta-item">
                       <span class="meta-label">${r("Cook")}</span>
                       <span class="meta-val"
@@ -3953,7 +3953,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                       >
                     </div>
                   `:""}
-              ${t?n`
+              ${t?s`
                     <div class="meta-item">
                       <span class="meta-label">${r("Total")}</span>
                       <span class="meta-val"
@@ -3961,7 +3961,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                       >
                     </div>
                   `:""}
-              ${e.servings?n`
+              ${e.servings?s`
                     <div class="meta-item">
                       <span class="meta-label">${r("Serves")}</span>
                       <span class="meta-val"
@@ -3979,7 +3979,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
 
           <!-- Tabs -->
           <div class="tabs-row">
-            ${[["ingredients",r("Ingredients")],["directions",r("Directions")],["notes",r("Notes")],["nutrition",r("Nutrition")],["photos",r("Photos")]].map(([i,a])=>n`
+            ${[["ingredients",r("Ingredients")],["directions",r("Directions")],["notes",r("Notes")],["nutrition",r("Nutrition")],["photos",r("Photos")]].map(([i,a])=>s`
                 <button
                   class="tab-btn ${this._activeTab===i?"active":""}"
                   @click=${()=>{this._activeTab=i}}
@@ -4005,68 +4005,68 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         <!-- Edit panel (inline overlay) -->
         ${this._editing?this._renderEditPanel():""}
       </div>
-    `}_getDisplayAmount(e){let t=Ue(this._scaleAmount(e.amount),e.unit);return t||{amount:this._scaleAmount(e.amount)||"",unit:e.unit||""}}_groupIngredients(e){let t=[],i={header:null,items:[]};for(let a of e||[])a.is_heading||a.name?.startsWith("#")?((i.items.length>0||i.header!==null)&&t.push(i),i={header:(a.name?.startsWith("#")?a.name.slice(1).trim():a.name)||"",items:[]}):i.items.push(a);return(i.items.length>0||i.header!==null)&&t.push(i),t.length?t:[{header:null,items:e||[]}]}_renderIngredients(e){return n`
-      ${e.ingredients?.length?n`
+    `}_getDisplayAmount(e){let t=Ve(this._scaleAmount(e.amount),e.unit);return t||{amount:this._scaleAmount(e.amount)||"",unit:e.unit||""}}_groupIngredients(e){let t=[],i={header:null,items:[]};for(let a of e||[])a.is_heading||a.name?.startsWith("#")?((i.items.length>0||i.header!==null)&&t.push(i),i={header:(a.name?.startsWith("#")?a.name.slice(1).trim():a.name)||"",items:[]}):i.items.push(a);return(i.items.length>0||i.header!==null)&&t.push(i),t.length?t:[{header:null,items:e||[]}]}_renderIngredients(e){return s`
+      ${e.ingredients?.length?s`
             <ul class="ingredient-list">
-              ${e.ingredients.map((t,i)=>{if(t.is_heading||t.name?.startsWith("#")){let o=t.name?.startsWith("#")?t.name.slice(1).trim():t.name;return n`<li class="ing-heading">${o}</li>`}let{amount:a,unit:s}=this._getDisplayAmount(t);return n`
+              ${e.ingredients.map((t,i)=>{if(t.is_heading||t.name?.startsWith("#")){let o=t.name?.startsWith("#")?t.name.slice(1).trim():t.name;return s`<li class="ing-heading">${o}</li>`}let{amount:a,unit:n}=this._getDisplayAmount(t);return s`
                   <li class="ingredient-item">
-                    <span class="ing-amount">${a} ${s}</span>
+                    <span class="ing-amount">${a} ${n}</span>
                     <span class="ing-name"
-                      >${t.name}${t.notes?n` <em class="ing-notes">(${t.notes})</em>`:""}</span
+                      >${t.name}${t.notes?s` <em class="ing-notes">(${t.notes})</em>`:""}</span
                     >
                   </li>
                 `})}
             </ul>
-          `:n`<p class="empty-tab">${r("No ingredients listed.")}</p>`}
-    `}_toggleStepComplete(e){let t=new Set(this._completedSteps);t.has(e)?t.delete(e):t.add(e),this._completedSteps=t}_renderDirections(e){return e.instructions?.length?n`
+          `:s`<p class="empty-tab">${r("No ingredients listed.")}</p>`}
+    `}_toggleStepComplete(e){let t=new Set(this._completedSteps);t.has(e)?t.delete(e):t.add(e),this._completedSteps=t}_renderDirections(e){return e.instructions?.length?s`
       <ol class="steps-list">
-        ${e.instructions.map((t,i)=>{let a=this._completedSteps.has(i);return n`
+        ${e.instructions.map((t,i)=>{let a=this._completedSteps.has(i);return s`
             <li class="step-item ${a?"step-done":""}">
               <span
                 class="step-num ${a?"done":""}"
-                @click=${s=>{s.stopPropagation(),this._toggleStepComplete(i)}}
+                @click=${n=>{n.stopPropagation(),this._toggleStepComplete(i)}}
                 title="${a?r("Mark incomplete"):r("Mark complete")}"
-                >${a?n`<ha-icon icon="mdi:check"></ha-icon>`:i+1}</span
+                >${a?s`<ha-icon icon="mdi:check"></ha-icon>`:i+1}</span
               >
               <span class="step-text">${this._renderStepWithTimers(t)}</span>
             </li>
           `})}
       </ol>
-    `:n`<p class="empty-tab">${r("No directions listed.")}</p>`}_renderStepWithTimers(e){let t=[],i=0,a;for(Te.lastIndex=0;(a=Te.exec(e))!==null;){a.index>i&&t.push(e.slice(i,a.index));let s=a[0],o=We(s);o>0?t.push(n`<button
+    `:s`<p class="empty-tab">${r("No directions listed.")}</p>`}_renderStepWithTimers(e){let t=[],i=0,a;for(Ce.lastIndex=0;(a=Ce.exec(e))!==null;){a.index>i&&t.push(e.slice(i,a.index));let n=a[0],o=Be(n);o>0?t.push(s`<button
             class="time-chip"
-            @click=${c=>{c.stopPropagation(),this._fireTimer(o,s)}}
-            title="${r(p`Start timer for ${s}`)}"
+            @click=${c=>{c.stopPropagation(),this._fireTimer(o,n)}}
+            title="${r(p`Start timer for ${n}`)}"
           >
-            <ha-icon icon="mdi:timer-outline"></ha-icon>${s}
-          </button>`):t.push(s),i=a.index+a[0].length}return i<e.length&&t.push(e.slice(i)),t}_renderNotes(e){return n`
-      ${e.notes?n`<div class="notes-text md-content">${F(e.notes)}</div>`:n`<p class="empty-tab">${r("No notes.")}</p>`}
-    `}_renderNutrition(e){let t=e.nutrition||{};if(!ze.some(s=>t[s.key]!=null&&t[s.key]!==""))return n`
+            <ha-icon icon="mdi:timer-outline"></ha-icon>${n}
+          </button>`):t.push(n),i=a.index+a[0].length}return i<e.length&&t.push(e.slice(i)),t}_renderNotes(e){return s`
+      ${e.notes?s`<div class="notes-text md-content">${M(e.notes)}</div>`:s`<p class="empty-tab">${r("No notes.")}</p>`}
+    `}_renderNutrition(e){let t=e.nutrition||{};if(!Te.some(n=>t[n.key]!=null&&t[n.key]!==""))return s`
         <div class="empty-tab">
           <p>${r("No nutrition info. Add it via the edit panel.")}</p>
         </div>
-      `;let a=e.servings?r(p`Per serving (${e.servings_text||e.servings})`):r("Per serving");return n`
+      `;let a=e.servings?r(p`Per serving (${e.servings_text||e.servings})`):r("Per serving");return s`
       <div class="nutrition-panel">
         <div class="nutr-header">${r("Nutrition Facts")}</div>
         <div class="nutr-sub">${a}</div>
         <div class="nutr-divider thick"></div>
-        ${ze.map(s=>{let o=t[s.key];return o==null||o===""?"":n`
+        ${Te.map(n=>{let o=t[n.key];return o==null||o===""?"":s`
             <div
-              class="nutr-row ${s.bold?"nutr-bold":""} ${s.indent?"nutr-indent":""}"
+              class="nutr-row ${n.bold?"nutr-bold":""} ${n.indent?"nutr-indent":""}"
             >
-              <span class="nutr-label">${s.label}</span>
+              <span class="nutr-label">${n.label}</span>
               <span class="nutr-val"
-                >${o}${s.unit!=="kcal"?n`<em> ${s.unit}</em>`:""}</span
+                >${o}${n.unit!=="kcal"?s`<em> ${n.unit}</em>`:""}</span
               >
             </div>
             <div class="nutr-divider"></div>
           `})}
       </div>
-    `}_renderNutritionRing(e){let t=e?.declared_nutrition||{},i=m=>typeof m=="number"&&Number.isFinite(m)&&m>=0?m:null,a=i(t.calories),s=i(t.fat),o=i(t.carbs),c=i(t.protein),d=[s,o,c].every(m=>m!==null),h=s*9,u=o*4,T=c*4,g=d?h+u+T:0;if(![a,s,o,c].some(m=>m!==null))return n` <div class="nutr-card">
+    `}_renderNutritionRing(e){let t=e?.declared_nutrition||{},i=h=>typeof h=="number"&&Number.isFinite(h)&&h>=0?h:null,a=i(t.calories),n=i(t.fat),o=i(t.carbs),c=i(t.protein),d=[n,o,c].every(h=>h!==null),m=n*9,u=o*4,T=c*4,g=d?m+u+T:0;if(![a,n,o,c].some(h=>h!==null))return s` <div class="nutr-card">
           <p class="empty-tab" style="margin:0;padding:8px 0;text-align:center">
             ${r("No nutritional information available.")}
           </p>
         </div>
-        ${this._renderOriginalNutrition(e)}`;let j=[{label:r("Carbs"),val:o,cal:u,color:"var(--rm-ochre)"},{label:r("Total fat"),val:s,cal:h,color:"var(--rm-terracotta)"},{label:r("Protein"),val:c,cal:T,color:"var(--rm-sage)"}],C=42,x=50,_=50,Ie=7,$=2*Math.PI*C,W=Ie+$*4/360,re=g>0?Math.max(0,u/g*$-W):0,ae=g>0?Math.max(0,h/g*$-W):0,ne=g>0?Math.max(0,T/g*$-W):0,se=-90,oe=se+(g>0?u/g*360:0),Ae=oe+(g>0?h/g*360:0),De=a!==null?Math.round(a):null,B=Object.entries(Be).filter(([m])=>i(t[m==="carbohydrates"?"carbs":m])!==null&&e.nutrition_basis==="per_serving").map(([m,S])=>{let ce=i(t[m==="carbohydrates"?"carbs":m]),Ee=Math.min(Math.round(ce/S.val*100),999);return{key:m,label:S.label,val:ce,unit:S.unit,pct:Ee}});return n`
+        ${this._renderOriginalNutrition(e)}`;let j=[{label:r("Carbs"),val:o,cal:u,color:"var(--rm-ochre)"},{label:r("Total fat"),val:n,cal:m,color:"var(--rm-terracotta)"},{label:r("Protein"),val:c,cal:T,color:"var(--rm-sage)"}],C=42,x=50,_=50,Ie=7,$=2*Math.PI*C,W=Ie+$*4/360,ae=g>0?Math.max(0,u/g*$-W):0,se=g>0?Math.max(0,m/g*$-W):0,ne=g>0?Math.max(0,T/g*$-W):0,oe=-90,ce=oe+(g>0?u/g*360:0),De=ce+(g>0?m/g*360:0),Ee=a!==null?Math.round(a):null,B=Object.entries(qe).filter(([h])=>i(t[h==="carbohydrates"?"carbs":h])!==null&&e.nutrition_basis==="per_serving").map(([h,S])=>{let le=i(t[h==="carbohydrates"?"carbs":h]),Me=Math.min(Math.round(le/S.val*100),999);return{key:h,label:S.label,val:le,unit:S.unit,pct:Me}});return s`
       <div class="nutr-card">
         <!-- Top row: donut ring + macro columns -->
         <div class="nutr-top">
@@ -4097,9 +4097,9 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 stroke="var(--rm-ochre)"
                 stroke-width="7"
                 stroke-linecap="round"
-                stroke-dasharray="${re} ${$}"
-                transform="rotate(${se} ${x} ${_})"
-                opacity="${g>0&&re>0?.95:0}"
+                stroke-dasharray="${ae} ${$}"
+                transform="rotate(${oe} ${x} ${_})"
+                opacity="${g>0&&ae>0?.95:0}"
               />
               <circle
                 cx="${x}"
@@ -4109,9 +4109,9 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 stroke="var(--rm-terracotta)"
                 stroke-width="7"
                 stroke-linecap="round"
-                stroke-dasharray="${ae} ${$}"
-                transform="rotate(${oe} ${x} ${_})"
-                opacity="${g>0&&ae>0?.95:0}"
+                stroke-dasharray="${se} ${$}"
+                transform="rotate(${ce} ${x} ${_})"
+                opacity="${g>0&&se>0?.95:0}"
               />
               <circle
                 cx="${x}"
@@ -4122,7 +4122,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 stroke-width="7"
                 stroke-linecap="round"
                 stroke-dasharray="${ne} ${$}"
-                transform="rotate(${Ae} ${x} ${_})"
+                transform="rotate(${De} ${x} ${_})"
                 opacity="${g>0&&ne>0?.95:0}"
               />
               <text
@@ -4134,7 +4134,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 font-weight="700"
                 font-family="inherit"
               >
-                ${De??"\u2013"}
+                ${Ee??"\u2013"}
               </text>
               <text
                 x="${x}"
@@ -4150,26 +4150,26 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </div>
 
           <div class="nutr-macro-cols">
-            ${j.map(m=>{let S=g>0?Math.round(m.cal/g*100):0;return n`
-                <div class="nutr-macro-col" style="--macro-color:${m.color}">
+            ${j.map(h=>{let S=g>0?Math.round(h.cal/g*100):0;return s`
+                <div class="nutr-macro-col" style="--macro-color:${h.color}">
                   <span class="nutr-mcol-num"
-                    >${m.val!==null?`${m.val} g`:"\u2014"}</span
+                    >${h.val!==null?`${h.val} g`:"\u2014"}</span
                   >
-                  <span class="nutr-mcol-label">${m.label}</span>
-                  ${S>0?n`<span class="nutr-mcol-pct">${S}% cals</span>`:""}
+                  <span class="nutr-mcol-label">${h.label}</span>
+                  ${S>0?s`<span class="nutr-mcol-pct">${S}% cals</span>`:""}
                 </div>
               `})}
           </div>
         </div>
 
-        ${e?.servings?n`
+        ${e?.servings?s`
               <div class="nutr-serving-note">
                 ${e.nutrition_basis==="per_serving"?r("Per serving"):e.nutrition_basis==="per_recipe"?"Per recipe":"Unknown nutrition basis"}
               </div>
             `:""}
 
         <!-- Daily RDA collapsible -->
-        ${B.length?n`
+        ${B.length?s`
               <button
                 class="nutr-rda-toggle"
                 @click=${()=>{this._nutritionExpanded=!this._nutritionExpanded}}
@@ -4182,19 +4182,19 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                   icon="${this._nutritionExpanded?"mdi:chevron-up":"mdi:chevron-down"}"
                 ></ha-icon>
               </button>
-              ${this._nutritionExpanded?n`
+              ${this._nutritionExpanded?s`
                     <div class="nutr-rda-rows">
-                      ${B.map(m=>n`
+                      ${B.map(h=>s`
                           <div class="nutr-rda-row">
-                            <span class="nutr-rda-label">${m.label}</span>
+                            <span class="nutr-rda-label">${h.label}</span>
                             <span class="nutr-rda-val"
-                              >${m.val} ${m.unit}</span
+                              >${h.val} ${h.unit}</span
                             >
-                            <span class="nutr-rda-pct">${m.pct}%</span>
+                            <span class="nutr-rda-pct">${h.pct}%</span>
                             <div class="nutr-rda-bar-wrap">
                               <div
-                                class="nutr-rda-bar ${m.pct>100?"over":""}"
-                                style="width:${Math.min(m.pct,100)}%"
+                                class="nutr-rda-bar ${h.pct>100?"over":""}"
+                                style="width:${Math.min(h.pct,100)}%"
                               ></div>
                             </div>
                           </div>
@@ -4204,31 +4204,31 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             `:""}
       </div>
       ${this._renderOriginalNutrition(e)}
-    `}_renderOriginalNutrition(e){let t=Object.entries(e.nutrition||{}).filter(([,i])=>i!==null&&i!=="");return t.length?n`<details class="nutr-original" open>
+    `}_renderOriginalNutrition(e){let t=Object.entries(e.nutrition||{}).filter(([,i])=>i!==null&&i!=="");return t.length?s`<details class="nutr-original" open>
           <summary>Original nutrition text</summary>
-          ${t.map(([i,a])=>n`<p>
+          ${t.map(([i,a])=>s`<p>
                 <strong>${i}</strong>
                 <span
                   >${typeof a=="object"?JSON.stringify(a):a}</span
                 >
               </p>`)}
-        </details>`:""}_renderPhotos(e){let t=e.photos||[],i=e.image_url,a=i?[i,...t.filter(s=>s!==i)]:t;return n`
+        </details>`:""}_renderPhotos(e){let t=e.photos||[],i=e.image_url,a=i?[i,...t.filter(n=>n!==i)]:t;return s`
       <div class="photos-tab">
-        ${a.length?n`
+        ${a.length?s`
               <div class="photos-grid">
-                ${a.map(s=>n`
+                ${a.map(n=>s`
                     <div
-                      class="photo-item ${s===i?"main-photo":""}"
+                      class="photo-item ${n===i?"main-photo":""}"
                     >
                       <img
-                        src="${this.api.transport.previewURL(s)||z}"
+                        src="${this.api.transport.previewURL(n)||z}"
                         alt="${r("Recipe photo")}"
                         loading="lazy"
                       />
-                      ${s===i?n`<span class="photo-badge">${r("Main")}</span>`:n`
+                      ${n===i?s`<span class="photo-badge">${r("Main")}</span>`:s`
                             <button
                               class="photo-action set-main"
-                              @click=${()=>this._setMainPhoto(s)}
+                              @click=${()=>this._setMainPhoto(n)}
                               title="${r("Set as main photo")}"
                             >
                               <ha-icon icon="mdi:star-outline"></ha-icon>
@@ -4236,7 +4236,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                           `}
                       <button
                         class="photo-action remove-photo"
-                        @click=${()=>this._removePhoto(s)}
+                        @click=${()=>this._removePhoto(n)}
                         title="${r("Remove photo")}"
                       >
                         <ha-icon icon="mdi:close"></ha-icon>
@@ -4244,7 +4244,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                     </div>
                   `)}
               </div>
-            `:n`
+            `:s`
               <div class="empty-tab">
                 <ha-icon icon="mdi:image-off-outline"></ha-icon>
                 <p>${r("No photos yet.")}</p>
@@ -4259,8 +4259,8 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               class="photo-url-input"
               placeholder="${r("Paste image URL\u2026")}"
               .value=${this._photoUrlInput}
-              @input=${s=>{this._photoUrlInput=s.target.value}}
-              @keydown=${s=>{s.key==="Enter"&&this._handleAddPhotoUrl()}}
+              @input=${n=>{this._photoUrlInput=n.target.value}}
+              @keydown=${n=>{n.key==="Enter"&&this._handleAddPhotoUrl()}}
             />
             <button
               class="action-btn primary"
@@ -4295,9 +4295,9 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </div>
         </div>
       </div>
-    `}static styles=$e};try{customElements.define("rm-recipe-detail",Q)}catch{}var Ve=["breakfast","lunch","dinner","snack"],X=class extends v{static properties={api:{type:Object},recipes:{type:Array},settings:{type:Object},fromRecipe:{type:Object},_weekStart:{type:String},_plan:{type:Array},_loading:{type:Boolean},_showPicker:{type:Boolean},_pickerTarget:{type:Object},_pickerSearch:{type:String},_pickerServings:{type:Number}};constructor(){super(),this.api=null,this.recipes=[],this.settings={},this.fromRecipe=null,this._plan=[],this._loading=!1,this._showPicker=!1,this._pickerTarget=null,this._pickerSearch="",this._pickerServings=2,this._weekStart=this._getMondayISO(new Date)}updated(e){(e.has("api")||e.has("_weekStart"))&&this.api&&this._loadPlan()}_getMondayISO(e){let t=e.getDay(),i=t===0?-6:1-t,a=new Date(e);a.setDate(a.getDate()+i);let s=a.getFullYear(),o=String(a.getMonth()+1).padStart(2,"0"),c=String(a.getDate()).padStart(2,"0");return`${s}-${o}-${c}`}_addDays(e,t){let i=new Date(e+"T00:00:00Z");return i.setUTCDate(i.getUTCDate()+t),i.toISOString().split("T")[0]}_formatDisplayDate(e){return new Date(e+"T00:00:00Z").getUTCDate().toString()}_formatMonthYear(e){return new Date(e+"T00:00:00Z").toLocaleDateString(this.settings?.language||"en",{month:"long",year:"numeric",timeZone:"UTC"})}_formatDayName(e){return new Date(e+"T00:00:00Z").toLocaleDateString(this.settings?.language||"en",{weekday:"short",timeZone:"UTC"})}_prevWeek(){this._weekStart=this._addDays(this._weekStart,-7)}_nextWeek(){this._weekStart=this._addDays(this._weekStart,7)}_isCurrentWeek(){return this._weekStart===this._getMondayISO(new Date)}async _loadPlan(){this._loading=!0;try{let e=await this.api.getMealPlan(this._weekStart);this._plan=e?.entries??[]}catch{this._plan=[]}finally{this._loading=!1}}_getEntriesForSlot(e,t){return this._plan.filter(i=>i.date===e&&i.meal_type===t)}_openPicker(e,t){this._pickerTarget={date:e,mealType:t},this._pickerSearch="",this._pickerServings=2,this._showPicker=!0}async _handlePickRecipe(e){this._pickerTarget&&(await this.api.addToMealPlan(e.id,this._pickerTarget.date,this._pickerTarget.mealType,this._pickerServings),this._showPicker=!1,await this._loadPlan())}async _handleRemoveEntry(e){await this.api.removeFromMealPlan(e),await this._loadPlan()}async _handleClearWeek(){await this.api.clearMealPlanWeek(this._weekStart),await this._loadPlan()}_openRecipeDetail(e){let t=this.recipes.find(i=>i.id===e.recipe_id);t&&this.dispatchEvent(new CustomEvent("rm-open-recipe",{detail:{recipe:t},bubbles:!0,composed:!0}))}_mealTypeLabel(e){switch(e){case"breakfast":return r("Breakfast");case"lunch":return r("Lunch");case"dinner":return r("Dinner");case"snack":return r("Snack");default:return e}}get _pickerFiltered(){let e=this._pickerSearch.trim().toLowerCase();return e?this.recipes.filter(t=>t.name?.toLowerCase().includes(e)||t.tags?.some(i=>i.toLowerCase().includes(e))):this.recipes}render(){let e=Array.from({length:7},(i,a)=>this._addDays(this._weekStart,a)),t=new Date().toISOString().split("T")[0];return n`
+    `}static styles=Se};try{customElements.define("rm-recipe-detail",Q)}catch{}var Ge=["breakfast","lunch","dinner","snack"],K=class extends v{static properties={api:{type:Object},recipes:{type:Array},settings:{type:Object},fromRecipe:{type:Object},_weekStart:{type:String},_plan:{type:Array},_loading:{type:Boolean},_showPicker:{type:Boolean},_pickerTarget:{type:Object},_pickerSearch:{type:String},_pickerServings:{type:Number}};constructor(){super(),this.api=null,this.recipes=[],this.settings={},this.fromRecipe=null,this._plan=[],this._loading=!1,this._showPicker=!1,this._pickerTarget=null,this._pickerSearch="",this._pickerServings=2,this._weekStart=this._getMondayISO(new Date)}updated(e){(e.has("api")||e.has("_weekStart"))&&this.api&&this._loadPlan()}_getMondayISO(e){let t=e.getDay(),i=t===0?-6:1-t,a=new Date(e);a.setDate(a.getDate()+i);let n=a.getFullYear(),o=String(a.getMonth()+1).padStart(2,"0"),c=String(a.getDate()).padStart(2,"0");return`${n}-${o}-${c}`}_addDays(e,t){let i=new Date(e+"T00:00:00Z");return i.setUTCDate(i.getUTCDate()+t),i.toISOString().split("T")[0]}_formatDisplayDate(e){return new Date(e+"T00:00:00Z").getUTCDate().toString()}_formatMonthYear(e){return new Date(e+"T00:00:00Z").toLocaleDateString(this.settings?.language||"en",{month:"long",year:"numeric",timeZone:"UTC"})}_formatDayName(e){return new Date(e+"T00:00:00Z").toLocaleDateString(this.settings?.language||"en",{weekday:"short",timeZone:"UTC"})}_prevWeek(){this._weekStart=this._addDays(this._weekStart,-7)}_nextWeek(){this._weekStart=this._addDays(this._weekStart,7)}_isCurrentWeek(){return this._weekStart===this._getMondayISO(new Date)}async _loadPlan(){this._loading=!0;try{let e=await this.api.getMealPlan(this._weekStart);this._plan=e?.entries??[]}catch{this._plan=[]}finally{this._loading=!1}}_getEntriesForSlot(e,t){return this._plan.filter(i=>i.date===e&&i.meal_type===t)}_openPicker(e,t){this._pickerTarget={date:e,mealType:t},this._pickerSearch="",this._pickerServings=2,this._showPicker=!0}async _handlePickRecipe(e){this._pickerTarget&&(await this.api.addToMealPlan(e.id,this._pickerTarget.date,this._pickerTarget.mealType,this._pickerServings),this._showPicker=!1,await this._loadPlan())}async _handleRemoveEntry(e){await this.api.removeFromMealPlan(e),await this._loadPlan()}async _handleClearWeek(){await this.api.clearMealPlanWeek(this._weekStart),await this._loadPlan()}_openRecipeDetail(e){let t=this.recipes.find(i=>i.id===e.recipe_id);t&&this.dispatchEvent(new CustomEvent("rm-open-recipe",{detail:{recipe:t},bubbles:!0,composed:!0}))}_mealTypeLabel(e){switch(e){case"breakfast":return r("Breakfast");case"lunch":return r("Lunch");case"dinner":return r("Dinner");case"snack":return r("Snack");default:return e}}get _pickerFiltered(){let e=this._pickerSearch.trim().toLowerCase();return e?this.recipes.filter(t=>t.name?.toLowerCase().includes(e)||t.tags?.some(i=>i.toLowerCase().includes(e))):this.recipes}render(){let e=Array.from({length:7},(i,a)=>this._addDays(this._weekStart,a)),t=new Date().toISOString().split("T")[0];return s`
       <div class="planner-container">
-        ${this.fromRecipe?n`
+        ${this.fromRecipe?s`
               <div class="back-to-recipe">
                 <button
                   class="back-recipe-btn"
@@ -4321,7 +4321,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             <span class="week-month"
               >${this._formatMonthYear(this._weekStart)}</span
             >
-            ${this._isCurrentWeek()?n`<span class="today-badge">${r("This week")}</span>`:n`
+            ${this._isCurrentWeek()?s`<span class="today-badge">${r("This week")}</span>`:s`
                   <button
                     class="text-link"
                     @click=${()=>{this._weekStart=this._getMondayISO(new Date)}}
@@ -4347,7 +4347,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         >
           <!-- Day headers share the grid's horizontal scroll on narrow screens. -->
           <div class="day-headers">
-            ${e.map(i=>n`
+            ${e.map(i=>s`
                 <div class="day-header ${i===t?"today":""}">
                   <span class="day-name">${this._formatDayName(i)}</span>
                   <span class="day-num">${this._formatDisplayDate(i)}</span>
@@ -4357,35 +4357,35 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
 
           <!-- Plan grid scroll -->
           <div class="plan-scroll">
-            ${this._loading?n`
+            ${this._loading?s`
                   <div class="plan-loading">
                     <ha-circular-progress active></ha-circular-progress>
                   </div>
-                `:n`
-                  ${Ve.map(i=>n`
+                `:s`
+                  ${Ge.map(i=>s`
                       <div class="meal-row">
                         <div class="meal-label">
                           ${this._mealTypeLabel(i)}
                         </div>
                         <div class="meal-cells">
-                          ${e.map(a=>{let s=this._getEntriesForSlot(a,i);return n`
+                          ${e.map(a=>{let n=this._getEntriesForSlot(a,i);return s`
                               <div
                                 class="meal-cell ${a===t?"today":""}"
                               >
-                                ${s.map(o=>{let c=this.recipes.find(d=>d.id===o.recipe_id);return n`
+                                ${n.map(o=>{let c=this.recipes.find(d=>d.id===o.recipe_id);return s`
                                     <div class="meal-entry">
                                       <button
                                         class="entry-open"
                                         aria-label=${c?.name??r("Unknown")}
                                         @click=${()=>this._openRecipeDetail(o)}
                                       >
-                                        ${c?.image_url?n`
+                                        ${c?.image_url?s`
                                               <img
                                                 src="${c.image_url}"
                                                 alt="${c?.name||""}"
                                                 class="entry-thumb"
                                               />
-                                            `:n`
+                                            `:s`
                                               <span
                                                 class="entry-thumb entry-placeholder"
                                               >
@@ -4397,7 +4397,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                                         <span class="entry-name"
                                           >${c?.name??r("Unknown")}</span
                                         >
-                                        ${o.servings&&o.servings!==1?n`
+                                        ${o.servings&&o.servings!==1?s`
                                               <span class="entry-servings"
                                                 >×${o.servings}</span
                                               >
@@ -4427,7 +4427,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 `}
 
             <!-- Clear week button -->
-            ${this._plan.length?n`
+            ${this._plan.length?s`
                   <div class="clear-row">
                     <button
                       class="text-danger-btn"
@@ -4444,7 +4444,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         <!-- Recipe picker dialog -->
         ${this._showPicker?this._renderPicker():""}
       </div>
-    `}_renderPicker(){let e=this._pickerTarget;return n`
+    `}_renderPicker(){let e=this._pickerTarget;return s`
       <div
         class="picker-overlay"
         @click=${t=>{t.target===t.currentTarget&&(this._showPicker=!1)}}
@@ -4495,31 +4495,31 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             />
           </div>
           <div class="picker-list">
-            ${this._pickerFiltered.length===0?n`
+            ${this._pickerFiltered.length===0?s`
                   <div class="picker-empty">${r("No recipes found")}</div>
-                `:this._pickerFiltered.map(t=>n`
+                `:this._pickerFiltered.map(t=>s`
                     <button
                       class="picker-item"
                       @click=${()=>this._handlePickRecipe(t)}
                     >
-                      ${t.image_url?n`
+                      ${t.image_url?s`
                             <img
                               src="${t.image_url}"
                               alt="${t.name}"
                               class="picker-thumb"
                             />
-                          `:n`
+                          `:s`
                             <span class="picker-thumb picker-placeholder">
                               <ha-icon icon="mdi:food"></ha-icon>
                             </span>
                           `}
                       <span class="picker-info">
                         <span class="picker-name">${t.name}</span>
-                        ${t.tags?.length?n`<span class="picker-tags"
+                        ${t.tags?.length?s`<span class="picker-tags"
                               >${t.tags.slice(0,2).join(", ")}</span
                             >`:""}
                       </span>
-                      ${t.is_favourite?n`<ha-icon
+                      ${t.is_favourite?s`<ha-icon
                             icon="mdi:heart"
                             class="picker-fav"
                           ></ha-icon>`:""}
@@ -5025,10 +5025,205 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
       font-size: var(--rm-font-size-sm, 14px);
     }
     ${f}
-  `};try{customElements.define("rm-meal-planner",X)}catch{}var Ce="unified",Ge=[["en","English"],["es","Espa\xF1ol"],["fr","Fran\xE7ais"],["de","Deutsch"],["pt","Portugu\xEAs"],["nl","Nederlands"],["it","Italiano"]],K=class extends v{static properties={hass:{type:Object},settings:{type:Object},_activeTab:{type:String},_rmVersion:{type:String},_rmcVersion:{type:String},_backupState:{type:String}};constructor(){super(),this.settings={},this._activeTab="advanced",this._rmVersion="\u2026",this._rmcVersion="\u2026",this._backupState=null}updated(e){e.has("hass")&&this.hass&&this._rmVersion==="\u2026"&&this._fetchVersionsFromHacs()}async _backup(){if(this._backupState!=="loading"){this._backupState="loading";try{let e=await this.hass.callWS({type:"recipe_manager/backup"}),t=JSON.stringify(e,null,2),i=new Blob([t],{type:"application/json"}),a=URL.createObjectURL(i),s=document.createElement("a");s.href=a,s.download=`macromate-backup-${new Date().toISOString().slice(0,10)}.json`,s.click(),URL.revokeObjectURL(a),this._backupState="done"}catch(e){console.error("[RM] Backup failed:",e),this._backupState="error"}setTimeout(()=>{this._backupState=null},3e3)}}_fetchVersionsFromHacs(){this.hass&&(this._rmVersion="\u2026",this._rmcVersion="\u2026",this.hass.callWS({type:"recipe_manager/get_info"}).then(e=>{this._rmVersion=e.version||"\u2014",this._rmcVersion=Ce}).catch(()=>{this._rmVersion="\u2014",this._rmcVersion=Ce}))}_update(e){let t=w({...this.settings,...e});this.dispatchEvent(new CustomEvent("rm-settings-change",{detail:{settings:t},bubbles:!0,composed:!0}))}render(){let e=w(this.settings);return n`
+  `};try{customElements.define("rm-meal-planner",K)}catch{}var X=class extends v{static properties={hass:{type:Object},language:{type:String},_label:{state:!0},_origin:{state:!0},_rows:{state:!0},_created:{state:!0},_busy:{state:!0},_message:{state:!0},_manual:{state:!0},_copied:{state:!0}};constructor(){super(),this._epoch=0,this._rows=[],this._label="",this._origin=globalThis.location?.origin||"",this._created=null,this._busy=!1,this._message="",this._manual=!1,this._copied=!1}t(e,t){return(this.language||this.hass?.language||"en").startsWith("de")?e:t}willUpdate(e){if(e.has("hass")){let t=`${this.hass?.user?.id}:${this.hass?.user?.is_admin===!0}`;(this._transport!==this.hass?.credentials||this._identity!==t)&&(this._epoch++,this._forget(),this._rows=[],this._busy=!1,this._message="",this._transport=this.hass?.credentials,this._identity=t,this.hass?.user?.is_admin===!0&&this._transport&&queueMicrotask(()=>this._load()))}}disconnectedCallback(){this._epoch++,this._forget(),this._rows=[],this._busy=!1,super.disconnectedCallback()}_forget(){this._created=null,this._manual=!1,this._copied=!1,this._message="";let e=this.shadowRoot?.querySelector("textarea");e&&(e.value="")}_live(e){return this.isConnected&&e===this._epoch&&this.hass?.user?.is_admin===!0&&this._identity===`${this.hass?.user?.id}:${this.hass?.user?.is_admin===!0}`&&this._transport===this.hass?.credentials}_address(){let e=new URL(this._origin.trim());if(!["http:","https:"].includes(e.protocol)||e.username||e.password||e.search||e.hash||!["","/"].includes(e.pathname))throw new Error("Invalid origin");return e.origin}_connection(){return this._created?JSON.stringify({service:"MacroMate",base_url:this._address(),headers:{Authorization:`Bearer ${this._created.token}`,"Content-Type":"application/json"},discovery:{method:"POST",url:this._address()+"/api/macromate/agent/action/describe",body:{}},instructions:["Store this credential privately; never repeat it in replies or logs.","Call discovery first. Use the returned actions and schemas via POST /api/macromate/agent/action/{action} with the supplied headers and JSON body. No Python client or repository checkout is required.","For each mutation generate a unique stable request_id. After a timeout retain the same request_id and identical payload, and inspect readback before retrying. Never duplicate a write with a new ID.","Create recipes with recipes_add, then read recipes_get using the exact returned recipe.id. Use metric quantities and only known nutrition values. Existing recipes may be read and updated; other permissions are not granted by this connection."]},null,2):""}async _load(){if(this._busy||!this.hass?.credentials)return;let e=this._epoch;if(this._live(e)){this._busy=!0,this._message="";try{let t=await this.hass.credentials("list");if(!this._live(e))return;if(!Array.isArray(t.credentials))throw new Error("Invalid response");this._rows=t.credentials.filter(i=>/^[a-f0-9]{32}$/.test(i?.id||"")&&typeof i.label=="string"&&!i.revoked&&(!i.expires_at||i.expires_at*1e3>Date.now())),this._created&&!this._rows.some(i=>i.id===this._created.id)&&this._forget()}catch{this._live(e)&&(this._message=this.t("Zug\xE4nge konnten nicht geladen werden. Bitte aktualisieren.","Could not load access. Please refresh."))}finally{this._live(e)&&(this._busy=!1)}}}async _create(){if(this._busy)return;let e=this._epoch;if(!this._live(e))return;try{this._address()}catch{this._message=this.t("Bitte eine g\xFCltige Home-Assistant-Adresse eingeben.","Enter a valid Home Assistant address.");return}let t=this._label.trim()||this.t("Mein Agent","My agent");if(!(t.length>100||/[\x00-\x1f]/.test(t))){this._forget(),this._busy=!0,this._message="";try{let i=await this.hass.credentials("create",{label:t});if(!this._live(e))return;if(!/^[a-f0-9]{32}$/.test(i.id||"")||!/^mm1\.[a-f0-9]{32}\.[A-Za-z0-9_-]{43}$/.test(i.token||"")||i.token.split(".")[1]!==i.id)throw new Error("Invalid response");this._created={id:i.id,token:i.token},this._rows=[...this._rows,{id:i.id,label:t}]}catch(i){this._live(e)&&(this._message=i?.code==="unauthorized"?this.t("Bitte als Home-Assistant-Administrator anmelden.","Sign in as a Home Assistant administrator."):this.t("Zugang nicht best\xE4tigt. Liste aktualisieren und einen neu angelegten Zugang ohne Schl\xFCssel trennen, bevor du es erneut versuchst.","Access was not confirmed. Refresh the list and disconnect any newly created access without a key before trying again."))}finally{this._live(e)&&(this._busy=!1)}}}async _revoke(e){if(this._busy)return;let t=this._epoch;if(this._live(t)){this._busy=!0,this._message="";try{if(await this.hass.credentials("revoke",{id:e}),!this._live(t))return;this._created?.id===e&&this._forget(),this._rows=this._rows.filter(i=>i.id!==e)}catch{this._live(t)&&(this._message=this.t("Trennen nicht best\xE4tigt. Bitte die Liste aktualisieren.","Disconnect was not confirmed. Please refresh the list."))}finally{this._live(t)&&(this._busy=!1)}}}async _copy(){let e=this._epoch;if(!this._live(e)||!this._created)return;let t;try{t=this._connection()}catch{this._message=this.t("Bitte die Home-Assistant-Adresse pr\xFCfen.","Check the Home Assistant address.");return}try{await navigator.clipboard.writeText(t),this._live(e)&&(this._copied=!0)}catch{if(!this._live(e))return;if(this._manual=!0,this._message=this.t("Bitte die markierten Verbindungsdaten kopieren.","Copy the selected connection details."),await this.updateComplete,this._live(e)){let i=this.shadowRoot.querySelector("textarea");i?.focus(),i?.select()}}}render(){if(this.hass?.user?.is_admin!==!0)return s``;let e="";try{e=this._connection()}catch{}return s`
+      <section>
+        <h3>${this.t("Agent verbinden","Connect agent")}</h3>
+        <p>
+          ${this.t("Dein Agent darf Rezepte lesen, anlegen und bearbeiten.","Your agent can read, create and edit recipes.")}
+        </p>
+        <label
+          >${this.t("Name des Agenten","Agent name")}
+          <input
+            aria-label=${this.t("Name des Agenten","Agent name")}
+            maxlength="100"
+            .value=${this._label}
+            placeholder=${this.t("Mein Agent","My agent")}
+            ?disabled=${this._busy||!!this._created}
+            @input=${t=>{this._label=t.target.value}}
+          />
+        </label>
+        <label
+          >${this.t("Home-Assistant-Adresse","Home Assistant address")}
+          <input
+            aria-label=${this.t("Home-Assistant-Adresse","Home Assistant address")}
+            type="url"
+            .value=${this._origin}
+            @input=${t=>{this._origin=t.target.value,this._copied=!1}}
+          />
+        </label>
+        <p class="hint">
+          ${this.t("Im selben Netz kann dein Agent diese Adresse direkt nutzen.","On the same network your agent can use this address directly.")}
+        </p>
+        ${this._created?s`
+              <div class="handoff">
+                <p>
+                  ${this.t("Zugang erstellt. Kopiere die Verbindung und \xFCbergib sie deinem Agenten. Der Schl\xFCssel wird nur jetzt angezeigt.","Access created. Copy the connection and give it to your agent. The key is only shown now.")}
+                </p>
+                <div class="actions">
+                  <button @click=${this._copy} ?disabled=${!e}>
+                    ${this.t("Verbindung kopieren","Copy connection")}
+                  </button>
+                  <button class="secondary" @click=${this._forget}>
+                    ${this.t("Fertig","Done")}
+                  </button>
+                </div>
+                ${this._copied?s`<p role="status">
+                      ${this.t("Verbindung kopiert.","Connection copied.")}
+                    </p>`:""}
+                <details .open=${this._manual}>
+                  <summary>
+                    ${this.t("Verbindungsdaten anzeigen","Show connection details")}
+                  </summary>
+                  <textarea
+                    aria-label=${this.t("Verbindungsdaten","Connection details")}
+                    readonly
+                    spellcheck="false"
+                    .value=${e}
+                  ></textarea>
+                </details>
+              </div>
+            `:s`<button @click=${this._create} ?disabled=${this._busy}>
+              ${this.t("Agent verbinden","Connect agent")}
+            </button>`}
+        ${this._message?s`<p role="status">${this._message}</p>`:""}
+      </section>
+      <section>
+        <div class="heading">
+          <h3>${this.t("Aktive Zug\xE4nge","Active access")}</h3>
+          <button
+            class="secondary"
+            @click=${this._load}
+            ?disabled=${this._busy}
+          >
+            ${this.t("Zug\xE4nge aktualisieren","Refresh access")}
+          </button>
+        </div>
+        ${this._rows.length?s`<ul>
+              ${this._rows.map(t=>s` <li data-credential-id=${t.id}>
+                    <span>${t.label}</span>
+                    <button
+                      class="secondary"
+                      @click=${()=>this._revoke(t.id)}
+                      ?disabled=${this._busy}
+                    >
+                      ${this.t("Trennen","Disconnect")}
+                    </button>
+                  </li>`)}
+            </ul>`:s`<p class="hint">
+              ${this.t("Noch kein aktiver Zugang.","No active access yet.")}
+            </p>`}
+      </section>
+    `}static styles=[f,b`
+      :host {
+        display: block;
+        color: var(--rm-text);
+      }
+      section {
+        padding: 16px 0;
+        border-bottom: 1px solid var(--rm-border);
+      }
+      h3 {
+        margin: 0 0 10px;
+        font-size: 1rem;
+      }
+      p {
+        line-height: 1.5;
+      }
+      .hint {
+        color: var(--rm-text-secondary);
+        font-size: 0.85rem;
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        margin: 14px 0;
+        font-size: 0.9rem;
+      }
+      input,
+      textarea {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid var(--rm-border);
+        border-radius: var(--rm-radius-sm, 8px);
+        background: var(--rm-bg-input, var(--rm-bg-surface));
+        color: var(--rm-text);
+        font: inherit;
+      }
+      textarea {
+        margin-top: 12px;
+        min-height: 180px;
+        resize: vertical;
+        font: 0.8rem monospace;
+      }
+      button {
+        min-height: 44px;
+        padding: 10px 14px;
+        border: 1px solid var(--rm-border);
+        border-radius: var(--rm-radius-sm, 8px);
+        background: var(--rm-accent);
+        color: var(--rm-accent-text);
+        cursor: pointer;
+        font: inherit;
+      }
+      button.secondary {
+        background: var(--rm-bg-surface);
+        color: var(--rm-text);
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      summary:focus-visible {
+        outline: 2px solid var(--rm-text);
+        outline-offset: 2px;
+      }
+      .actions,
+      .heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .heading {
+        justify-content: space-between;
+      }
+      .heading h3 {
+        margin: 0;
+      }
+      details {
+        margin-top: 14px;
+      }
+      summary {
+        min-height: 44px;
+        display: list-item;
+        align-content: center;
+        cursor: pointer;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 0;
+      }
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+      }
+      li span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+    `]};customElements.define("mm-agent-access",X);var Ae="unified",He=[["en","English"],["es","Espa\xF1ol"],["fr","Fran\xE7ais"],["de","Deutsch"],["pt","Portugu\xEAs"],["nl","Nederlands"],["it","Italiano"]],Z=class extends v{static properties={hass:{type:Object},settings:{type:Object},_activeTab:{type:String},_rmVersion:{type:String},_rmcVersion:{type:String},_backupState:{type:String}};constructor(){super(),this.settings={},this._activeTab="advanced",this._rmVersion="\u2026",this._rmcVersion="\u2026",this._backupState=null}updated(e){e.has("hass")&&this.hass&&this._rmVersion==="\u2026"&&this._fetchVersionsFromHacs()}async _backup(){if(this._backupState!=="loading"){this._backupState="loading";try{let e=await this.hass.callWS({type:"recipe_manager/backup"}),t=JSON.stringify(e,null,2),i=new Blob([t],{type:"application/json"}),a=URL.createObjectURL(i),n=document.createElement("a");n.href=a,n.download=`macromate-backup-${new Date().toISOString().slice(0,10)}.json`,n.click(),URL.revokeObjectURL(a),this._backupState="done"}catch(e){console.error("[RM] Backup failed:",e),this._backupState="error"}setTimeout(()=>{this._backupState=null},3e3)}}_fetchVersionsFromHacs(){this.hass&&(this._rmVersion="\u2026",this._rmcVersion="\u2026",this.hass.callWS({type:"recipe_manager/get_info"}).then(e=>{this._rmVersion=e.version||"\u2014",this._rmcVersion=Ae}).catch(()=>{this._rmVersion="\u2014",this._rmcVersion=Ae}))}_update(e){let t=w({...this.settings,...e});this.dispatchEvent(new CustomEvent("rm-settings-change",{detail:{settings:t},bubbles:!0,composed:!0}))}render(){let e=w(this.settings);return s`
       <div class="settings-root">
         <div class="tab-bar">
-          ${[["advanced","mdi:tune-variant",r("Advanced")],["sync","mdi:cloud-sync-outline",r("Sync")],["help","mdi:help-circle-outline",r("Help")]].map(([t,i,a])=>n`
+          ${[["advanced","mdi:tune-variant",r("Advanced")],...this.hass?.user?.is_admin===!0?[["agent","mdi:robot-outline","Agent"]]:[],["sync","mdi:cloud-sync-outline",r("Sync")],["help","mdi:help-circle-outline",r("Help")]].map(([t,i,a])=>s`
               <button
                 class="tab-item ${this._activeTab===t?"active":""}"
                 aria-pressed=${this._activeTab===t}
@@ -5041,11 +5236,15 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         </div>
         <div class="settings-body">
           ${this._activeTab==="advanced"?this._renderAdvanced(e):""}
+          ${this._activeTab==="agent"&&this.hass?.user?.is_admin===!0?s`<mm-agent-access
+                .hass=${this.hass}
+                .language=${e.language}
+              ></mm-agent-access>`:""}
           ${this._activeTab==="sync"?this._renderSync():""}
           ${this._activeTab==="help"?this._renderHelp():""}
         </div>
       </div>
-    `}_renderAdvanced(e){return n`
+    `}_renderAdvanced(e){return s`
       <div class="section">
         <div class="setting-row">
           <span class="setting-name">${r("Language")}</span>
@@ -5054,7 +5253,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             aria-label=${r("Language")}
             @change=${t=>this._update({language:t.target.value})}
           >
-            ${Ge.map(([t,i])=>n`
+            ${He.map(([t,i])=>s`
                 <option
                   value="${t}"
                   ?selected=${(e.language??"en")===t}
@@ -5097,7 +5296,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </select>
         </div>
 
-        ${e.timerSound==="file"?n`
+        ${e.timerSound==="file"?s`
               <div class="setting-row">
                 <div class="setting-info">
                   <span class="setting-name">${r("Sound file")}</span>
@@ -5158,14 +5357,14 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </label>
         </div>
 
-        ${e.keepScreenOn&&!k()?n`
+        ${e.keepScreenOn&&!y()?s`
               <div class="setting-row muted-row">
                 <span class="setting-hint"
                   >${r(`Not available in this browser/connection \u2014 the Wake Lock API requires a secure (HTTPS) connection to Home Assistant. This is the most common reason "keep screen on" doesn't work.`)}</span
                 >
               </div>
             `:""}
-        ${e.keepScreenOn?n`
+        ${e.keepScreenOn?s`
               <div class="setting-row">
                 <div class="setting-info">
                   <span class="setting-name">${r("Auto-release after")}</span>
@@ -5174,7 +5373,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                   >
                 </div>
                 <div class="btn-group">
-                  ${[15,30,45,60].map(t=>n`
+                  ${[15,30,45,60].map(t=>s`
                       <button
                         class="seg-btn ${(e.wakeLockDuration??60)===t?"active":""}"
                         aria-pressed=${(e.wakeLockDuration??60)===t}
@@ -5200,7 +5399,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             >
           </div>
           <div class="btn-group">
-            ${[0,3,5,10,15].map(t=>n`
+            ${[0,3,5,10,15].map(t=>s`
                 <button
                   class="seg-btn ${(e.slideshowInterval??5)===t?"active":""}"
                   aria-pressed=${(e.slideshowInterval??5)===t}
@@ -5212,7 +5411,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </div>
         </div>
       </div>
-    `}_handleSoundFileChange(e){let t=e.target.files?.[0];if(!t)return;let i=new FileReader;i.onload=a=>{this._update({timerSoundFile:a.target.result,timerSoundFileName:t.name})},i.readAsDataURL(t)}_testSound(e,t){if(e==="file"){typeof t=="string"&&t.length<=2e6&&/^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/]*={0,2}$/.test(t)&&new Audio(t).play().catch(a=>console.warn("Could not play file:",a));return}try{let i=new(window.AudioContext||window.webkitAudioContext);if(e==="ding"){let a=i.createOscillator(),s=i.createGain();a.connect(s),s.connect(i.destination),a.type="sine",a.frequency.setValueAtTime(1046,i.currentTime),s.gain.setValueAtTime(.6,i.currentTime),s.gain.exponentialRampToValueAtTime(.001,i.currentTime+1),a.start(i.currentTime),a.stop(i.currentTime+1)}else if(e==="alarm")for(let a=0;a<3;a++){let s=i.currentTime+a*.35,o=i.createOscillator(),c=i.createGain();o.connect(c),c.connect(i.destination),o.type="square",o.frequency.setValueAtTime(660,s),c.gain.setValueAtTime(.3,s),c.gain.exponentialRampToValueAtTime(.001,s+.2),o.start(s),o.stop(s+.2)}else if(e!=="none"){let a=i.createOscillator(),s=i.createGain();a.connect(s),s.connect(i.destination),a.type="sine",a.frequency.setValueAtTime(880,i.currentTime),s.gain.setValueAtTime(.5,i.currentTime),s.gain.exponentialRampToValueAtTime(.001,i.currentTime+.5),a.start(i.currentTime),a.stop(i.currentTime+.5)}}catch(i){console.warn("Audio test failed:",i)}}_renderSync(){let e=this._backupState==="loading"?r("Backing up\u2026"):this._backupState==="done"?r("Downloaded \u2713"):this._backupState==="error"?r("Failed \u2717"):r("Download backup");return n`
+    `}_handleSoundFileChange(e){let t=e.target.files?.[0];if(!t)return;let i=new FileReader;i.onload=a=>{this._update({timerSoundFile:a.target.result,timerSoundFileName:t.name})},i.readAsDataURL(t)}_testSound(e,t){if(e==="file"){typeof t=="string"&&t.length<=2e6&&/^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/]*={0,2}$/.test(t)&&new Audio(t).play().catch(a=>console.warn("Could not play file:",a));return}try{let i=new(window.AudioContext||window.webkitAudioContext);if(e==="ding"){let a=i.createOscillator(),n=i.createGain();a.connect(n),n.connect(i.destination),a.type="sine",a.frequency.setValueAtTime(1046,i.currentTime),n.gain.setValueAtTime(.6,i.currentTime),n.gain.exponentialRampToValueAtTime(.001,i.currentTime+1),a.start(i.currentTime),a.stop(i.currentTime+1)}else if(e==="alarm")for(let a=0;a<3;a++){let n=i.currentTime+a*.35,o=i.createOscillator(),c=i.createGain();o.connect(c),c.connect(i.destination),o.type="square",o.frequency.setValueAtTime(660,n),c.gain.setValueAtTime(.3,n),c.gain.exponentialRampToValueAtTime(.001,n+.2),o.start(n),o.stop(n+.2)}else if(e!=="none"){let a=i.createOscillator(),n=i.createGain();a.connect(n),n.connect(i.destination),a.type="sine",a.frequency.setValueAtTime(880,i.currentTime),n.gain.setValueAtTime(.5,i.currentTime),n.gain.exponentialRampToValueAtTime(.001,i.currentTime+.5),a.start(i.currentTime),a.stop(i.currentTime+.5)}}catch(i){console.warn("Audio test failed:",i)}}_renderSync(){let e=this._backupState==="loading"?r("Backing up\u2026"):this._backupState==="done"?r("Downloaded \u2713"):this._backupState==="error"?r("Failed \u2717"):r("Download backup");return s`
       <div class="section">
         <div class="section-label">${r("Backup")}</div>
 
@@ -5232,7 +5431,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </button>
         </div>
       </div>
-    `}_renderHelp(){return n`
+    `}_renderHelp(){return s`
       <div class="section">
         <div class="section-label">${r("FAQ & Support")}</div>
 
@@ -5311,7 +5510,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </button>
         </div>
       </div>
-    `}_renderPlaceholder(e,t,i){return n`
+    `}_renderPlaceholder(e,t,i){return s`
       <div class="placeholder-tab">
         <ha-icon icon="${t}"></ha-icon>
         <div class="placeholder-title">${e}</div>
@@ -5652,25 +5851,25 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
       line-height: 1.5;
     }
     ${f}
-  `};try{customElements.define("rm-settings-view",K)}catch{}import{MacroMateNutritionBase as He}from"../nutrition-base.js";var Z=class extends He{get profilesEnabled(){return!0}renderOverview(){let e=document.createElement("mm-summary");e._hass=this.hass,e.data=this.data;let t=document.createElement("div");return t.className="nutrition-overview",t.append(e.renderEnergy(),e.renderMacros()),t}renderDiary(){super.renderDiary();let e=this.data.recommendation;if(e?.fallback_reasons?.includes("weight_unavailable")){let t=document.createElement("p");t.className="weight-fallback",t.setAttribute("role","status"),t.textContent=this.hass.language==="de"?`Gewichtssensor nicht verf\xFCgbar. Gespeichertes Profilgewicht: ${e.weight_kg} kg (kein Live-Messwert).`:`Weight sensor unavailable. Saved profile weight: ${e.weight_kg} kg (not live).`,this.diaryNode.append(t)}}};customElements.define("mm-nutrition",Z);var J="manual-toggle",Re=["grid","detail","settings","planner"];function Y(l){let e=Math.floor(l/3600),t=Math.floor(l%3600/60),i=l%60;return e>0?`${e}:${String(t).padStart(2,"0")}:${String(i).padStart(2,"0")}`:`${t}:${String(i).padStart(2,"0")}`}function ee(l){try{let e=new(window.AudioContext||window.webkitAudioContext);e.createGain().connect(e.destination);let i=(a,s,o,c=.6)=>{let d=e.createOscillator(),h=e.createGain();d.connect(h),h.connect(e.destination),d.frequency.value=a,h.gain.setValueAtTime(c,e.currentTime+s),h.gain.exponentialRampToValueAtTime(.001,e.currentTime+s+o),d.start(e.currentTime+s),d.stop(e.currentTime+s+o+.05)};if(l==="beep")i(880,0,.15),i(880,.2,.15),i(880,.4,.15);else if(l==="ding")i(1318,0,.8,.5),i(1047,.1,.6,.3);else if(l==="alarm")for(let a=0;a<5;a++)i(880,a*.25,.12),i(660,a*.25+.13,.1)}catch{}}var te=class extends v{static properties={hass:{type:Object},systemDark:{attribute:!1},_config:{type:Object},_view:{type:String},_recipes:{type:Array},_tags:{type:Array},_selectedRecipe:{type:Object},_loading:{type:Boolean},_error:{type:String},_searchQuery:{type:String},_activeTag:{type:String},_settings:{type:Object},_wide:{type:Boolean},_sidebarCollapsed:{type:Boolean},_gridScrollPos:{type:Number},_recentRecipeIds:{type:Array},_timers:{type:Array},_timerAlarm:{type:Object},_timerAlarmQueue:{type:Array},_timersPrevView:{type:String},_customTimerInput:{type:String},_hdrStarHover:{type:Number},_mobileMenuOpen:{type:Boolean},_navDirection:{type:String},_closingDetail:{type:Boolean},_gridFilterPreset:{type:Object},_timerPresets:{type:Array},_presetNameInput:{type:String},_presetMinsInput:{type:String},_alarmAddInput:{type:String},_plannerFromRecipe:{type:Object},_globalMode:{type:Boolean},_quickTimerLabel:{type:String},_globalWakeActive:{type:Boolean}};constructor(){super(),this._pendingViewRestore=null,this._view="grid",this._recipes=[],this._tags=[],this._selectedRecipe=null,this._loading=!1,this._error=null,this._searchQuery="",this._activeTag=null,this._settings=w(),this._languageAutoDetectPending=!0,R(this._settings.language),this._wide=!1,this._sidebarCollapsed=!1,this._gridScrollPos=0,this._recentRecipeIds=[],this._timers=[],this._timerAlarm=null,this._timerAlarmQueue=[],this._timersPrevView=null,this._customTimerInput="",this._hdrStarHover=0,this._mobileMenuOpen=!1,this._navDirection="forward",this._closingDetail=!1,this._gridFilterPreset=null,this._timerPresets=[],this._presetNameInput="",this._presetMinsInput="",this._alarmAddInput="",this._plannerFromRecipe=null,this._globalMode=!1,this._quickTimerLabel="",this._alarmLoopActive=!1,this._alarmInterval=null,this._alarmTimeout=null,this._alarmAudio=null,this._unsubscribe=null,this._refreshGeneration=0,this._refreshRequested=!1,this._refreshScheduled=!1,this._refreshRunning=!1,this._recipeRefreshDeferred=!1,this._darkModeQuery=null,this._resizeObserver=null,this._timerTick=null,this._globalWakeActive=!1,this._globalWakeUnsubscribeFn=null}setConfig(e){this._config=e}static getStubConfig(){return{}}getCardSize(){return 6}_updateHeight(){requestAnimationFrame(()=>requestAnimationFrame(()=>{let e=this.getBoundingClientRect().top,t=window.innerHeight-Math.max(e,0);t>100&&(this.style.height=`${t}px`)}))}connectedCallback(){super.connectedCallback(),this._darkModeQuery=window.matchMedia("(prefers-color-scheme: dark)"),this._darkModeQuery.addEventListener("change",this._onSystemDark),this._applyTheme(),this._resizeObserver=new ResizeObserver(e=>{let t=e[0]?.contentRect?.width??0;this._wide=t>=620}),this._resizeObserver.observe(this),this._onViewportResize=()=>this._updateHeight(),window.visualViewport?.addEventListener("resize",this._onViewportResize),window.addEventListener("resize",this._onViewportResize),this._updateHeight(),this._timerTick=setInterval(()=>this._tickTimers(),1e3)}disconnectedCallback(){super.disconnectedCallback(),this._refreshGeneration++,this._refreshRequested=!1,this._refreshScheduled=!1,this._refreshRunning=!1,this._unsubscribe&&(this._unsubscribe(),this._unsubscribe=null),this._darkModeQuery?.removeEventListener("change",this._onSystemDark),this._resizeObserver?.disconnect(),window.visualViewport?.removeEventListener("resize",this._onViewportResize),window.removeEventListener("resize",this._onViewportResize),this._timerTick&&(clearInterval(this._timerTick),this._timerTick=null),this._timerAlarm&&(this._stopAlarmLoop(),this._timerAlarm=null),this._timerAlarmQueue=[],this._globalWakeActive&&D(J)}_onSystemDark=()=>{this._settings.darkMode==="system"&&this._applyTheme()};updated(e){if(e.has("hass")&&this.hass&&!this._api&&(this._api=new M(this.hass),this._api.transport=this.transport,this._init()),e.has("hass")&&this.hass&&this._languageAutoDetectPending){this._languageAutoDetectPending=!1;let t=(this.hass.language||"").split("-")[0].toLowerCase(),i=N.includes(t)?t:this._settings.language;this._settings={...this._settings,language:i},R(i)}e.has("hass")&&this._api&&(this._api.hass=this.hass),(e.has("_settings")||e.has("systemDark"))&&this._applyTheme(),(e.has("_view")||e.has("_selectedRecipe")||e.has("_timers")||e.has("_recentRecipeIds"))&&this._saveViewState(),(e.has("_view")||e.has("_closingDetail"))&&this._recipeRefreshDeferred&&!this.shadowRoot.querySelector("rm-recipe-detail")&&this._queueRefresh()}_saveViewState(){if(!this._cacheBootstrapped||!this.transport?.current())return;let e=Re.includes(this._view)?this._view:"grid";me(this.transport,{view:e,recipeId:e==="detail"&&this._selectedRecipe?.id||null,recentIds:this._recentRecipeIds},this._timers)}_restoreViewState(){let e=this._pendingViewRestore;if(this._pendingViewRestore=null,!(!e||!Re.includes(e.view)))if(e.view==="detail"&&e.recipeId){let t=this._recipes.find(i=>i.id===e.recipeId);t&&(this._selectedRecipe=t,this._view="detail")}else e.view!=="detail"&&(this._view=e.view)}_applyTheme(){he(this,this._settings,this.systemDark??this._darkModeQuery?.matches??!1),this.dispatchEvent(new CustomEvent("macromate-appearance",{detail:{settings:this._settings},bubbles:!0,composed:!0}))}async _init(){if(this._loading=!0,this._error=null,this.hass.user.is_admin||(this._view="nutrition"),!this._cacheBootstrapped&&this.hass.user.is_admin){let e=pe(this.transport);this._pendingViewRestore=e,this._recentRecipeIds=e.recentIds||[],this._timers=e.timers||[],this._cacheBootstrapped=!0}try{let e;try{e=await this.transport.call("preferences_get")}catch(t){if(this.hass.user.is_admin)throw t;return}if(e.preferences?.recipe_settings&&(this._settings=w({...this._settings,...e.preferences.recipe_settings}),await R(this._settings.language),this.transport.locale=this._settings.language,this.hass=this.transport.facade()),!this.hass.user.is_admin){this._view="nutrition";return}await Promise.all([this._loadRecipes(),this._loadTags(),this._loadGlobalTimers()]),this._restoreViewState(),await this._loadPresets(),await this._subscribe()}catch(e){this._error=e.message||r("Failed to load recipes")}finally{this._loading=!1}}async _loadGlobalTimers(){try{let{timers:e}=await this._api.getGlobalTimers(),t=Date.now()/1e3;this._timers=[...this._timers.filter(i=>!i.global),...(e||[]).map(i=>this._globalTimerToLocal(i,t))]}catch{}}_globalTimerToLocal(e,t=Date.now()/1e3){let i=e.running?Math.max(0,e.duration-(t-e.start_time)):e.paused_remaining??e.duration;return{id:e.id,label:e.label,total:e.duration,remaining:Math.round(i),running:e.running&&i>0,alarming:e.running&&i<=0,presetId:e.preset_id||null,global:!0,duration:e.duration,start_time:e.start_time,paused_remaining:e.paused_remaining}}async _loadRecipes(){let e=await this._api.getAllRecipes();this._recipes=e?.recipes??[]}async _loadTags(){let e=await this._api.getTags();this._tags=e?.tags??[]}async _subscribe(){if(this._unsubscribe)return;let e=this._refreshGeneration,t=await this._api.subscribe(()=>this._queueRefresh());!this.isConnected||e!==this._refreshGeneration||!this.transport.current()?t():this._unsubscribe=t}_queueRefresh(){if(this._refreshRequested=!0,this._refreshScheduled||this._refreshRunning)return;this._refreshScheduled=!0;let e=this._refreshGeneration;queueMicrotask(()=>{e===this._refreshGeneration&&(this._refreshScheduled=!1,this._refreshLive())})}async _refreshLive(){let e=this.transport;if(!this._refreshRequested||!this.isConnected||!e?.current()||e.pending)return;this._refreshRequested=!1,this._refreshRunning=!0;let t=this._refreshGeneration,i=()=>!!this.shadowRoot.querySelector("rm-recipe-detail"),a=i();try{let[s,o,c]=await Promise.all([a?null:this._api.getAllRecipes(),a?null:this._api.getTags(),a?null:this._api.getGlobalTimers()]);if(!this.isConnected||t!==this._refreshGeneration||this.transport!==e||!e.current())return;if(e.pending){this._refreshRequested=!0;return}this._recipeRefreshDeferred=a||i(),a&&!i()&&(this._refreshRequested=!0),this._recipeRefreshDeferred||(this._recipes=s?.recipes??[],this._tags=o?.tags??[],this._timers=[...this._timers.filter(d=>!d.global),...(c?.timers||[]).map(d=>this._globalTimerToLocal(d))])}catch{}finally{t===this._refreshGeneration&&(this._refreshRunning=!1,this._refreshRequested&&!e.pending&&e.current()&&this._queueRefresh())}}get _filteredRecipes(){let e=this._recipes;if(this._activeTag&&(e=e.filter(t=>t.tags?.includes(this._activeTag)||t.courses?.includes(this._activeTag)||t.categories?.includes(this._activeTag)||t.collections?.includes(this._activeTag))),this._searchQuery.trim()){let t=this._searchQuery.trim().toLowerCase();e=e.filter(i=>i.name?.toLowerCase().includes(t)||i.description?.toLowerCase().includes(t)||i.tags?.some(a=>a.toLowerCase().includes(t)))}return e}get _recentRecipes(){let e=this._settings.recentCount??12;return this._recentRecipeIds.slice(0,e).map(t=>this._recipes.find(i=>i.id===t)).filter(Boolean)}async _handleSettingsChange(e){let t=this._settings.language;if(this._settings=w(e.detail.settings),this._settings.language!==t){await R(this._settings.language),this.transport.locale=this._settings.language,this.hass=this.transport.facade(),this.requestUpdate();for(let i of this.shadowRoot.querySelectorAll("*"))i.requestUpdate?.()}try{await this.transport.call("preferences_update",{preferences:{recipe_settings:this._settings}}),this._error=null}catch(i){this._error=this._settings.language==="de"?i.code==="uncertain"?"Speicherstatus unklar. Gleiche Anfrage nur ausdr\xFCcklich erneut senden.":i.code==="pending"?"Zuerst die unklare Anfrage kl\xE4ren.":"Einstellungen konnten nicht gespeichert werden. Felder und Berechtigungen pr\xFCfen.":i.message}}async _toggleGlobalWakeLock(){k()&&(this._globalWakeActive?(await D(J),this._globalWakeActive=!1):(await O(J),this._globalWakeActive=!0))}_tickTimers(){if(!this._timers.length)return;let e=!1,t=[],i=Date.now()/1e3,a=this._timers.map(s=>{if(s.alarming||!s.running)return s;let o=s.global?Math.max(0,s.duration-(i-s.start_time)):s.remaining-1;if(e=!0,o<=0){if(s.presetId)return{...s,remaining:0,running:!1,alarming:!0};t.push({id:s.id,label:s.label})}return{...s,remaining:Math.round(o),running:o>0}});e&&(this._timers=a),t.length&&(this._timerAlarm||(this._timerAlarm=t.shift(),this._startAlarmLoop(this._settings.timerSound??"beep",this._settings.timerSoundFile)),t.length&&(this._timerAlarmQueue=[...this._timerAlarmQueue,...t]))}async _startTimer(e,t,i=null,a=!1){if(!Number.isFinite(e)||e<=0||e>604800||t&&String(t).length>300)return;let s=t||r(p`${Math.floor(e/60)} min timer`);if(a&&this._api)try{let c=Date.now()/1e3;await this._api.addGlobalTimer({label:s,duration:e,start_time:c,running:!0,paused_remaining:null,...i?{preset_id:i}:{}}),await this._loadGlobalTimers();return}catch(c){this._error=c.message;return}let o=crypto.randomUUID();this._timers=[...this._timers,{id:o,label:s,total:e,remaining:e,running:!0,presetId:i||null}]}async _stopTimer(e){if(this._timers.find(i=>i.id===e)?.global){try{await this._api.deleteGlobalTimer(e),await this._loadGlobalTimers()}catch(i){this._error=i.message}return}this._timers=this._timers.filter(i=>i.id!==e)}async _pauseTimer(e){let t=this._timers.find(i=>i.id===e);if(t){if(t.global){try{await this._api.updateGlobalTimer(e,t.running?{running:!1,paused_remaining:t.remaining}:{running:!0,start_time:Date.now()/1e3-(t.duration-t.remaining),paused_remaining:null}),await this._loadGlobalTimers()}catch(i){this._error=i.message}return}this._timers=this._timers.map(i=>i.id===e?{...i,running:!i.running}:i)}}async _addTimeToTimer(e,t){let i=this._timers.find(a=>a.id===e);if(i){if(i.global){try{await this._api.updateGlobalTimer(e,{duration:i.duration+t,running:!0,start_time:Date.now()/1e3-(i.duration-i.remaining),paused_remaining:null}),await this._loadGlobalTimers()}catch(a){this._error=a.message}return}this._timers=this._timers.map(a=>a.id===e?{...a,total:a.total+t,remaining:a.remaining+t,running:!0,alarming:!1}:a)}}_dismissAlarm(){this._timerAlarm&&(this._stopAlarmLoop(),this._stopTimer(this._timerAlarm.id),this._timerAlarm=this._timerAlarmQueue.length?this._timerAlarmQueue.shift():null,this._timerAlarm&&this._startAlarmLoop(this._settings.timerSound??"beep",this._settings.timerSoundFile))}async _loadPresets(){let e=await this.transport.call("timer_presets_get");this._timerPresets=e.presets||[]}async _addPresetTimer(){let e=this._presetNameInput.trim(),t=Number(this._presetMinsInput);if(!(!e||!Number.isFinite(t)||t<=0))try{await this.transport.call("timer_presets_add",{name:e,seconds:Math.round(t*60)}),await this._loadPresets(),this._presetNameInput="",this._presetMinsInput=""}catch(i){this._error=i.message}}async _removePreset(e){try{await this.transport.call("timer_presets_delete",{preset_id:e}),await this._loadPresets()}catch(t){this._error=t.message}}_startAlarmLoop(e,t){if(this._stopAlarmLoop(),e!=="none"&&!(e==="file"&&(typeof t!="string"||t.length>2e6||!/^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/]*={0,2}$/.test(t))))if(e==="file"&&t){this._alarmLoopActive=!0;let i=()=>{this._alarmLoopActive&&(this._alarmAudio=new Audio(t),this._alarmAudio.onended=()=>{this._alarmLoopActive&&(this._alarmTimeout=setTimeout(i,2e3))},this._alarmAudio.onerror=()=>{this._alarmLoopActive&&(this._alarmTimeout=setTimeout(()=>ee("beep"),2e3))},this._alarmAudio.play().catch(()=>{}))};i()}else ee(e),this._alarmInterval=setInterval(()=>ee(e),4e3)}_stopAlarmLoop(){this._alarmLoopActive=!1,this._alarmInterval&&(clearInterval(this._alarmInterval),this._alarmInterval=null),this._alarmTimeout&&(clearTimeout(this._alarmTimeout),this._alarmTimeout=null),this._alarmAudio&&(this._alarmAudio.pause(),this._alarmAudio.onended=null,this._alarmAudio.onerror=null,this._alarmAudio=null)}_handleStartTimer(e){let{seconds:t,label:i}=e.detail;this._startTimer(t,i,null,this._globalMode)}_handleSearch(e){this._searchQuery=e.detail?.query??""}_handleTagFilter(e){let t=e.detail?.tag;this._activeTag=this._activeTag===t?null:t}_handleChipNav(e){let{filterMode:t,value:i}=e.detail;this._navDirection="back",t==="tags"?(this._activeTag=i,this._gridFilterPreset=null):(this._activeTag=null,this._gridFilterPreset={filterMode:t,selectedValues:[i]}),this._view="grid"}_handleBack(){this._closingDetail||(this._view==="detail"&&this._selectedRecipe&&!this._closingDetail?(this._closingDetail=!0,this._view="grid",window.matchMedia("(prefers-reduced-motion: reduce)").matches&&(this._closingDetail=!1,this._selectedRecipe=null)):(this._navDirection="back",this._view="grid",this._selectedRecipe=null,this._closingDetail=!1))}_onDetailTransitionEnd(e){e.target===e.currentTarget&&e.propertyName==="transform"&&this._closingDetail&&(this._closingDetail=!1,this._selectedRecipe=null)}_handleShowGrid(){if(!this.hass.user.is_admin){this._view="nutrition";return}this._navDirection="back",this._view="grid",this._selectedRecipe=null}_handleShowPlanner(){this._plannerFromRecipe=this._selectedRecipe||null,this._navDirection="forward",this._view="planner"}_handleBackToRecipe(){this._plannerFromRecipe&&(this._selectedRecipe=this._plannerFromRecipe,this._plannerFromRecipe=null,this._navDirection="back",this._view="detail")}_handleOpenRecipe(e){let t=this.shadowRoot?.querySelector("rm-recipe-grid");if(t){let a=t.shadowRoot?.querySelector(".grid-scroll");this._gridScrollPos=a?.scrollTop??0}let i=e.detail?.recipe;if(this._closingDetail=!1,this._navDirection="forward",this._selectedRecipe=i,this._view="detail",i?.id){let a=[i.id,...this._recentRecipeIds.filter(s=>s!==i.id)].slice(0,50);this._recentRecipeIds=a}}async _handleToggleFavourite(e){try{let{recipeId:t}=e.detail;await this._api.toggleFavourite(t),await this._loadRecipes(),this._selectedRecipe?.id===t&&(this._selectedRecipe=this._recipes.find(i=>i.id===t)??this._selectedRecipe)}catch{}}async _handleDeleteRecipe(e){try{await this._api.deleteRecipe(e.detail.recipeId),await this._loadRecipes(),await this._loadTags(),this._navDirection="back",this._view="grid",this._selectedRecipe=null}catch{}}async _handleUpdateRecipe(e){try{let{recipeId:t,data:i}=e.detail;await this._api.updateRecipe(t,i),await this._loadRecipes(),await this._loadTags(),this._selectedRecipe?.id===t&&(this._selectedRecipe=this._recipes.find(a=>a.id===t)??null)}catch{}}_renderStars(e){let t=e||0,i=this._hdrStarHover,a=i>0?i:t;return n`
+  `};try{customElements.define("rm-settings-view",Z)}catch{}import{MacroMateNutritionBase as Qe}from"../nutrition-base.js";var J=class extends Qe{get profilesEnabled(){return!0}renderOverview(){let e=document.createElement("mm-summary");e._hass=this.hass,e.data=this.data;let t=document.createElement("div");return t.className="nutrition-overview",t.append(e.renderEnergy(),e.renderMacros()),t}renderDiary(){super.renderDiary();let e=this.data.recommendation;if(e?.fallback_reasons?.includes("weight_unavailable")){let t=document.createElement("p");t.className="weight-fallback",t.setAttribute("role","status"),t.textContent=this.hass.language==="de"?`Gewichtssensor nicht verf\xFCgbar. Gespeichertes Profilgewicht: ${e.weight_kg} kg (kein Live-Messwert).`:`Weight sensor unavailable. Saved profile weight: ${e.weight_kg} kg (not live).`,this.diaryNode.append(t)}}};customElements.define("mm-nutrition",J);var Y="manual-toggle",Re=["grid","detail","settings","planner"];function ee(l){let e=Math.floor(l/3600),t=Math.floor(l%3600/60),i=l%60;return e>0?`${e}:${String(t).padStart(2,"0")}:${String(i).padStart(2,"0")}`:`${t}:${String(i).padStart(2,"0")}`}function te(l){try{let e=new(window.AudioContext||window.webkitAudioContext);e.createGain().connect(e.destination);let i=(a,n,o,c=.6)=>{let d=e.createOscillator(),m=e.createGain();d.connect(m),m.connect(e.destination),d.frequency.value=a,m.gain.setValueAtTime(c,e.currentTime+n),m.gain.exponentialRampToValueAtTime(.001,e.currentTime+n+o),d.start(e.currentTime+n),d.stop(e.currentTime+n+o+.05)};if(l==="beep")i(880,0,.15),i(880,.2,.15),i(880,.4,.15);else if(l==="ding")i(1318,0,.8,.5),i(1047,.1,.6,.3);else if(l==="alarm")for(let a=0;a<5;a++)i(880,a*.25,.12),i(660,a*.25+.13,.1)}catch{}}var ie=class extends v{static properties={hass:{type:Object},systemDark:{attribute:!1},_config:{type:Object},_view:{type:String},_recipes:{type:Array},_tags:{type:Array},_selectedRecipe:{type:Object},_loading:{type:Boolean},_error:{type:String},_searchQuery:{type:String},_activeTag:{type:String},_settings:{type:Object},_wide:{type:Boolean},_sidebarCollapsed:{type:Boolean},_gridScrollPos:{type:Number},_recentRecipeIds:{type:Array},_timers:{type:Array},_timerAlarm:{type:Object},_timerAlarmQueue:{type:Array},_timersPrevView:{type:String},_customTimerInput:{type:String},_hdrStarHover:{type:Number},_mobileMenuOpen:{type:Boolean},_navDirection:{type:String},_closingDetail:{type:Boolean},_gridFilterPreset:{type:Object},_timerPresets:{type:Array},_presetNameInput:{type:String},_presetMinsInput:{type:String},_alarmAddInput:{type:String},_plannerFromRecipe:{type:Object},_globalMode:{type:Boolean},_quickTimerLabel:{type:String},_globalWakeActive:{type:Boolean}};constructor(){super(),this._pendingViewRestore=null,this._view="grid",this._recipes=[],this._tags=[],this._selectedRecipe=null,this._loading=!1,this._error=null,this._searchQuery="",this._activeTag=null,this._settings=w(),this._languageAutoDetectPending=!0,A(this._settings.language),this._wide=!1,this._sidebarCollapsed=!1,this._gridScrollPos=0,this._recentRecipeIds=[],this._timers=[],this._timerAlarm=null,this._timerAlarmQueue=[],this._timersPrevView=null,this._customTimerInput="",this._hdrStarHover=0,this._mobileMenuOpen=!1,this._navDirection="forward",this._closingDetail=!1,this._gridFilterPreset=null,this._timerPresets=[],this._presetNameInput="",this._presetMinsInput="",this._alarmAddInput="",this._plannerFromRecipe=null,this._globalMode=!1,this._quickTimerLabel="",this._alarmLoopActive=!1,this._alarmInterval=null,this._alarmTimeout=null,this._alarmAudio=null,this._unsubscribe=null,this._refreshGeneration=0,this._refreshRequested=!1,this._refreshScheduled=!1,this._refreshRunning=!1,this._recipeRefreshDeferred=!1,this._darkModeQuery=null,this._resizeObserver=null,this._timerTick=null,this._globalWakeActive=!1,this._globalWakeUnsubscribeFn=null}setConfig(e){this._config=e}static getStubConfig(){return{}}getCardSize(){return 6}_updateHeight(){requestAnimationFrame(()=>requestAnimationFrame(()=>{let e=this.getBoundingClientRect().top,t=window.innerHeight-Math.max(e,0);t>100&&(this.style.height=`${t}px`)}))}connectedCallback(){super.connectedCallback(),this._darkModeQuery=window.matchMedia("(prefers-color-scheme: dark)"),this._darkModeQuery.addEventListener("change",this._onSystemDark),this._applyTheme(),this._resizeObserver=new ResizeObserver(e=>{let t=e[0]?.contentRect?.width??0;this._wide=t>=620}),this._resizeObserver.observe(this),this._onViewportResize=()=>this._updateHeight(),window.visualViewport?.addEventListener("resize",this._onViewportResize),window.addEventListener("resize",this._onViewportResize),this._updateHeight(),this._timerTick=setInterval(()=>this._tickTimers(),1e3)}disconnectedCallback(){super.disconnectedCallback(),this._refreshGeneration++,this._refreshRequested=!1,this._refreshScheduled=!1,this._refreshRunning=!1,this._unsubscribe&&(this._unsubscribe(),this._unsubscribe=null),this._darkModeQuery?.removeEventListener("change",this._onSystemDark),this._resizeObserver?.disconnect(),window.visualViewport?.removeEventListener("resize",this._onViewportResize),window.removeEventListener("resize",this._onViewportResize),this._timerTick&&(clearInterval(this._timerTick),this._timerTick=null),this._timerAlarm&&(this._stopAlarmLoop(),this._timerAlarm=null),this._timerAlarmQueue=[],this._globalWakeActive&&D(Y)}_onSystemDark=()=>{this._settings.darkMode==="system"&&this._applyTheme()};updated(e){if(e.has("hass")&&this.hass&&!this._api&&(this._api=new F(this.hass),this._api.transport=this.transport,this._init()),e.has("hass")&&this.hass&&this._languageAutoDetectPending){this._languageAutoDetectPending=!1;let t=(this.hass.language||"").split("-")[0].toLowerCase(),i=N.includes(t)?t:this._settings.language;this._settings={...this._settings,language:i},A(i)}e.has("hass")&&this._api&&(this._api.hass=this.hass),(e.has("_settings")||e.has("systemDark"))&&this._applyTheme(),(e.has("_view")||e.has("_selectedRecipe")||e.has("_timers")||e.has("_recentRecipeIds"))&&this._saveViewState(),(e.has("_view")||e.has("_closingDetail"))&&this._recipeRefreshDeferred&&!this.shadowRoot.querySelector("rm-recipe-detail")&&this._queueRefresh()}_saveViewState(){if(!this._cacheBootstrapped||!this.transport?.current())return;let e=Re.includes(this._view)?this._view:"grid";me(this.transport,{view:e,recipeId:e==="detail"&&this._selectedRecipe?.id||null,recentIds:this._recentRecipeIds},this._timers)}_restoreViewState(){let e=this._pendingViewRestore;if(this._pendingViewRestore=null,!(!e||!Re.includes(e.view)))if(e.view==="detail"&&e.recipeId){let t=this._recipes.find(i=>i.id===e.recipeId);t&&(this._selectedRecipe=t,this._view="detail")}else e.view!=="detail"&&(this._view=e.view)}_applyTheme(){ue(this,this._settings,this.systemDark??this._darkModeQuery?.matches??!1),this.dispatchEvent(new CustomEvent("macromate-appearance",{detail:{settings:this._settings},bubbles:!0,composed:!0}))}async _init(){if(this._loading=!0,this._error=null,this.hass.user.is_admin||(this._view="nutrition"),!this._cacheBootstrapped&&this.hass.user.is_admin){let e=he(this.transport);this._pendingViewRestore=e,this._recentRecipeIds=e.recentIds||[],this._timers=e.timers||[],this._cacheBootstrapped=!0}try{let e;try{e=await this.transport.call("preferences_get")}catch(t){if(this.hass.user.is_admin)throw t;return}if(e.preferences?.recipe_settings&&(this._settings=w({...this._settings,...e.preferences.recipe_settings}),await A(this._settings.language),this.transport.locale=this._settings.language,this.hass=this.transport.facade()),!this.hass.user.is_admin){this._view="nutrition";return}await Promise.all([this._loadRecipes(),this._loadTags(),this._loadGlobalTimers()]),this._restoreViewState(),await this._loadPresets(),await this._subscribe()}catch(e){this._error=e.message||r("Failed to load recipes")}finally{this._loading=!1}}async _loadGlobalTimers(){try{let{timers:e}=await this._api.getGlobalTimers(),t=Date.now()/1e3;this._timers=[...this._timers.filter(i=>!i.global),...(e||[]).map(i=>this._globalTimerToLocal(i,t))]}catch{}}_globalTimerToLocal(e,t=Date.now()/1e3){let i=e.running?Math.max(0,e.duration-(t-e.start_time)):e.paused_remaining??e.duration;return{id:e.id,label:e.label,total:e.duration,remaining:Math.round(i),running:e.running&&i>0,alarming:e.running&&i<=0,presetId:e.preset_id||null,global:!0,duration:e.duration,start_time:e.start_time,paused_remaining:e.paused_remaining}}async _loadRecipes(){let e=await this._api.getAllRecipes();this._recipes=e?.recipes??[]}async _loadTags(){let e=await this._api.getTags();this._tags=e?.tags??[]}async _subscribe(){if(this._unsubscribe)return;let e=this._refreshGeneration,t=await this._api.subscribe(()=>this._queueRefresh());!this.isConnected||e!==this._refreshGeneration||!this.transport.current()?t():this._unsubscribe=t}_queueRefresh(){if(this._refreshRequested=!0,this._refreshScheduled||this._refreshRunning)return;this._refreshScheduled=!0;let e=this._refreshGeneration;queueMicrotask(()=>{e===this._refreshGeneration&&(this._refreshScheduled=!1,this._refreshLive())})}async _refreshLive(){let e=this.transport;if(!this._refreshRequested||!this.isConnected||!e?.current()||e.pending)return;this._refreshRequested=!1,this._refreshRunning=!0;let t=this._refreshGeneration,i=()=>!!this.shadowRoot.querySelector("rm-recipe-detail"),a=i();try{let[n,o,c]=await Promise.all([a?null:this._api.getAllRecipes(),a?null:this._api.getTags(),a?null:this._api.getGlobalTimers()]);if(!this.isConnected||t!==this._refreshGeneration||this.transport!==e||!e.current())return;if(e.pending){this._refreshRequested=!0;return}this._recipeRefreshDeferred=a||i(),a&&!i()&&(this._refreshRequested=!0),this._recipeRefreshDeferred||(this._recipes=n?.recipes??[],this._tags=o?.tags??[],this._timers=[...this._timers.filter(d=>!d.global),...(c?.timers||[]).map(d=>this._globalTimerToLocal(d))])}catch{}finally{t===this._refreshGeneration&&(this._refreshRunning=!1,this._refreshRequested&&!e.pending&&e.current()&&this._queueRefresh())}}get _filteredRecipes(){let e=this._recipes;if(this._activeTag&&(e=e.filter(t=>t.tags?.includes(this._activeTag)||t.courses?.includes(this._activeTag)||t.categories?.includes(this._activeTag)||t.collections?.includes(this._activeTag))),this._searchQuery.trim()){let t=this._searchQuery.trim().toLowerCase();e=e.filter(i=>i.name?.toLowerCase().includes(t)||i.description?.toLowerCase().includes(t)||i.tags?.some(a=>a.toLowerCase().includes(t)))}return e}get _recentRecipes(){let e=this._settings.recentCount??12;return this._recentRecipeIds.slice(0,e).map(t=>this._recipes.find(i=>i.id===t)).filter(Boolean)}async _handleSettingsChange(e){let t=this._settings.language;if(this._settings=w(e.detail.settings),this._settings.language!==t){await A(this._settings.language),this.transport.locale=this._settings.language,this.hass=this.transport.facade(),this.requestUpdate();for(let i of this.shadowRoot.querySelectorAll("*"))i.requestUpdate?.()}try{await this.transport.call("preferences_update",{preferences:{recipe_settings:this._settings}}),this._error=null}catch(i){this._error=this._settings.language==="de"?i.code==="uncertain"?"Speicherstatus unklar. Gleiche Anfrage nur ausdr\xFCcklich erneut senden.":i.code==="pending"?"Zuerst die unklare Anfrage kl\xE4ren.":"Einstellungen konnten nicht gespeichert werden. Felder und Berechtigungen pr\xFCfen.":i.message}}async _toggleGlobalWakeLock(){y()&&(this._globalWakeActive?(await D(Y),this._globalWakeActive=!1):(await O(Y),this._globalWakeActive=!0))}_tickTimers(){if(!this._timers.length)return;let e=!1,t=[],i=Date.now()/1e3,a=this._timers.map(n=>{if(n.alarming||!n.running)return n;let o=n.global?Math.max(0,n.duration-(i-n.start_time)):n.remaining-1;if(e=!0,o<=0){if(n.presetId)return{...n,remaining:0,running:!1,alarming:!0};t.push({id:n.id,label:n.label})}return{...n,remaining:Math.round(o),running:o>0}});e&&(this._timers=a),t.length&&(this._timerAlarm||(this._timerAlarm=t.shift(),this._startAlarmLoop(this._settings.timerSound??"beep",this._settings.timerSoundFile)),t.length&&(this._timerAlarmQueue=[...this._timerAlarmQueue,...t]))}async _startTimer(e,t,i=null,a=!1){if(!Number.isFinite(e)||e<=0||e>604800||t&&String(t).length>300)return;let n=t||r(p`${Math.floor(e/60)} min timer`);if(a&&this._api)try{let c=Date.now()/1e3;await this._api.addGlobalTimer({label:n,duration:e,start_time:c,running:!0,paused_remaining:null,...i?{preset_id:i}:{}}),await this._loadGlobalTimers();return}catch(c){this._error=c.message;return}let o=crypto.randomUUID();this._timers=[...this._timers,{id:o,label:n,total:e,remaining:e,running:!0,presetId:i||null}]}async _stopTimer(e){if(this._timers.find(i=>i.id===e)?.global){try{await this._api.deleteGlobalTimer(e),await this._loadGlobalTimers()}catch(i){this._error=i.message}return}this._timers=this._timers.filter(i=>i.id!==e)}async _pauseTimer(e){let t=this._timers.find(i=>i.id===e);if(t){if(t.global){try{await this._api.updateGlobalTimer(e,t.running?{running:!1,paused_remaining:t.remaining}:{running:!0,start_time:Date.now()/1e3-(t.duration-t.remaining),paused_remaining:null}),await this._loadGlobalTimers()}catch(i){this._error=i.message}return}this._timers=this._timers.map(i=>i.id===e?{...i,running:!i.running}:i)}}async _addTimeToTimer(e,t){let i=this._timers.find(a=>a.id===e);if(i){if(i.global){try{await this._api.updateGlobalTimer(e,{duration:i.duration+t,running:!0,start_time:Date.now()/1e3-(i.duration-i.remaining),paused_remaining:null}),await this._loadGlobalTimers()}catch(a){this._error=a.message}return}this._timers=this._timers.map(a=>a.id===e?{...a,total:a.total+t,remaining:a.remaining+t,running:!0,alarming:!1}:a)}}_dismissAlarm(){this._timerAlarm&&(this._stopAlarmLoop(),this._stopTimer(this._timerAlarm.id),this._timerAlarm=this._timerAlarmQueue.length?this._timerAlarmQueue.shift():null,this._timerAlarm&&this._startAlarmLoop(this._settings.timerSound??"beep",this._settings.timerSoundFile))}async _loadPresets(){let e=await this.transport.call("timer_presets_get");this._timerPresets=e.presets||[]}async _addPresetTimer(){let e=this._presetNameInput.trim(),t=Number(this._presetMinsInput);if(!(!e||!Number.isFinite(t)||t<=0))try{await this.transport.call("timer_presets_add",{name:e,seconds:Math.round(t*60)}),await this._loadPresets(),this._presetNameInput="",this._presetMinsInput=""}catch(i){this._error=i.message}}async _removePreset(e){try{await this.transport.call("timer_presets_delete",{preset_id:e}),await this._loadPresets()}catch(t){this._error=t.message}}_startAlarmLoop(e,t){if(this._stopAlarmLoop(),e!=="none"&&!(e==="file"&&(typeof t!="string"||t.length>2e6||!/^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/]*={0,2}$/.test(t))))if(e==="file"&&t){this._alarmLoopActive=!0;let i=()=>{this._alarmLoopActive&&(this._alarmAudio=new Audio(t),this._alarmAudio.onended=()=>{this._alarmLoopActive&&(this._alarmTimeout=setTimeout(i,2e3))},this._alarmAudio.onerror=()=>{this._alarmLoopActive&&(this._alarmTimeout=setTimeout(()=>te("beep"),2e3))},this._alarmAudio.play().catch(()=>{}))};i()}else te(e),this._alarmInterval=setInterval(()=>te(e),4e3)}_stopAlarmLoop(){this._alarmLoopActive=!1,this._alarmInterval&&(clearInterval(this._alarmInterval),this._alarmInterval=null),this._alarmTimeout&&(clearTimeout(this._alarmTimeout),this._alarmTimeout=null),this._alarmAudio&&(this._alarmAudio.pause(),this._alarmAudio.onended=null,this._alarmAudio.onerror=null,this._alarmAudio=null)}_handleStartTimer(e){let{seconds:t,label:i}=e.detail;this._startTimer(t,i,null,this._globalMode)}_handleSearch(e){this._searchQuery=e.detail?.query??""}_handleTagFilter(e){let t=e.detail?.tag;this._activeTag=this._activeTag===t?null:t}_handleChipNav(e){let{filterMode:t,value:i}=e.detail;this._navDirection="back",t==="tags"?(this._activeTag=i,this._gridFilterPreset=null):(this._activeTag=null,this._gridFilterPreset={filterMode:t,selectedValues:[i]}),this._view="grid"}_handleBack(){this._closingDetail||(this._view==="detail"&&this._selectedRecipe&&!this._closingDetail?(this._closingDetail=!0,this._view="grid",window.matchMedia("(prefers-reduced-motion: reduce)").matches&&(this._closingDetail=!1,this._selectedRecipe=null)):(this._navDirection="back",this._view="grid",this._selectedRecipe=null,this._closingDetail=!1))}_onDetailTransitionEnd(e){e.target===e.currentTarget&&e.propertyName==="transform"&&this._closingDetail&&(this._closingDetail=!1,this._selectedRecipe=null)}_handleShowGrid(){if(!this.hass.user.is_admin){this._view="nutrition";return}this._navDirection="back",this._view="grid",this._selectedRecipe=null}_handleShowPlanner(){this._plannerFromRecipe=this._selectedRecipe||null,this._navDirection="forward",this._view="planner"}_handleBackToRecipe(){this._plannerFromRecipe&&(this._selectedRecipe=this._plannerFromRecipe,this._plannerFromRecipe=null,this._navDirection="back",this._view="detail")}_handleOpenRecipe(e){let t=this.shadowRoot?.querySelector("rm-recipe-grid");if(t){let a=t.shadowRoot?.querySelector(".grid-scroll");this._gridScrollPos=a?.scrollTop??0}let i=e.detail?.recipe;if(this._closingDetail=!1,this._navDirection="forward",this._selectedRecipe=i,this._view="detail",i?.id){let a=[i.id,...this._recentRecipeIds.filter(n=>n!==i.id)].slice(0,50);this._recentRecipeIds=a}}async _handleToggleFavourite(e){try{let{recipeId:t}=e.detail;await this._api.toggleFavourite(t),await this._loadRecipes(),this._selectedRecipe?.id===t&&(this._selectedRecipe=this._recipes.find(i=>i.id===t)??this._selectedRecipe)}catch{}}async _handleDeleteRecipe(e){try{await this._api.deleteRecipe(e.detail.recipeId),await this._loadRecipes(),await this._loadTags(),this._navDirection="back",this._view="grid",this._selectedRecipe=null}catch{}}async _handleUpdateRecipe(e){try{let{recipeId:t,data:i}=e.detail;await this._api.updateRecipe(t,i),await this._loadRecipes(),await this._loadTags(),this._selectedRecipe?.id===t&&(this._selectedRecipe=this._recipes.find(a=>a.id===t)??null)}catch{}}_renderStars(e){let t=e||0,i=this._hdrStarHover,a=i>0?i:t;return s`
       <div
         class="header-stars"
         @mouseleave=${()=>{this._hdrStarHover=0}}
         title="${i>0?r(p`Set rating: ${i}★`):t>0?r(p`Rating: ${t}★ — click to change`):r("Click to rate")}"
       >
-        ${[1,2,3,4,5].map(s=>n`
+        ${[1,2,3,4,5].map(n=>s`
             <button
-              class="hdr-star ${s<=a?"filled":""}"
-              aria-label=${r(p`Set rating: ${s}★`)}
-              aria-pressed=${s===t}
-              @mouseover=${()=>{this._hdrStarHover=s}}
-              @click=${()=>this._handleRateRecipe(s)}
+              class="hdr-star ${n<=a?"filled":""}"
+              aria-label=${r(p`Set rating: ${n}★`)}
+              aria-pressed=${n===t}
+              @mouseover=${()=>{this._hdrStarHover=n}}
+              @click=${()=>this._handleRateRecipe(n)}
             >
               ★
             </button>
           `)}
       </div>
-    `}async _handleRateRecipe(e){try{if(!this._selectedRecipe)return;let t=this._selectedRecipe.rating===e?null:e;this._hdrStarHover=0,await this._handleUpdateRecipe({detail:{recipeId:this._selectedRecipe.id,data:{rating:t}}})}catch{}}_renderSidebar(){if(!this.hass?.user?.is_admin)return n`<nav class="rm-sidebar">
+    `}async _handleRateRecipe(e){try{if(!this._selectedRecipe)return;let t=this._selectedRecipe.rating===e?null:e;this._hdrStarHover=0,await this._handleUpdateRecipe({detail:{recipeId:this._selectedRecipe.id,data:{rating:t}}})}catch{}}_renderSidebar(){if(!this.hass?.user?.is_admin)return s`<nav class="rm-sidebar">
         <div class="sb-nav">
           <button
             class="sb-item"
@@ -5684,17 +5883,17 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             ${r("Settings")}
           </button>
         </div>
-      </nav>`;let e=this._view,t=this._sidebarCollapsed,i=(a,s,o,c=!1,d=null)=>n`
+      </nav>`;let e=this._view,t=this._sidebarCollapsed,i=(a,n,o,c=!1,d=null)=>s`
       <button
         class="sb-item ${e===o?"active":""} ${c?"placeholder":""}"
-        title="${c?r(p`${s} — coming soon`):s}"
+        title="${c?r(p`${n} — coming soon`):n}"
         @click=${c?void 0:d||(()=>{this._navDirection="forward",this._view=o,this._selectedRecipe=null})}
         ?disabled=${c}
       >
         <ha-icon icon="${a}"></ha-icon>
-        ${t?"":n`<span>${s}</span>`}
+        ${t?"":s`<span>${n}</span>`}
       </button>
-    `;return n`
+    `;return s`
       <nav class="rm-sidebar ${t?"collapsed":""}">
         <div class="sb-top">
           <div class="sb-logo-row">
@@ -5709,7 +5908,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             </button>
           </div>
 
-          ${t?"":n`
+          ${t?"":s`
                 <div class="sb-search">
                   <ha-icon icon="mdi:magnify" class="sb-search-icon"></ha-icon>
                   <input
@@ -5719,7 +5918,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                     .value=${this._searchQuery}
                     @input=${a=>{this._searchQuery=a.target.value,this._navDirection="back",this._view="grid"}}
                   />
-                  ${this._searchQuery?n`
+                  ${this._searchQuery?s`
                         <button
                           class="sb-search-clear"
                           @click=${()=>{this._searchQuery=""}}
@@ -5742,8 +5941,8 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             @click=${()=>{this._timersPrevView=this._view,this._view="timers"}}
           >
             <ha-icon icon="mdi:timer-outline"></ha-icon>
-            ${t?"":n`<span>${r("Timers")}</span>`}
-            ${this._timers.length?n`<span class="sb-timer-badge">${this._timers.length}</span>`:""}
+            ${t?"":s`<span>${r("Timers")}</span>`}
+            ${this._timers.length?s`<span class="sb-timer-badge">${this._timers.length}</span>`:""}
           </button>
         </div>
 
@@ -5753,27 +5952,27 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             disabled
             title="${r("Sync \u2014 coming soon")}"
           >
-            <ha-icon icon="mdi:cloud-sync-outline"></ha-icon>${t?"":n`<span>${r("Sync")}</span>`}
+            <ha-icon icon="mdi:cloud-sync-outline"></ha-icon>${t?"":s`<span>${r("Sync")}</span>`}
           </button>
           <button
             class="sb-item placeholder"
             disabled
             title="${r("Help \u2014 coming soon")}"
           >
-            <ha-icon icon="mdi:help-circle-outline"></ha-icon>${t?"":n`<span>${r("Help")}</span>`}
+            <ha-icon icon="mdi:help-circle-outline"></ha-icon>${t?"":s`<span>${r("Help")}</span>`}
           </button>
           <button
             class="sb-item ${e==="settings"?"active":""}"
             @click=${()=>{this._view="settings"}}
           >
-            <ha-icon icon="mdi:cog-outline"></ha-icon>${t?"":n`<span>${r("Settings")}</span>`}
+            <ha-icon icon="mdi:cog-outline"></ha-icon>${t?"":s`<span>${r("Settings")}</span>`}
           </button>
         </div>
       </nav>
-    `}_renderHeader(){let e=(this._view==="detail"||this._closingDetail)&&this._selectedRecipe,t=this._view==="settings",i=this._view==="timers",a=this._wide,s=t?r("Settings"):i?r("Timers"):e?"":this._view==="planner"?r("Meal Planner"):this._view==="nutrition"?this._settings.language==="de"?"Ern\xE4hrung":"Nutrition":r("Recipes");return n`
+    `}_renderHeader(){let e=(this._view==="detail"||this._closingDetail)&&this._selectedRecipe,t=this._view==="settings",i=this._view==="timers",a=this._wide,n=t?r("Settings"):i?r("Timers"):e?"":this._view==="planner"?r("Meal Planner"):this._view==="nutrition"?this._settings.language==="de"?"Ern\xE4hrung":"Nutrition":r("Recipes");return s`
       <div class="rm-header">
         <div class="rm-header-left">
-          ${e?n`
+          ${e?s`
                 <button
                   class="icon-btn"
                   @click=${this._handleBack}
@@ -5781,7 +5980,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 >
                   <ha-icon icon="mdi:arrow-left"></ha-icon>
                 </button>
-              `:i&&this._timersPrevView==="detail"?n`
+              `:i&&this._timersPrevView==="detail"?s`
                   <button
                     class="icon-btn"
                     @click=${()=>{this._navDirection="back",this._view="detail",this._timersPrevView=null}}
@@ -5789,7 +5988,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                   >
                     <ha-icon icon="mdi:arrow-left"></ha-icon>
                   </button>
-                `:!a&&this._view!=="grid"&&!t&&!i?n`
+                `:!a&&this._view!=="grid"&&!t&&!i?s`
                     <button
                       class="icon-btn"
                       aria-label=${r("Back")}
@@ -5800,25 +5999,25 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                   `:""}
           <div class="rm-title">
             <ha-icon icon="mdi:chef-hat"></ha-icon>
-            <span>${s}</span>
+            <span>${n}</span>
           </div>
         </div>
 
         <div class="rm-header-right">
           <!-- Timer pills (compact, shown when timers are running, not in timer view) -->
-          ${this._timers.length&&this._view!=="timers"?n`
+          ${this._timers.length&&this._view!=="timers"?s`
                 <button
                   class="timer-pills"
                   aria-label=${r("Timers")}
                   @click=${()=>{this._navDirection="forward",this._timersPrevView=this._view,this._view="timers"}}
                 >
-                  ${this._timers.slice(0,3).map(o=>n`
+                  ${this._timers.slice(0,3).map(o=>s`
                       <div class="timer-pill ${o.running?"":"paused"}">
                         <ha-icon icon="mdi:timer-outline"></ha-icon>
-                        <span>${Y(o.remaining)}</span>
+                        <span>${ee(o.remaining)}</span>
                       </div>
                     `)}
-                  ${this._timers.length>3?n`<span class="timer-more"
+                  ${this._timers.length>3?s`<span class="timer-more"
                         >+${this._timers.length-3}</span
                       >`:""}
                 </button>
@@ -5828,15 +6027,15 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           <button
             class="icon-btn wake-toggle-btn ${this._globalWakeActive?"active":""}"
             @click=${this._toggleGlobalWakeLock}
-            ?disabled=${!k()}
-            title="${k()?this._globalWakeActive?r("Screen awake \u2014 click to allow sleep"):r("Keep screen awake"):r("Keep screen awake \u2014 requires a secure (HTTPS) connection and a supported browser")}"
+            ?disabled=${!y()}
+            title="${y()?this._globalWakeActive?r("Screen awake \u2014 click to allow sleep"):r("Keep screen awake"):r("Keep screen awake \u2014 requires a secure (HTTPS) connection and a supported browser")}"
           >
             <ha-icon
               icon="${this._globalWakeActive?"mdi:eye":"mdi:eye-off-outline"}"
             ></ha-icon>
           </button>
 
-          ${t||i?n`
+          ${t||i?s`
                 <button
                   class="icon-btn"
                   aria-label=${r("Close")}
@@ -5844,7 +6043,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 >
                   <ha-icon icon="mdi:close"></ha-icon>
                 </button>
-              `:a?"":n`
+              `:a?"":s`
                   <button
                     class="icon-btn"
                     @click=${()=>{this._mobileMenuOpen=!this._mobileMenuOpen}}
@@ -5857,13 +6056,13 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                 `}
         </div>
       </div>
-    `}_renderBody(){let e=this._settings;if(this._view==="nutrition")return n`<mm-nutrition .hass=${this.hass}></mm-nutrition>`;if(this._view==="settings")return n`
+    `}_renderBody(){let e=this._settings;if(this._view==="nutrition")return s`<mm-nutrition .hass=${this.hass}></mm-nutrition>`;if(this._view==="settings")return s`
         <rm-settings-view
           .hass=${this.hass}
           .settings=${e}
           @rm-settings-change=${this._handleSettingsChange}
         ></rm-settings-view>
-      `;if(this._view==="timers")return this._renderTimersView();if(this._view==="planner")return n`
+      `;if(this._view==="timers")return this._renderTimersView();if(this._view==="planner")return s`
         <rm-meal-planner
           .api=${this._api}
           .recipes=${this._recipes}
@@ -5872,11 +6071,11 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           @rm-open-recipe=${this._handleOpenRecipe}
           @rm-back-to-recipe=${this._handleBackToRecipe}
         ></rm-meal-planner>
-      `;if(this._loading)return n`
+      `;if(this._loading)return s`
         <div class="rm-loading">
           <ha-circular-progress active size="large"></ha-circular-progress>
         </div>
-      `;if(this._error)return n`
+      `;if(this._error)return s`
         <div class="rm-error">
           <ha-icon icon="mdi:alert-circle-outline"></ha-icon>
           <p>${this._error}</p>
@@ -5884,7 +6083,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
             ${r("Retry")}
           </button>
         </div>
-      `;let t=(this._view==="detail"||this._closingDetail)&&this._selectedRecipe;return n`
+      `;let t=(this._view==="detail"||this._closingDetail)&&this._selectedRecipe;return s`
       <div
         class="rm-slide-track ${this._view==="detail"?"show-detail":""}"
         @transitionend=${this._onDetailTransitionEnd}
@@ -5910,7 +6109,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           ></rm-recipe-grid>
         </div>
         <div class="rm-slide-pane">
-          ${t?n`
+          ${t?s`
                 <rm-recipe-detail
                   .recipe=${this._selectedRecipe}
                   .api=${this._api}
@@ -5932,12 +6131,12 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               `:""}
         </div>
       </div>
-    `}_renderTimersView(){let e=this._customTimerInput.trim(),t=this._presetNameInput.trim()&&this._presetMinsInput.trim(),i=[{label:"+30s",secs:30},{label:"+1m",secs:60},{label:"+5m",secs:300},{label:"+10m",secs:600}],a=this._timers.filter(o=>!o.presetId),s=263.9;return n`
+    `}_renderTimersView(){let e=this._customTimerInput.trim(),t=this._presetNameInput.trim()&&this._presetMinsInput.trim(),i=[{label:"+30s",secs:30},{label:"+1m",secs:60},{label:"+5m",secs:300},{label:"+10m",secs:600}],a=this._timers.filter(o=>!o.presetId),n=263.9;return s`
       <div class="timers-view">
         <!-- Active timers (non-preset): horizontal wrap of square arc tiles -->
-        ${a.length?n`
+        ${a.length?s`
               <div class="timer-list">
-                ${a.map(o=>{let c=o.remaining<60?"var(--rm-ochre)":"var(--rm-accent)",d=s*(1-o.remaining/o.total);return n`
+                ${a.map(o=>{let c=o.remaining<60?"var(--rm-ochre)":"var(--rm-accent)",d=n*(1-o.remaining/o.total);return s`
                     <div class="timer-card">
                       <button
                         class="preset-remove"
@@ -5946,7 +6145,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                       >
                         <ha-icon icon="mdi:close"></ha-icon>
                       </button>
-                      ${o.global?n`<ha-icon
+                      ${o.global?s`<ha-icon
                             class="timer-global-badge"
                             icon="mdi:earth"
                             title="${r("Global timer")}"
@@ -5970,7 +6169,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                             stroke="${c}"
                             stroke-width="6"
                             stroke-linecap="round"
-                            stroke-dasharray="${s}"
+                            stroke-dasharray="${n}"
                             stroke-dashoffset="${d}"
                             transform="rotate(-90 50 50)"
                             style="transition: stroke-dashoffset 0.8s linear, stroke 0.3s;"
@@ -5978,7 +6177,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                         </svg>
                         <div class="preset-arc-center">
                           <span class="preset-arc-time"
-                            >${Y(o.remaining)}</span
+                            >${ee(o.remaining)}</span
                           >
                         </div>
                       </div>
@@ -6003,7 +6202,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                     </div>
                   `})}
               </div>
-            `:n`
+            `:s`
               <div class="timer-empty">
                 <ha-icon icon="mdi:timer-off-outline"></ha-icon>
                 <p>${r("No active timers.")}</p>
@@ -6099,11 +6298,11 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         </div>
 
         <!-- Preset timers grid (bottom) -->
-        ${this._timerPresets.length?n`
+        ${this._timerPresets.length?s`
               <div class="timer-presets-grid">
-                ${this._timerPresets.map(o=>{let c=this._timers.find(j=>j.presetId===o.id),d=c&&c.running,h=c&&c.alarming,u=c?c.remaining:o.seconds,T=c?c.total:o.seconds,g=h?"var(--rm-error)":u<60&&c?"var(--rm-ochre)":"var(--rm-accent)",ie=h?0:c?s*(1-u/T):s;return n`
+                ${this._timerPresets.map(o=>{let c=this._timers.find(j=>j.presetId===o.id),d=c&&c.running,m=c&&c.alarming,u=c?c.remaining:o.seconds,T=c?c.total:o.seconds,g=m?"var(--rm-error)":u<60&&c?"var(--rm-ochre)":"var(--rm-accent)",re=m?0:c?n*(1-u/T):n;return s`
                     <div
-                      class="timer-preset-card ${h?"alarming":""}"
+                      class="timer-preset-card ${m?"alarming":""}"
                     >
                       <button
                         class="preset-remove"
@@ -6131,28 +6330,28 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                             stroke="${g}"
                             stroke-width="7"
                             stroke-linecap="round"
-                            stroke-dasharray="${s}"
-                            stroke-dashoffset="${ie}"
+                            stroke-dasharray="${n}"
+                            stroke-dashoffset="${re}"
                             transform="rotate(-90 50 50)"
                             style="transition: stroke-dashoffset 0.8s linear, stroke 0.3s;"
                           />
                         </svg>
                         <div class="preset-arc-center">
-                          ${h?n`
+                          ${m?s`
                                 <span
                                   class="preset-arc-time"
                                   style="color:var(--rm-error)"
                                   >${r("Done!")}</span
                                 >
-                              `:n`
+                              `:s`
                                 <span class="preset-arc-time"
-                                  >${Y(u)}</span
+                                  >${ee(u)}</span
                                 >
                               `}
                         </div>
                       </div>
                       <div class="preset-arc-btns">
-                        ${h?n`
+                        ${m?s`
                               <button
                                 class="preset-arc-btn"
                                 @click=${()=>this._addTimeToTimer(c.id,30)}
@@ -6177,7 +6376,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                               >
                                 ${r("Stop")}
                               </button>
-                            `:d?n`
+                            `:d?s`
                                 <button
                                   class="preset-arc-btn"
                                   @click=${()=>this._addTimeToTimer(c.id,30)}
@@ -6205,7 +6404,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                                 >
                                   ${r("Stop")}
                                 </button>
-                              `:c?n`
+                              `:c?s`
                                   <button
                                     class="preset-arc-btn"
                                     @click=${()=>this._pauseTimer(c.id)}
@@ -6218,7 +6417,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
                                   >
                                     ${r("Stop")}
                                   </button>
-                                `:n`
+                                `:s`
                                   <button
                                     class="preset-arc-btn play"
                                     @click=${()=>this._startTimer(o.seconds,o.name,o.id)}
@@ -6236,7 +6435,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
               </div>
             `:""}
       </div>
-    `}_renderTimerAlarm(){let e=this._timerAlarm;return e?n`
+    `}_renderTimerAlarm(){let e=this._timerAlarm;return e?s`
       <div class="alarm-overlay">
         <div class="alarm-bubble">
           <ha-icon icon="mdi:alarm" class="alarm-icon"></ha-icon>
@@ -6291,7 +6490,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </div>
         </div>
       </div>
-    `:""}_renderBottomNav(){if(!this.hass?.user?.is_admin)return n`<nav class="rm-bottom-nav">
+    `:""}_renderBottomNav(){if(!this.hass?.user?.is_admin)return s`<nav class="rm-bottom-nav">
         <button
           class="rm-bn-btn"
           @click=${()=>{this._view="nutrition"}}
@@ -6303,16 +6502,16 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         >
           ${r("Settings")}
         </button>
-      </nav>`;let e=this._view,t=(i,a,s,o)=>n`
+      </nav>`;let e=this._view,t=(i,a,n,o)=>s`
       <button
-        class="rm-bn-btn ${e===s?"active":""}"
-        @click=${o||(()=>{this._navDirection="forward",this._view=s,this._selectedRecipe=null})}
+        class="rm-bn-btn ${e===n?"active":""}"
+        @click=${o||(()=>{this._navDirection="forward",this._view=n,this._selectedRecipe=null})}
         title="${a}"
       >
         <ha-icon icon="${i}"></ha-icon>
         <span>${a}</span>
       </button>
-    `;return n`
+    `;return s`
       <nav class="rm-bottom-nav">
         ${t("mdi:home",r("Home"),"grid",()=>{this._navDirection="back",this._view="grid",this._selectedRecipe=null})}
         ${t("mdi:heart-pulse",this._settings.language==="de"?"Ern\xE4hrung":"Nutrition","nutrition")}
@@ -6324,10 +6523,10 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
         >
           <ha-icon icon="mdi:timer-outline"></ha-icon>
           <span>${r("Timers")}</span>
-          ${this._timers.length?n`<span class="rm-bn-badge">${this._timers.length}</span>`:""}
+          ${this._timers.length?s`<span class="rm-bn-badge">${this._timers.length}</span>`:""}
         </button>
       </nav>
-    `}_renderMobileMenu(){return n`
+    `}_renderMobileMenu(){return s`
       <div
         class="rm-mobile-overlay"
         @click=${()=>{this._mobileMenuOpen=!1}}
@@ -6359,7 +6558,7 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
           </div>
         </nav>
       </div>
-    `}render(){let e=this._wide;return n`
+    `}render(){let e=this._wide;return s`
       <ha-card class="rm-card ${e?"rm-wide":""}">
         ${e?this._renderSidebar():""}
         <div class="rm-main">
@@ -7521,4 +7720,4 @@ import{a as b,b as n,c as z,d as v,e as p,f as r,g as le}from"./chunks/chunk-MCI
     }
 
     ${f}
-  `};try{customElements.define("mm-unified-app",te)}catch{}export{te as UnifiedApp};
+  `};try{customElements.define("mm-unified-app",ie)}catch{}export{ie as UnifiedApp};

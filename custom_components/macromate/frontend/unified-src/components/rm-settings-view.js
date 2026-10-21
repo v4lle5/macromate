@@ -1,6 +1,6 @@
 /**
  * Recipe Manager — Settings panel.
- * Tabs: Advanced (language, sound, wake lock) | Sync | Help
+ * Tabs: Advanced (language, sound, wake lock) | Agent | Sync | Help
  */
 import { LitElement, html, css } from "lit";
 import { msg, str } from "@lit/localize";
@@ -8,6 +8,7 @@ const CARD_VERSION = "unified";
 import { isWakeLockSupported } from "../services/wake-lock.js";
 import { normalizeSettings } from "../services/theme.js";
 import { componentStyles } from "./component-styles.js";
+import "./agent-access.js";
 
 const LANGUAGES = [
   ["en", "English"],
@@ -101,6 +102,9 @@ class RmSettingsView extends LitElement {
         <div class="tab-bar">
           ${[
             ["advanced", "mdi:tune-variant", msg("Advanced")],
+            ...(this.hass?.user?.is_admin === true
+              ? [["agent", "mdi:robot-outline", "Agent"]]
+              : []),
             ["sync", "mdi:cloud-sync-outline", msg("Sync")],
             ["help", "mdi:help-circle-outline", msg("Help")],
           ].map(
@@ -120,6 +124,12 @@ class RmSettingsView extends LitElement {
         </div>
         <div class="settings-body">
           ${this._activeTab === "advanced" ? this._renderAdvanced(s) : ""}
+          ${this._activeTab === "agent" && this.hass?.user?.is_admin === true
+            ? html`<mm-agent-access
+                .hass=${this.hass}
+                .language=${s.language}
+              ></mm-agent-access>`
+            : ""}
           ${this._activeTab === "sync" ? this._renderSync() : ""}
           ${this._activeTab === "help" ? this._renderHelp() : ""}
         </div>

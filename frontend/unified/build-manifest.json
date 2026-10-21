@@ -40,8 +40,8 @@
   "artifacts": [
     {
       "path": "frontend/unified/app.js",
-      "bytes": 282885,
-      "sha256": "a7e9fbcb79a511a88b52e1320f7626ad6834f32f7d3ccac33b2160347a0df457"
+      "bytes": 294940,
+      "sha256": "ff7cfabde79a46b29479f3cb64e99ebfad5a7f15cc3b03bafa8d401cc596c397"
     },
     {
       "path": "frontend/unified/chunks/de-6NBW56XJ.js",

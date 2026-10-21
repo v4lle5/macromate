@@ -5,23 +5,31 @@ plans and diary records. The broader HA client/agent guide is **not** applicable
 
 ## Credentials and transport
 
-- The operator separately approves activation, mints a restricted credential and
-  provides an owner-only local secret-file path plus the HA origin. Building or
-  installing this integration is not approval to mint or distribute credentials.
+- The operator explicitly creates a restricted credential in **Settings → Agent**
+  and hands you the connection block, or supplies an existing protected secret-file
+  path and HA origin. The app's recipe setup grants only recipe read/create/update.
+  Store a handed-off token in your protected secret configuration or an owner-only
+  local file immediately; do not repeat it in replies. Installing the integration
+  or opening its settings does not authorize credential creation.
 - Never request, read, store or use the operator's HA administrator token. Never
   use `tools/macromate_client.py`, HA services, WebSocket authentication or other
   HA routes as a fallback. A scoped MacroMate credential cannot authenticate to HA.
-- Use only `tools/macromate_scoped_client.py ... call ACTION --json-file FILE`.
-  Keep the credential in the supplied protected file, not a prompt, command-line
-  literal, URL, chat, screenshot or log. The client reads it itself.
-- HTTPS is required by default. Use `--trusted-lan-http` only for an explicitly
-  operator-approved trusted local network, never automatically after TLS failure.
+- Call only `POST /api/macromate/agent/action/ACTION` at the supplied HA origin,
+  using `Authorization: Bearer <scoped token>` and an `application/json` object.
+  Use your protected HTTP credential configuration or the optional
+  `tools/macromate_scoped_client.py ... call ACTION --json-file FILE` client.
+  Keep the token out of command-line literals, URLs, screenshots and logs.
+- HTTPS is preferred. HTTP is allowed only for the operator-approved trusted LAN
+  address in the connection block, never as an automatic fallback after TLS
+  failure. The optional Python client requires `--trusted-lan-http` for HTTP.
 - The agent must not run the operator-only `mint`, `list` or `revoke` commands.
   Credential administration is outside the delegated scope.
 
 ## Discovery and commands
 
-Create an ordinary JSON file containing `{}` and invoke:
+First POST `{}` to `/api/macromate/agent/action/describe` using the supplied
+connection. An agent with HTTP support needs no additional Python installation.
+With the optional repository client, save `{}` as `empty-object.json` and invoke:
 
 ```sh
 python tools/macromate_scoped_client.py --origin https://ha.example.invalid \
@@ -71,5 +79,6 @@ permissions, media acquisition and generic HA service control are also forbidden
 6. Keep destructive operations within the user's explicit requested scope. Never
    infer approval for bulk deletion, credential changes or integration deployment.
 
-The client does not retry or generate request IDs. Full scope, endpoint and
-operator instructions are in [SCOPED_AGENT_ACCESS.md](SCOPED_AGENT_ACCESS.md).
+The optional client does not retry or generate request IDs. The operator's short
+app setup is in [AGENT_LAN_SETUP_DE.md](AGENT_LAN_SETUP_DE.md); full scope and
+endpoint details are in [SCOPED_AGENT_ACCESS.md](SCOPED_AGENT_ACCESS.md).

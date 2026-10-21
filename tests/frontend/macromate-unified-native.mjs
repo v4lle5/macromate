@@ -82,6 +82,97 @@ try{
   assert.ok(wire.some(m=>m.action==='describe'));
   return {actions:await page.evaluate(()=>Object.keys(card.api.actions).length),subscription:'macromate/subscribe'};
  });
+ await test('native-agent-settings-connect-recipe-readback-and-disconnect',async()=>{
+  // Keep the one-time credential in an isolated page. Closing it in finally
+  // precedes the generic failure screenshot; only non-secret results leave it.
+  const privateContext=await browser.newContext({viewport:{width:1280,height:1000},reducedMotion:'reduce'});
+  const agentPage=await privateContext.newPage();agentPage.setDefaultTimeout(15000);
+  let scopedRecipeId,privatePageErrors=0,blockedExternal=0,stage='open settings';
+  agentPage.on('pageerror',()=>privatePageErrors++);
+  await agentPage.route('**/*',route=>{
+   const url=route.request().url();
+   if(!/^(blob:|data:)/.test(url)&&new URL(url).origin!==cfg.url){blockedExternal++;return route.abort();}
+   return route.continue();
+  });
+  try{
+   await agentPage.goto(cfg.url+'/native-card/');await agentPage.waitForFunction(()=>window.ready);
+   await agentPage.evaluate(options=>window.connectBackend(options),cfg.accounts[0]);
+   await agentPage.waitForFunction(()=>card.application&&!card.application._loading);
+   await agentPage.getByRole('button',{name:'Settings',exact:true}).click();
+   await agentPage.locator('rm-settings-view').getByRole('button',{name:'Agent',exact:true}).click();
+   const access=agentPage.locator('mm-agent-access');
+   assert.equal(await access.getByRole('textbox',{name:'Agent name',exact:true}).getAttribute('placeholder'),'My agent');
+   assert.equal(await access.getByRole('textbox',{name:'Home Assistant address',exact:true}).inputValue(),cfg.url);
+   await access.getByRole('textbox',{name:'Agent name',exact:true}).fill('Native UI agent');
+   stage='create scoped access';await access.getByRole('button',{name:'Connect agent',exact:true}).click();
+   await access.getByRole('button',{name:'Copy connection',exact:true}).waitFor();
+   const connection=await access.evaluate(el=>{
+    let details;try{details=JSON.parse(el.shadowRoot.querySelector('textarea[aria-label="Connection details"]').value);}catch{throw Error('Connection details are not a valid connection block');}
+    const authorization=details.headers?.Authorization;
+    const valid=typeof authorization==='string'&&/^Bearer mm1\.[a-f0-9]{32}\.[A-Za-z0-9_-]+$/.test(authorization);
+    if(valid)window.__nativeAgentAuthorization=authorization;
+    return {valid,base_url:details.base_url,method:details.discovery?.method,url:details.discovery?.url,empty_body:details.discovery?.body&&Object.keys(details.discovery.body).length===0,content_type:details.headers?.['Content-Type'],pending:card.api.pending!==null};
+   });
+   assert.equal(connection.valid,true,'The connection block contains a scoped credential');
+   assert.equal(connection.base_url,cfg.url);assert.equal(connection.method,'POST');
+   assert.equal(connection.url,cfg.url+'/api/macromate/agent/action/describe');
+   assert.equal(connection.empty_body,true);assert.equal(connection.content_type,'application/json');assert.equal(connection.pending,false);
+   // Simulate a denied clipboard without replacing any HA request or response.
+   stage='clipboard fallback';await agentPage.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('Synthetic clipboard denial');}}}));
+   await access.getByRole('button',{name:'Copy connection',exact:true}).click();
+   await access.getByRole('textbox',{name:'Connection details',exact:true}).waitFor({state:'visible'});
+   assert.equal(await access.getByRole('textbox',{name:'Connection details',exact:true}).evaluate(field=>field.selectionStart===0&&field.selectionEnd===field.value.length),true,'Clipboard denial selects the complete block for manual copying');
+   await agentPage.setViewportSize({width:390,height:844});
+   const mobile=await access.evaluate(el=>({overflow:document.documentElement.scrollWidth>innerWidth,fieldWidth:el.shadowRoot.querySelector('textarea').getBoundingClientRect().width,paneWidth:el.getBoundingClientRect().width}));
+   assert.equal(mobile.overflow,false);assert.ok(mobile.fieldWidth<=mobile.paneWidth);
+   stage='scoped recipe HTTP readback';const result=await agentPage.evaluate(async()=>{
+    const request=async(action,payload={})=>{
+     const response=await fetch('/api/macromate/agent/action/'+action,{method:'POST',headers:{Authorization:window.__nativeAgentAuthorization,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+     return {status:response.status,data:response.ok?await response.json():null};
+    };
+    const discovery=await request('describe');
+    const created=await request('recipes_add',{name:'Connected agent oats',servings:1,ingredients:[{name:'Oats',amount:'60',unit:'g'}],request_id:'native-settings-agent-create'});
+    const recipe=created.data?.recipe;
+    const read=recipe?await request('recipes_get',{recipe_id:recipe.id}):{status:null};
+    const forbidden=await request('diary');
+    const bearer=window.__nativeAgentAuthorization;
+    const persisted=[localStorage,sessionStorage].some(storage=>Array.from({length:storage.length},(_,i)=>storage.getItem(storage.key(i))).some(value=>value?.includes(bearer.slice(7))));
+    return {describe_status:discovery.status,authentication:discovery.data?.authentication,scopes:discovery.data?.scopes,actions:Object.keys(discovery.data?.actions||{}),create_status:created.status,read_status:read.status,recipe_id:recipe?.id,name:read.data?.recipe?.name,ingredients:read.data?.recipe?.ingredients,forbidden_status:forbidden.status,credential_persisted:persisted,pending:card.api.pending!==null};
+   });
+   scopedRecipeId=result.recipe_id;
+   assert.equal(result.describe_status,200);assert.equal(result.authentication,'macromate_scoped_bearer');
+   assert.deepEqual(result.scopes,['recipes.create','recipes.read','recipes.update']);
+   assert.ok(result.actions.includes('recipes_add')&&result.actions.includes('recipes_get')&&result.actions.includes('recipes_update'));
+   assert.ok(!result.actions.some(action=>action.startsWith('diary')||action.startsWith('meal_plan')||action==='recipes_delete'));
+   assert.equal(result.create_status,200);assert.equal(result.read_status,200);assert.equal(result.name,'Connected agent oats');
+   assert.equal(result.ingredients[0].amount,'60');assert.equal(result.ingredients[0].unit,'g');
+   assert.equal(result.forbidden_status,403);assert.equal(result.credential_persisted,false);assert.equal(result.pending,false);
+   assert.equal((await store('settings-agent-recipe')).kitchen.recipes[scopedRecipeId].name,'Connected agent oats','UI-issued credential writes the actual shared recipe Store');
+   stage='disconnect and verify revocation';await access.locator('li[data-credential-id]').filter({hasText:'Native UI agent'}).getByRole('button',{name:'Disconnect',exact:true}).click();
+   await access.locator('textarea[aria-label="Connection details"]').waitFor({state:'detached'});
+   const revokedStatus=await agentPage.evaluate(async()=>{
+    const response=await fetch('/api/macromate/agent/action/describe',{method:'POST',headers:{Authorization:window.__nativeAgentAuthorization,'Content-Type':'application/json'},body:'{}'});
+    return response.status;
+   });
+   assert.equal(revokedStatus,401,'Disconnected access is rejected by native HA');
+   assert.equal(privatePageErrors,0);assert.equal(blockedExternal,0);
+   return {created_via:'Settings Agent UI',native_http:true,recipe_id:scopedRecipeId,scopes:result.scopes,clipboard_manual_fallback:true,credential_persisted:false,revoked_status:401};
+  }catch{
+   // Locator/DOM errors can contain textarea contents. Never export their text
+   // or cause while the one-time connection block exists in this private page.
+   throw Error('Native agent connection failed during: '+stage);
+  }finally{
+   try{
+    await agentPage.evaluate(async recipeId=>{
+     // Metadata contains no token. Clean up even if an assertion failed after mint.
+     const response=await hass.fetchWithAuth('/api/macromate/agent/credentials');
+     if(response.ok)for(const row of (await response.json()).credentials||[])if(row.label==='Native UI agent'&&!row.revoked)await hass.fetchWithAuth('/api/macromate/agent/credentials/'+row.id,{method:'DELETE'});
+     if(recipeId)await nativeSend({type:'macromate/command',action:'recipes_delete',payload:{recipe_id:recipeId,request_id:'native-settings-agent-cleanup'}});
+     delete window.__nativeAgentAuthorization;card?.remove();await window.closeBackend?.();
+    },scopedRecipeId).catch(()=>{});
+   }finally{await privateContext.close();}
+  }
+ });
  await test('agent-recipe-create-ui-edit-readback',async()=>{
   await page.waitForFunction(()=>card.application&&!card.application._loading);
   assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0,'Recipe creation belongs to the agent, including for administrators');
@@ -243,7 +334,9 @@ try{
   await page.waitForFunction(()=>!document.querySelector('macromate-card').shadowRoot.textContent.includes('Native quick diary'));
   assert.equal(await page.locator('mm-nutrition .calorie-ring').count(),0);assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0);
   assert.equal(await page.getByText('Synthetic private photo',{exact:true}).count(),0);
-  return {private_dom_cleared:true,shopping_ui_removed:true,private_backend_denied:true};
+  await view('Settings');assert.equal(await page.locator('rm-settings-view').getByRole('button',{name:'Agent',exact:true}).count(),0);
+  assert.equal(await page.locator('mm-agent-access').count(),0,'Members cannot open credential management');
+  return {private_dom_cleared:true,shopping_ui_removed:true,private_backend_denied:true,agent_management_hidden:true};
  });
  await test('native-reader-denials',async()=>{
   await connect(2);await assert.rejects(()=>native('diary',{}));await assert.rejects(()=>native('recipes_get_all',{}));

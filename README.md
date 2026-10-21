@@ -25,7 +25,7 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 - Cooking timers/presets, server-side Home Assistant notifications, and complete local agent CRUD through the same authenticated, validated command model as the card.
 - Separate nutrition profiles with explicit Home Assistant ownership/sharing, plus ISO-week and calendar-month reports.
 
-No bundled inference model, fasting tracker or photo-based food recognition. Agents need no cloud model, browser automation or extra MCP server to use the API. Start with the [German LAN setup guide](docs/AGENT_LAN_SETUP_DE.md) and [scoped agent instructions](docs/SCOPED_AGENT_INSTRUCTIONS.md). The [administrative API guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md) cover broader operator access. This development branch is not automatically published or installed.
+No bundled inference model, fasting tracker or photo-based food recognition. Agents need no cloud model, browser automation or extra MCP server to use the API. Start with the [three-step app setup guide](docs/AGENT_LAN_SETUP_DE.md) and [scoped agent instructions](docs/SCOPED_AGENT_INSTRUCTIONS.md). The [administrative API guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md) cover broader operator access. This development branch is not automatically published or installed.
 
 ## Installation
 
@@ -195,6 +195,16 @@ The panel never automatically retries writes. Unclear transport/storage status k
 Authorized views subscribe to filtered native refresh events and coalesce bursts. Refresh preserves selected dates, draft/focused forms and uncertain writes; safe list metadata can refresh without replacing a dirty recipe editor. The nutrition view retains its bounded fallback for missed events and HA-local date changes. Removal or identity changes release subscriptions and private state. No background provider search or automatic write retry is performed.
 
 ## Agent client
+
+Connect a recipe agent in **Settings → Agent → Agent verbinden** while signed in
+as a Home Assistant administrator. MacroMate creates a separate recipe
+read/create/update credential and shows one connection block to hand to your
+chosen agent. The tab also lists and revokes access. See the
+[short German setup guide](docs/AGENT_LAN_SETUP_DE.md); the
+[terminal workflow](docs/AGENT_LAN_SETUP_ADVANCED_DE.md) is optional.
+
+The following broad client is for administrative automation, separate from that
+restricted app setup:
 
 `tools/macromate_client.py` uses HA's authenticated REST service API. Supply `HA_URL` as a credential-free HTTPS origin and `HA_TOKEN` through a protected environment/secret manager. Never paste tokens into chat, files, skills, logs or URLs. These private actions need an appropriate HA administrator identity; HA tokens are not fine-grained MacroMate-only scopes.
 

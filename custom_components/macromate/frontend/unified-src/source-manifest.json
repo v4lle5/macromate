@@ -30,7 +30,7 @@
     {
       "path": "frontend/build-info.js",
       "bytes": 96,
-      "sha256": "5d976df2bf09fc09e2548aef216ac447fac776f47531e4a91094084bcdff1a71"
+      "sha256": "c1a54b8e7fba9903dff2f4b7f565d7e7ee351514b52fe25f398910bd486d643f"
     },
     {
       "path": "frontend/card-runtime.js",
@@ -49,8 +49,8 @@
     },
     {
       "path": "frontend/delivery-manifest.json",
-      "bytes": 7808,
-      "sha256": "1d117ae612dcbcf4a5af2b50ef65db25bd118a70cf3f6295c64afc3708321a98"
+      "bytes": 7922,
+      "sha256": "07519b637dedec5192b1eb2dba06f2048b9d2c242386877e5a1ca325a309c149"
     },
     {
       "path": "frontend/dom.js",
@@ -85,7 +85,7 @@
     {
       "path": "frontend/macromate-card.js",
       "bytes": 2526,
-      "sha256": "1da83b42c7c7b110a133cb4f2dfc5b1052c69a5cfddac2b58bfa47d9f4ea7d88"
+      "sha256": "725c8bb61a24d1ff96c41f5708eb14fb057e5c89b2fadeba2fa319b589d80cb8"
     },
     {
       "path": "frontend/navigation.js",
@@ -114,8 +114,8 @@
     },
     {
       "path": "frontend/retained-releases.json",
-      "bytes": 116900,
-      "sha256": "fd18bef2ffe59544f67bfa89fb7e0d79147745adec444c39116d966b267f574e"
+      "bytes": 124811,
+      "sha256": "76f62773a43e6e9b61ed3a11956dea18ed745107ef2ff23359a3363f6de16c89"
     },
     {
       "path": "frontend/scanner.js",
@@ -131,6 +131,11 @@
       "path": "frontend/unified-src/RECIPE-MANAGER-CARD-LICENSE.txt",
       "bytes": 1073,
       "sha256": "559f1f8661f954ef58dc9e3767014363c287b3f0f78f1de0c959922ecc11dee0"
+    },
+    {
+      "path": "frontend/unified-src/components/agent-access.js",
+      "bytes": 15284,
+      "sha256": "bf1ce3856282338c47e6d25b444668f66ef26619f0efa862c2f0924499d542ee"
     },
     {
       "path": "frontend/unified-src/components/component-styles.js",
@@ -179,8 +184,8 @@
     },
     {
       "path": "frontend/unified-src/components/rm-settings-view.js",
-      "bytes": 24603,
-      "sha256": "c4fe4091a72741489e4da888d80fc7bf07b8617019b0de649b8af114aa289f92"
+      "bytes": 25011,
+      "sha256": "3f35fced1f099cbbd4897ce886e194bfdf84c1179c124f1dd4b46da8aa597f16"
     },
     {
       "path": "frontend/unified-src/components/workspace-styles.js",
@@ -249,8 +254,8 @@
     },
     {
       "path": "frontend/unified-src/services/adapter.js",
-      "bytes": 12993,
-      "sha256": "2ff67262a818b1ee2bc1c4c641af4cf51377602e600f99051dee248a949e1d2b"
+      "bytes": 15340,
+      "sha256": "aec49657b15eff77419f0cca4f8acc398c2be7e96ea0f1295c177799e54e9940"
     },
     {
       "path": "frontend/unified-src/services/amounts.js",
@@ -369,8 +374,8 @@
     },
     {
       "path": "tests/frontend/macromate-unified-adapter.mjs",
-      "bytes": 8801,
-      "sha256": "35d82f43378589551982adbff6d2ea12487e1e096b92876d1717e9358ce12db3"
+      "bytes": 15887,
+      "sha256": "d8373eaf69dcb9d82c3f685f2b14afcd5e89fa0ce44cdc17cb65430ecb5f2e7c"
     },
     {
       "path": "tests/frontend/macromate-unified-amounts.mjs",
@@ -419,8 +424,8 @@
     },
     {
       "path": "tests/frontend/macromate-unified-native.mjs",
-      "bytes": 45964,
-      "sha256": "d86620feb26f6f655114da00f242e292d8c145e07f47c2780dad7930d6cc62d9"
+      "bytes": 54742,
+      "sha256": "206a414ccc2cad5d39c33acd8f685647299a682636ec291e35ad8dacb16ecf37"
     },
     {
       "path": "tests/frontend/macromate-unified-nutrition-browser.mjs",
@@ -434,8 +439,8 @@
     },
     {
       "path": "tests/frontend/macromate-unified-settings.mjs",
-      "bytes": 3736,
-      "sha256": "3ec619ce4d1f353ce1eda7a619bce966c1790e067db7efe7ae6f2ffc762c51d9"
+      "bytes": 10869,
+      "sha256": "4486a7b300882ffb21a345de9678f28443c62f09a0aa25f765cf345fcef3abe7"
     },
     {
       "path": "tests/frontend/macromate-unified-shopping.mjs",

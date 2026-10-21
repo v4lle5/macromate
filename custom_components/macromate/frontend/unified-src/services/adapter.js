@@ -79,6 +79,7 @@ export class MacroMateAPI extends EventTarget {
     this.urls = new Map();
     this.mediaPromises = new Map();
     this.unsubscribers = new Set();
+    this.credentials = this.credentials.bind(this);
   }
   current() {
     return (
@@ -400,6 +401,7 @@ export class MacroMateAPI extends EventTarget {
     return {
       user: { ...this.hass.user },
       language: this.locale || this.hass.language,
+      credentials: this.credentials,
       connection: {
         subscribeMessage: (callback) => api.subscribe(callback),
         subscribeEvents: (callback) => api.subscribe(callback),
@@ -420,6 +422,67 @@ export class MacroMateAPI extends EventTarget {
         return api.call(type, payload);
       },
     };
+  }
+  async credentials(operation, payload = {}) {
+    const guard = () => {
+      this.guard();
+      if (!this.context.admin) throw safeError("unauthorized");
+    };
+    guard();
+    let path = "/api/macromate/agent/credentials";
+    const options = { method: "GET" };
+    if (operation === "create") {
+      if (typeof payload.label !== "string") throw safeError("invalid_request");
+      options.method = "POST";
+      options.headers = { "Content-Type": "application/json" };
+      options.body = JSON.stringify({
+        label: payload.label,
+        scopes: ["recipes.read", "recipes.create", "recipes.update"],
+      });
+    } else if (operation === "revoke") {
+      if (typeof payload.id !== "string" || !/^[a-f0-9]{32}$/.test(payload.id))
+        throw safeError("invalid_request");
+      path += "/" + payload.id;
+      options.method = "DELETE";
+    } else if (operation !== "list") throw safeError("invalid_request");
+    // Credentials have no replay mechanism. Never retain a bearer token in the
+    // shared transport, and never retry creation after an uncertain response.
+    try {
+      const response = await this.hass.fetchWithAuth(path, options);
+      guard();
+      if (!response.ok) {
+        const code =
+          response.status === 401 || response.status === 403
+            ? "unauthorized"
+            : response.status === 400
+              ? "invalid_request"
+              : response.status === 404
+                ? "not_found"
+                : operation === "list"
+                  ? "read_failed"
+                  : "uncertain";
+        throw safeError(code);
+      }
+      const result = await response.json();
+      guard();
+      if (!result || typeof result !== "object" || Array.isArray(result))
+        throw safeError(operation === "list" ? "read_failed" : "uncertain");
+      if (
+        operation === "revoke" &&
+        (result.id !== payload.id || result.revoked !== true)
+      )
+        throw safeError("uncertain");
+      return result;
+    } catch (error) {
+      guard();
+      throw safeError(
+        ["unauthorized", "invalid_request", "not_found"].includes(error?.code)
+          ? error.code
+          : operation === "list"
+            ? "read_failed"
+            : "uncertain",
+      );
+    }
   }
   dispose() {
     this.active = false;
