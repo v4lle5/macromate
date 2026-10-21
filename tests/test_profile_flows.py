@@ -214,18 +214,19 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
     async def test_options_submission_clears_sources_without_reintroducing_data_defaults(self):
         settings = self.module._normalized(PROFILE_INPUT)
         data = {**settings, "weight_entity": "sensor.original_weight", "bmr_entity": "sensor.original_bmr",
-                "active_calories_entity": "sensor.original_active", "enable_food_database": True}
+                "active_calories_entity": "sensor.original_active", "enable_food_database": False}
         entry = self.register_entry(data)
         flow = self.options_flow(entry)
         form = await flow.async_step_init()
-        submitted = form["data_schema"]({**PROFILE_INPUT, "enable_food_database": False})
+        self.assertNotIn("enable_food_database", {str(key) for key in form["data_schema"].schema})
+        submitted = form["data_schema"](PROFILE_INPUT)
         for key in ("weight_entity", "bmr_entity", "active_calories_entity"):
             self.assertNotIn(key, submitted, "Cleared entities must not get server defaults")
         result = await flow.async_step_init(submitted)
         self.assertEqual(result["type"], "create_entry")
         for key in ("weight_entity", "bmr_entity", "active_calories_entity"):
             self.assertIsNone(result["data"][key])
-        self.assertFalse(result["data"]["enable_food_database"])
+        self.assertTrue(result["data"]["enable_food_database"])
         await self.hass.config_entries.options.async_finish_flow(flow, result)
         exact = self.hass.config_entries.async_get_known_entry(entry.entry_id)
         self.assertIsNone(exact.options["weight_entity"])
@@ -252,7 +253,7 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(exact.data["bmr_entity"])
         self.assertEqual(exact.data["calorie_adjustment"], -300)
         self.assertFalse(exact.data["profile_complete"])
-        self.assertFalse(exact.data["enable_food_database"])
+        self.assertTrue(exact.data["enable_food_database"])
         self.assertNotIn("birthday", exact.data)
         self.assertTrue(await migration.async_migrate_entry(self.hass, entry))
         form = await self.options_flow(entry).async_step_init()
@@ -273,13 +274,13 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
         keys = {str(key) for key in form["data_schema"].schema}
         self.assertNotIn("kcal_per_kg", keys)
         self.assertTrue(set(PROFILE_INPUT).issubset(keys))
-        self.assertIn("enable_food_database", keys)
+        self.assertNotIn("enable_food_database", keys)
         submitted = form["data_schema"](PROFILE_INPUT)
         result = await flow.async_step_user(submitted)
         self.assertEqual(result["type"], "create_entry")
         self.assertEqual(result["version"], 2)
         self.assertTrue(result["data"]["profile_complete"])
-        self.assertFalse(result["data"]["enable_food_database"])
+        self.assertTrue(result["data"]["enable_food_database"])
         for key in ("weight_entity", "bmr_entity", "active_calories_entity"):
             self.assertIsNone(result["data"][key])
         self.assertNotIn("kcal_per_kg", result["data"])
@@ -287,8 +288,7 @@ class ProfileFlowRuntimeTests(unittest.IsolatedAsyncioTestCase):
     async def test_bad_profile_returns_translated_field_errors(self):
         for key, value, code in (("birthday", "2010-10-14", "adults_only"),
                                  ("weight_kg", float("nan"), "invalid_profile"),
-                                 ("target_weight_kg", 90, "goal_mismatch"),
-                                 ("enable_food_database", "yes", "invalid_profile")):
+                                 ("target_weight_kg", 90, "goal_mismatch")):
             with self.subTest(key=key):
                 result = await self.flow().async_step_user({**PROFILE_INPUT, key: value})
                 self.assertEqual(result["type"], "form")

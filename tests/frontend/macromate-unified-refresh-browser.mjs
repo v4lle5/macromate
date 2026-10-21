@@ -15,11 +15,13 @@ const python=`
 import sys,json,types,importlib,pathlib,asyncio,tempfile
 from homeassistant.core import HomeAssistant
 root=pathlib.Path(sys.argv[1]);evidence=pathlib.Path(sys.argv[2]);evidence.mkdir(parents=True,exist_ok=True)
+sys.path.insert(0,str(root/'tests/ha'))
+from offline_food_provider import install_offline_food_provider
 pkg=types.ModuleType('refresh_fixture');pkg.__path__=[str(root/'custom_components/macromate')];sys.modules['refresh_fixture']=pkg
 p=importlib.import_module('refresh_fixture.platform_support');r=importlib.import_module('refresh_fixture.recipes');s=importlib.import_module('refresh_fixture.shopping');c=importlib.import_module('refresh_fixture.coordinator')
 async def main():
  with tempfile.TemporaryDirectory(prefix='refresh-coordinator-',dir=str(evidence))as directory:
-  hass=HomeAssistant(directory);hass.config.time_zone='Europe/Berlin';coordinator=c.MealTrackerCoordinator(hass,{'weight_entity':'','active_calories_entity':''});await coordinator.async_load();actor=p.Actor('refresh-admin',True);events=[]
+  hass=HomeAssistant(directory);hass.config.time_zone='Europe/Berlin';install_offline_food_provider(hass,importlib.import_module('refresh_fixture.food_provider').OpenFoodFactsProvider);coordinator=c.MealTrackerCoordinator(hass,{'weight_entity':'','active_calories_entity':''});await coordinator.async_load();actor=p.Actor('refresh-admin',True);events=[]
   def published():
    raw=json.loads((pathlib.Path(directory)/'.storage/macromate.meals').read_text())
    assert raw['data']==coordinator._state(),'Event must follow durable acceptance'

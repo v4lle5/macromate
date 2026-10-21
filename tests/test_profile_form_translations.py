@@ -7,6 +7,15 @@ ROOT = Path(__file__).resolve().parents[1] / "custom_components" / "macromate"
 
 
 class ProfileFormTranslationTests(unittest.TestCase):
+    def test_setup_and_options_do_not_ask_about_the_food_provider(self):
+        for filename in ("strings.json", "translations/en.json", "translations/de.json"):
+            content = json.loads((ROOT / filename).read_text())
+            for section, step in (("config", "user"), ("options", "init")):
+                with self.subTest(filename=filename, section=section):
+                    form = json.dumps(content[section]["step"][step])
+                    self.assertNotIn("enable_food_database", form)
+                    self.assertNotIn("Open Food Facts", form)
+
     def test_birthday_format_hint_in_setup_and_options_in_both_languages(self):
         for filename, format_hint in (("strings.json", "DD.MM.YYYY"),
                                       ("translations/en.json", "DD.MM.YYYY"),

@@ -64,12 +64,13 @@ class IntegrationContractTests(unittest.TestCase):
         for factor in ("CONF_KCAL_PER_KG", "CONF_PROTEIN_PER_KG", "CONF_FAT_PER_KG", "CONF_CALORIE_ADJUSTMENT"):
             self.assertNotIn(factor, config_flow)
         required = {"formula_sex", "birthday", "height_cm", "weight_kg", "target_weight_kg", "goal",
-                    "weekly_pace_kg", "activity_level", "macro_plan", "enable_food_database"}
+                    "weekly_pace_kg", "activity_level", "macro_plan"}
         for filename in (INTEGRATION / "strings.json", INTEGRATION / "translations" / "de.json"):
             strings = json.loads(filename.read_text())
             for section, step in (("config", "user"), ("options", "init")):
                 fields = strings[section]["step"][step]["data"]
                 self.assertTrue(required.issubset(fields))
+                self.assertNotIn("enable_food_database", fields)
                 for factor in ("kcal_per_kg", "protein_per_kg", "fat_per_kg", "calorie_adjustment"):
                     self.assertNotIn(factor, fields)
                 self.assertIn("adults_only", strings[section]["error"])

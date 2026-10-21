@@ -1,6 +1,6 @@
 # MacroMate nutrition model
 
-MacroMate implements local nutrition tracking with optional Open Food Facts lookup. This note describes its own data and behavior contracts.
+MacroMate implements local nutrition tracking with automatic Open Food Facts lookup. This note describes its own data and behavior contracts.
 
 ## Foods and portions
 

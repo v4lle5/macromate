@@ -1,1 +1,1 @@
-export const BUILD_REVISION="ce7de64ca6b27ce715f9e225f21674bee4f4a97273cec29a5ea6cd6740459ca5";
+export const BUILD_REVISION="894c3ed70aa2ae9c2aa391e5fda55dc96bc479abd9e624ab2eab352041e4a4c6";

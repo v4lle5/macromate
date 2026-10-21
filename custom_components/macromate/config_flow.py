@@ -30,7 +30,6 @@ from .const import (
     CONF_ACTIVITY_LEVEL,
     CONF_BIRTHDAY,
     CONF_BMR_ENTITY,
-    CONF_ENABLE_FOOD_DATABASE,
     CONF_FORMULA_SEX,
     CONF_GOAL,
     CONF_HEIGHT_CM,
@@ -89,14 +88,12 @@ def _schema(hass, values: dict[str, Any], *, display_saved: bool = False) -> vol
         CONF_WEEKLY_PACE_KG: _DecimalTextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
         CONF_ACTIVITY_LEVEL: _select(ACTIVITY_LEVELS, "activity_level"),
         CONF_MACRO_PLAN: _select(MACRO_PLANS, "macro_plan"),
-        CONF_ENABLE_FOOD_DATABASE: bool,
     }
     defaults = {
         CONF_GOAL: "maintain",
         CONF_WEEKLY_PACE_KG: 0,
         CONF_ACTIVITY_LEVEL: "low",
         CONF_MACRO_PLAN: "balanced",
-        CONF_ENABLE_FOOD_DATABASE: False,
     }
     schema = {}
     for key, validator in fields.items():

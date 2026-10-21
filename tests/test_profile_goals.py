@@ -22,6 +22,15 @@ def profile_module():
 
 
 class ProfileGoalsTests(unittest.TestCase):
+    def test_retired_food_database_preference_cannot_disable_submitted_lookups(self):
+        module = profile_module()
+        for legacy in ({}, {"enable_food_database": False}, {"enable_food_database": True}):
+            with self.subTest(legacy=legacy):
+                settings = {**SETTINGS, **legacy}
+                result = module.normalize_settings(settings, TODAY)
+                self.assertTrue(result["enable_food_database"])
+                self.assertEqual(settings, {**SETTINGS, **legacy})
+
     def test_profile_json_roundtrip_has_no_manual_factors(self):
         module = profile_module()
         profile = module.Profile.from_settings(SETTINGS, TODAY)

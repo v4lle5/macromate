@@ -17,7 +17,7 @@ assert.equal(await page.evaluate(()=>card.application._settings.theme),'glass-wa
 assert.equal(await page.evaluate(()=>card.application._settings.language),'en','Unscoped legacy localStorage cannot override account preferences');
 const retiredThemes=['soft','blossom','arctic','meadow','ocean','midnight','ember','neon','unknown-theme'];
 for(const theme of retiredThemes){
- await page.evaluate(theme=>{window.preferences={recipe_settings:{theme,language:'en',darkMode:'on',fontSize:'large',unitSystem:'metric'}};card.remove();document.body.append(card);},theme);
+ await page.evaluate(theme=>{window.preferences={recipe_settings:{theme,language:'en',darkMode:'on',fontSize:'large',unitSystem:'imperial'}};card.remove();document.body.append(card);},theme);
  await page.waitForFunction(()=>card.application?._loading===false&&card.application?._settings.fontSize==='large');
  assert.deepEqual(await page.evaluate(()=>({theme:card.application._settings.theme,darkMode:card.application._settings.darkMode,fontSize:card.application._settings.fontSize,unitSystem:card.application._settings.unitSystem})),{theme:'glass-wave',darkMode:'on',fontSize:'large',unitSystem:'metric'},`${theme} is migrated without discarding the remaining preferences`);
 }
@@ -25,14 +25,16 @@ assert.equal(await page.evaluate(()=>window.calls.filter(c=>c.action==='preferen
 await page.evaluate(()=>{window.preferences={};card.remove();document.body.append(card);});
 await page.waitForFunction(()=>card.application?._loading===false&&card.application?._settings.fontSize==='medium');
 await page.getByRole('button',{name:'Settings',exact:true}).click();const settings=page.locator('rm-settings-view');
-assert.equal(await settings.locator('.theme-name').innerText(),'Glass Wave');
+assert.equal(await settings.locator('.theme-name,.theme-identity').count(),0);
+assert.equal(await settings.getByRole('button',{name:'Appearance',exact:true}).count(),0);
+assert.equal(await settings.getByRole('button',{name:/^(Imperial|Metric)$/}).count(),0);
+assert.equal(await settings.getByLabel('Show metric conversion button',{exact:true}).count(),0);
 assert.equal(await settings.locator('option[value="soft"],option[value="blossom"],option[value="arctic"],option[value="meadow"],option[value="ocean"],option[value="midnight"],option[value="ember"],option[value="neon"]').count(),0,'Retired palettes cannot be selected');
 for(const [darkMode,label,appearance] of [['off','Light','light'],['on','Dark','dark'],['system','Auto','light']]){
  await page.emulateMedia({colorScheme:'light'});
- await settings.getByRole('button',{name:label,exact:true}).click();
+ await page.evaluate(darkMode=>{card.application._settings={...card.application._settings,darkMode};},darkMode);
  await page.waitForFunction(expected=>card.application.getAttribute('data-appearance')===expected,appearance);
  assert.equal(await page.evaluate(()=>card.application._settings.darkMode),darkMode);
- assert.equal(await settings.getByRole('button',{name:label,exact:true}).getAttribute('aria-pressed'),'true');
  if(evidence)await page.screenshot({path:resolve(evidence,`glass-wave-${darkMode}.png`)});
 }
 await page.emulateMedia({colorScheme:'dark'});
@@ -46,7 +48,7 @@ await page.evaluate(()=>{card.hass={...card.hass,themes:{darkMode:false}};});
 await page.waitForFunction(()=>card.application.getAttribute('data-appearance')==='light');
 await page.evaluate(()=>{card.hass={...card.hass,themes:undefined};});
 for(const [label,size] of [['S',14],['L',18],['M',16]]){
- await settings.getByRole('button',{name:label,exact:true}).click();
+ await page.evaluate(fontSize=>{card.application._settings={...card.application._settings,fontSize};},{S:'small',M:'medium',L:'large'}[label]);
  await page.waitForFunction(size=>parseFloat(getComputedStyle(card.application).getPropertyValue('--rm-font-size-base'))===size,size);
  assert.equal(await settings.locator('.setting-name').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)),size,'Text-size preference changes the rendered settings labels');
 }

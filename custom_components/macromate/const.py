@@ -21,7 +21,6 @@ DEFAULT_FAT_PER_KG = 0.8
 
 # Config-entry version and profile schema version are independent of the meal Store.
 CONFIG_VERSION = 2
-CONF_ENABLE_FOOD_DATABASE = "enable_food_database"
 CONF_FORMULA_SEX = "formula_sex"
 CONF_BIRTHDAY = "birthday"
 CONF_HEIGHT_CM = "height_cm"

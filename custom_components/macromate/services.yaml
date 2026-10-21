@@ -45,7 +45,7 @@ legacy_import:
         text: {}
 barcode:
   name: Barcode
-  description: Look up an exact food barcode, online only after consent.
+  description: Look up an exact food barcode; online requests also query Open Food Facts when it is not cached.
   fields:
     barcode:
       name: Barcode
@@ -584,7 +584,7 @@ log_meal:
       required: false
 lookup_barcode:
   name: Lookup barcode
-  description: Look up an exact food barcode, online only after consent.
+  description: Look up an exact food barcode; online requests also query Open Food Facts when it is not cached.
   fields:
     barcode:
       name: Barcode
@@ -1668,7 +1668,7 @@ save_food:
       required: false
 search_foods:
   name: Search foods
-  description: Search local foods; remote searches require explicit consent.
+  description: Search foods; online requests also query Open Food Facts using only the submitted food name.
   fields:
     query:
       name: Query

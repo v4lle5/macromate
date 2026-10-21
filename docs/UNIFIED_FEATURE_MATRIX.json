@@ -92,7 +92,7 @@
     {
       "id": "macromate:source",
       "project": "macromate",
-      "feature": "Optional consent-gated read-only Open Food Facts search and barcode lookup, attribution, cache and bounded networking",
+      "feature": "Automatic read-only Open Food Facts search and barcode lookup, attribution, cache and bounded networking",
       "upstream_status": "implemented",
       "upstream_sources": [
         {

@@ -21,7 +21,6 @@ from .bls_foods import search as search_bls
 from .food_provider import (
     ATTRIBUTION,
     OpenFoodFactsProvider,
-    ProviderConsentRequired,
     ProviderRateLimited,
     ProviderUnavailable,
 )
@@ -91,8 +90,6 @@ class DiaryCommands:
         return FoodProduct.from_dict(value)
 
     def _online_provider(self):
-        if self.settings.get("enable_food_database") is not True:
-            raise PermissionError("online food database consent required")
         provider = getattr(self, "_provider", None)
         if provider is None:
             from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -116,17 +113,13 @@ class DiaryCommands:
         await self._transact("cache_foods", {}, None, apply_cache)
 
     async def _online_foods(self, value, *, barcode=False):
-        """Keep local search usable when the optional provider cannot answer."""
-        if self.settings.get("enable_food_database") is not True:
-            return [], ["provider_consent_required"]
+        """Query submitted food names/barcodes while retaining local fallback."""
         try:
             provider = self._online_provider()
             if barcode:
                 food = await provider.async_lookup_barcode(value)
                 return [food] if food is not None else [], []
             return await provider.async_search(value, submitted=True), []
-        except ProviderConsentRequired:
-            return [], ["provider_consent_required"]
         except ProviderRateLimited:
             return [], ["provider_rate_limited"]
         except (ProviderUnavailable, TimeoutError):
@@ -191,7 +184,7 @@ class DiaryCommands:
             ),
             "nutrition_missing": missing,
             "nutrient_units": dict(NUTRIENT_UNITS),
-            "enable_food_database": self.settings.get("enable_food_database", False),
+            "enable_food_database": True,
         }
 
     async def async_command(self, action, payload, *, actor: Actor | None = None):

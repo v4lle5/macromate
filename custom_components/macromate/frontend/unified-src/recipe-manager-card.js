@@ -1550,7 +1550,7 @@ export class UnifiedApp extends LitElement {
               <div class="timer-list">
                 ${nonPresetTimers.map((t) => {
                   const tArcColor =
-                    t.remaining < 60 ? "#f59e0b" : "var(--rm-accent)";
+                    t.remaining < 60 ? "var(--rm-ochre)" : "var(--rm-accent)";
                   const tOffset = circ * (1 - t.remaining / t.total);
                   return html`
                     <div class="timer-card">
@@ -1781,7 +1781,7 @@ export class UnifiedApp extends LitElement {
                   const arcColor = isAlarming
                     ? "var(--rm-error)"
                     : remaining < 60 && activeTimer
-                      ? "#f59e0b"
+                      ? "var(--rm-ochre)"
                       : "var(--rm-accent)";
                   const offset = isAlarming
                     ? 0
@@ -2174,15 +2174,15 @@ export class UnifiedApp extends LitElement {
       height: 100vh;
       height: calc(var(--vh, 1vh) * 100);
       max-height: -webkit-fill-available;
-      --rm-bg-main: #f7f4ed;
-      --rm-bg-surface: rgba(255, 252, 246, 0.96);
-      --rm-bg-elevated: #fffdf8;
-      --rm-text: #233b47;
-      --rm-text-secondary: #4c626c;
-      --rm-text-muted: #536873;
-      --rm-accent: #326382;
-      --rm-accent-soft: #e2edf1;
-      --rm-border: #c6d1d0;
+      --rm-bg-main: #f9efda;
+      --rm-bg-surface: rgba(253, 248, 239, 0.72);
+      --rm-bg-elevated: #fdf8ef;
+      --rm-text: #263b47;
+      --rm-text-secondary: #53666e;
+      --rm-text-muted: #53666e;
+      --rm-accent: #dccdb8;
+      --rm-accent-soft: #efe3ce;
+      --rm-border: #c5cbc7;
       --rm-shadow: 0 8px 28px rgba(35, 59, 71, 0.08);
       --rm-radius: 18px;
       --rm-radius-sm: 12px;
@@ -2427,7 +2427,7 @@ export class UnifiedApp extends LitElement {
     }
     .sb-item.active {
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       font-weight: 600;
     }
     .sb-item.placeholder {
@@ -2509,7 +2509,7 @@ export class UnifiedApp extends LitElement {
     }
     .rm-title ha-icon {
       --mdc-icon-size: 22px;
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       flex-shrink: 0;
     }
     .rm-title span {
@@ -2566,7 +2566,7 @@ export class UnifiedApp extends LitElement {
       align-items: center;
       gap: 3px;
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       border-radius: 10px;
       padding: 3px 8px;
       font-size: var(--rm-font-size-xs);
@@ -2626,7 +2626,7 @@ export class UnifiedApp extends LitElement {
     }
     .wake-toggle-btn.active {
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
 
     .text-btn {
@@ -2659,7 +2659,7 @@ export class UnifiedApp extends LitElement {
     }
     .rm-error ha-icon {
       --mdc-icon-size: 48px;
-      color: var(--rm-error);
+      color: var(--rm-error-ink);
     }
     .rm-error p {
       margin: 0;
@@ -2750,11 +2750,11 @@ export class UnifiedApp extends LitElement {
     }
     .timer-ctrl-btn:hover {
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
     .timer-ctrl-btn.danger:hover {
       background: var(--rm-error-soft);
-      color: var(--rm-error);
+      color: var(--rm-error-ink);
       border-color: var(--rm-error);
     }
 
@@ -2845,11 +2845,11 @@ export class UnifiedApp extends LitElement {
     }
     .preset-arc-btn:hover {
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       border-color: var(--rm-accent);
     }
     .preset-arc-btn.stop {
-      color: var(--rm-error);
+      color: var(--rm-error-ink);
       border-color: var(--rm-error);
     }
     .preset-arc-btn.stop:hover {
@@ -2936,7 +2936,7 @@ export class UnifiedApp extends LitElement {
     }
     .timer-global-toggle.active {
       border-color: var(--rm-accent);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       background: var(--rm-accent-soft);
     }
     .timer-add-group {
@@ -2978,7 +2978,7 @@ export class UnifiedApp extends LitElement {
       top: 4px;
       right: 22px;
       --mdc-icon-size: 11px;
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       opacity: 0.75;
     }
 
@@ -3033,7 +3033,7 @@ export class UnifiedApp extends LitElement {
 
     .alarm-icon {
       --mdc-icon-size: 52px;
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       animation: alarm-pulse 0.8s ease-in-out infinite alternate;
     }
 
@@ -3218,7 +3218,7 @@ export class UnifiedApp extends LitElement {
       --mdc-icon-size: 22px;
     }
     .rm-bn-btn.active {
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
     .rm-bn-btn:not(.rm-bn-add):hover {
       color: var(--rm-text);
@@ -3294,7 +3294,7 @@ export class UnifiedApp extends LitElement {
       flex-shrink: 0;
     }
     .rm-mm-logo {
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       --mdc-icon-size: 22px;
     }
     .rm-mm-title {
@@ -3345,7 +3345,7 @@ export class UnifiedApp extends LitElement {
       font-size: var(--rm-font-size-xs);
       font-weight: 700;
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       border-radius: 6px;
       padding: 2px 6px;
     }

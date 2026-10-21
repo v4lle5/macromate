@@ -188,7 +188,7 @@ NUTRITION_ACTIONS = {
         "Read an exact nutrient-tracked food.", {"food_id": ID}, ["food_id"], read=True
     ),
     "search_foods": descriptor(
-        "Search local foods; remote searches require explicit consent.",
+        "Search foods; online requests also query Open Food Facts using only the submitted food name.",
         {
             "query": {"type": "string", "maxLength": 200},
             "filter": {"enum": ["all", "favorites", "recent", "custom"]},
@@ -197,7 +197,7 @@ NUTRITION_ACTIONS = {
         read=True,
     ),
     "barcode": descriptor(
-        "Look up an exact food barcode, online only after consent.",
+        "Look up an exact food barcode; online requests also query Open Food Facts when it is not cached.",
         {"barcode": TEXT, "online": {"type": "boolean"}},
         ["barcode"],
         read=True,

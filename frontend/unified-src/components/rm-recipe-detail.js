@@ -121,7 +121,6 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
     _downloading: { type: Boolean },
     _photoUrlInput: { type: String },
     _addingPhotoUrl: { type: Boolean },
-    _metricMode: { type: Boolean },
     _wakeActive: { type: Boolean },
     _completedSteps: { type: Object }, // Set of completed step indices
     _editIngInput: { type: String },
@@ -156,7 +155,6 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
     this._downloading = false;
     this._photoUrlInput = "";
     this._addingPhotoUrl = false;
-    this._metricMode = this.settings?.unitSystem === "metric";
     this._wakeActive = false;
     this._completedSteps = new Set();
     this._editIngInput = "";
@@ -234,7 +232,6 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
         this._editing = false;
         this._confirmDelete = false;
         this._photoUrlInput = "";
-        this._metricMode = this.settings?.unitSystem === "metric";
         this._completedSteps = new Set();
       }
       this._slideIdx = 0;
@@ -1097,10 +1094,8 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
   }
 
   _getDisplayAmount(ing) {
-    if (this._metricMode) {
-      const conv = convertToMetric(this._scaleAmount(ing.amount), ing.unit);
-      if (conv) return conv;
-    }
+    const conv = convertToMetric(this._scaleAmount(ing.amount), ing.unit);
+    if (conv) return conv;
     return {
       amount: this._scaleAmount(ing.amount) || "",
       unit: ing.unit || "",
@@ -1130,28 +1125,7 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
   }
 
   _renderIngredients(r) {
-    const hasImperial = (r.ingredients || []).some(
-      (ing) => ing.unit && IMPERIAL_TO_METRIC[ing.unit.toLowerCase().trim()],
-    );
-
     return html`
-      ${this.settings?.showUnitConversion && hasImperial
-        ? html`
-            <div class="metric-toggle-row">
-              <button
-                class="metric-btn ${this._metricMode ? "active" : ""}"
-                @click=${() => {
-                  this._metricMode = !this._metricMode;
-                }}
-              >
-                <ha-icon icon="mdi:swap-horizontal"></ha-icon>
-                ${this._metricMode
-                  ? msg("Showing metric")
-                  : msg("Convert to metric")}
-              </button>
-            </div>
-          `
-        : ""}
       ${r.ingredients?.length
         ? html`
             <ul class="ingredient-list">
@@ -1331,9 +1305,24 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
     }
 
     const MACROS = [
-      { label: msg("Carbs"), val: carb, cal: carbCal, color: "#f59e0b" },
-      { label: msg("Total fat"), val: fat, cal: fatCal, color: "#3b82f6" },
-      { label: msg("Protein"), val: prot, cal: protCal, color: "#22c55e" },
+      {
+        label: msg("Carbs"),
+        val: carb,
+        cal: carbCal,
+        color: "var(--rm-ochre)",
+      },
+      {
+        label: msg("Total fat"),
+        val: fat,
+        cal: fatCal,
+        color: "var(--rm-terracotta)",
+      },
+      {
+        label: msg("Protein"),
+        val: prot,
+        cal: protCal,
+        color: "var(--rm-sage)",
+      },
     ];
 
     // SVG stroke-dasharray arcs using svg`` template tag (correct SVG namespace)
@@ -1399,7 +1388,7 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
                 cy="${cy}"
                 r="${rad}"
                 fill="none"
-                stroke="#f59e0b"
+                stroke="var(--rm-ochre)"
                 stroke-width="7"
                 stroke-linecap="round"
                 stroke-dasharray="${carbArc} ${circ}"
@@ -1411,7 +1400,7 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
                 cy="${cy}"
                 r="${rad}"
                 fill="none"
-                stroke="#3b82f6"
+                stroke="var(--rm-terracotta)"
                 stroke-width="7"
                 stroke-linecap="round"
                 stroke-dasharray="${fatArc} ${circ}"
@@ -1423,7 +1412,7 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
                 cy="${cy}"
                 r="${rad}"
                 fill="none"
-                stroke="#22c55e"
+                stroke="var(--rm-sage)"
                 stroke-width="7"
                 stroke-linecap="round"
                 stroke-dasharray="${protArc} ${circ}"
@@ -1458,15 +1447,13 @@ class RmRecipeDetail extends RecipeDetailEditing(LitElement) {
             ${MACROS.map((m) => {
               const pct = total > 0 ? Math.round((m.cal / total) * 100) : 0;
               return html`
-                <div class="nutr-macro-col">
-                  <span class="nutr-mcol-num" style="color:${m.color}"
+                <div class="nutr-macro-col" style="--macro-color:${m.color}">
+                  <span class="nutr-mcol-num"
                     >${m.val !== null ? `${m.val} g` : "\u2014"}</span
                   >
                   <span class="nutr-mcol-label">${m.label}</span>
                   ${pct > 0
-                    ? html`<span class="nutr-mcol-pct" style="color:${m.color}"
-                        >${pct}% cals</span
-                      >`
+                    ? html`<span class="nutr-mcol-pct">${pct}% cals</span>`
                     : ""}
                 </div>
               `;

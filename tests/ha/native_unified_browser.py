@@ -9,6 +9,7 @@ Only ephemeral loopback listeners and copied integration files are used. All
 records/users are synthetic. Auth travels in memory, protected subprocess env,
 and stdin, never command arguments, fixtures or evidence. No live HA is used.
 The bridge implements real HA HTTP/WS, not fixture responses or fake successes.
+Only the OFF upstream HTTP transport is synthetic; no public food API is called.
 """
 from __future__ import annotations
 
@@ -24,6 +25,8 @@ import shutil
 import sys
 import tempfile
 import traceback
+
+from offline_food_provider import install_offline_food_provider
 
 REPO = Path(__file__).resolve().parents[2]
 HTML = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Synthetic MacroMate native acceptance</title><link rel="icon" href="data:,"><style>body{margin:0;font:14px system-ui;background:#faf8f5}aside{padding:8px;text-align:center;color:#555}main{height:calc(100vh - 40px)}macromate-card{height:100%}</style><body><aside>SYNTHETIC isolated HA — not live HA or a household diary</aside><main></main><script type="module">
@@ -81,7 +84,8 @@ async def main():
     sys.dont_write_bytecode = True
     report = {'scope': 'Synthetic isolated HA native HTTP/WS; packaged combined card and shipped CLI',
               'ha': importlib.metadata.version('homeassistant'), 'run': str(run),
-              'live_ha': False, 'lovelace_editor': False, 'physical_devices': False, 'failures': []}
+              'live_ha': False, 'lovelace_editor': False, 'physical_devices': False,
+              'off_upstream': 'synthetic transport; no live Open Food Facts requests', 'failures': []}
     assert report['ha'] == '2026.10.1', report['ha']
     client_path = REPO / 'tools/macromate_client.py'
     client_hash = hashlib.sha256(client_path.read_bytes()).hexdigest()
@@ -112,6 +116,7 @@ async def main():
     snapshots = []
     client = None
     coord = None
+    food_transport = None
     try:
         await server.async_bind()
         await server.async_initialize(cors_origins=[], use_x_forwarded_for=False,
@@ -163,8 +168,7 @@ async def main():
         profile = {'formula_sex': 'male', 'birthday': '1990-01-01', 'height_cm': 180,
                    'weight_entity': 'sensor.synthetic_weight',
                    'weight_kg': 80, 'target_weight_kg': 80, 'goal': 'maintain',
-                   'weekly_pace_kg': 0, 'activity_level': 'low', 'macro_plan': 'balanced',
-                   'enable_food_database': False}
+                   'weekly_pace_kg': 0, 'activity_level': 'low', 'macro_plan': 'balanced'}
         flow = await hass.config_entries.flow.async_init('macromate', context={'source': 'user'}, data=profile)
         assert flow['type'] == 'create_entry', flow['type']
         await hass.async_block_till_done()
@@ -178,6 +182,7 @@ async def main():
             'MacroMate must load its complete dashboard card automatically, without manual resources')
         report['automatic_card_modules'] = sorted(modules)
         coord = entry.runtime_data
+        food_transport = install_offline_food_provider(hass)
         await hass.async_start()
         await server.start()
         sockets = server._server.sockets
@@ -469,6 +474,7 @@ async def main():
                 raise AssertionError('Disposable listener still reachable')
         (run / 'client-captured.json').write_text(json.dumps(captured, indent=2))
         (run / 'store-readbacks.json').write_text(json.dumps(snapshots, indent=2))
+        report['synthetic_off_requests'] = food_transport.calls if food_transport else []
         report['ok'] = not report['failures']
         (run / 'report.json').write_text(json.dumps(report, indent=2))
         print(json.dumps({'ok': report['ok'], 'report': str(run / 'report.json'),

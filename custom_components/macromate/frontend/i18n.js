@@ -13,8 +13,6 @@ const de = {
     "Durchschnittswerte aus USDA FoodData Central. Essbaren Anteil wiegen und auf die Angabe roh oder gekocht achten.",
   "Open Food Facts is currently unavailable. Local foods remain available. Try again later or use Quick entry.":
     "Open Food Facts ist derzeit nicht erreichbar. Lokale Lebensmittel bleiben verfügbar. Später erneut versuchen oder Schnelleintrag nutzen.",
-  "Online search is disabled. Enable Open Food Facts in the integration options, or use local foods and Quick entry.":
-    "Die Online-Suche ist deaktiviert. Open Food Facts in den Integrationsoptionen freigeben oder lokale Lebensmittel und Schnelleintrag nutzen.",
   "Open Food Facts has reached its request limit. Wait before searching online again. Local foods and Quick entry remain available.":
     "Das Anfragelimit von Open Food Facts ist erreicht. Vor der nächsten Online-Suche warten. Lokale Lebensmittel und Schnelleintrag bleiben verfügbar.",
   "No locally saved foods found. Use Quick entry or create a custom food.":
@@ -76,7 +74,6 @@ const de = {
   Favorites: "Favoriten",
   "Recently logged": "Zuletzt erfasst",
   "Custom foods": "Eigene Lebensmittel",
-  "Online search (Open Food Facts)": "Online-Suche (Open Food Facts)",
   Search: "Suchen",
   "Search barcode": "Barcode suchen",
   "Scan barcode": "EAN scannen",
@@ -116,8 +113,6 @@ const de = {
     "Gesamtnährwerte dieses Eintrags. Leere optionale Felder bleiben unbekannt. Beim Bearbeiten löscht ein leeres Feld den bisherigen Nährwert.",
   "Nutrients are scaled from the recorded entry snapshot, not the current product.":
     "Nährwerte werden aus dem gespeicherten Eintrag skaliert, nicht aus dem heutigen Produkt.",
-  "Local only by default. Online lookup requires submission and consent in integration settings.":
-    "Standard: nur lokal. Online nur nach Absenden und Freigabe in der Integrationskonfiguration.",
   Name: "Name",
   Date: "Datum",
   "No foods found. Try another search or create a custom food.":
@@ -254,8 +249,6 @@ const de = {
   "Low carbohydrate": "Wenig Kohlenhydrate",
   "High protein": "Proteinreich",
   "Low fat": "Fettarm",
-  "Allow submitted online food lookups":
-    "Online-Lebensmittelsuche nach Absenden erlauben",
 };
 const legacyKeys = {
   "Name oder Barcode": "Name or barcode",
@@ -315,7 +308,6 @@ const legacyKeys = {
   Favoriten: "Favorites",
   "Zuletzt erfasst": "Recently logged",
   "Eigene Lebensmittel": "Custom foods",
-  "Online-Suche (Open Food Facts)": "Online search (Open Food Facts)",
   Suchen: "Search",
   "Barcode suchen": "Search barcode",
   "EAN scannen": "Scan barcode",
@@ -355,8 +347,6 @@ const legacyKeys = {
     "Total nutrients of this entry. Empty optional fields remain unknown. When editing, an empty field clears its previous value.",
   "Nährwerte werden aus dem gespeicherten Eintrag skaliert, nicht aus dem heutigen Produkt.":
     "Nutrients are scaled from the recorded entry snapshot, not the current product.",
-  "Standard: nur lokal. Online nur nach Absenden und Freigabe in der Integrationskonfiguration.":
-    "Local only by default. Online lookup requires submission and consent in integration settings.",
   Name: "Name",
   Datum: "Date",
   "Keine Lebensmittel gefunden. Anderen Suchbegriff versuchen oder eigenes Lebensmittel anlegen.":
@@ -478,8 +468,6 @@ const legacyKeys = {
   "Wöchentliche Änderung (kg)": "Weekly change (kg)",
   Aktivität: "Activity",
   Makroplan: "Macro plan",
-  "Online-Lebensmittelsuche nach Absenden erlauben":
-    "Allow submitted online food lookups",
 };
 Object.assign(de, {
   "{name} edit": "{name} bearbeiten",

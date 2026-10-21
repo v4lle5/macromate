@@ -19,7 +19,7 @@ class FoodCommandsTests(CoordinatorTransactions):
             (ProviderUnavailable("private upstream details"), "provider_unavailable"),
             (TimeoutError(), "provider_unavailable"),
             (ProviderRateLimited(), "provider_rate_limited"),
-            (ProviderConsentRequired(), "provider_consent_required"),
+            (ProviderConsentRequired(), "provider_unavailable"),
         ]:
             with self.subTest(warning=warning, failure=type(failure)):
                 provider.async_search.side_effect = failure
@@ -43,13 +43,25 @@ class FoodCommandsTests(CoordinatorTransactions):
         })
         self.assertEqual(logged["entry"]["calories"], 200)
 
-    async def test_disabled_online_search_returns_local_results_without_contacting_provider(self):
-        from unittest.mock import AsyncMock
+    async def test_submitted_online_search_ignores_retired_config_preference(self):
+        from unittest.mock import AsyncMock, Mock
         provider = self.coord._provider = AsyncMock()
-        result = await self.coord.async_command("search_foods", {"query": "unknown fixture", "online": True})
-        self.assertEqual(result["warnings"], ["provider_consent_required"])
-        self.assertEqual(result["foods"], [])
-        self.assertEqual(provider.mock_calls, [])
+        provider.set_enabled = Mock()
+        provider.async_search.return_value = []
+        for legacy in (None, False, True):
+            with self.subTest(legacy=legacy):
+                if legacy is None:
+                    self.coord.settings.pop("enable_food_database", None)
+                else:
+                    self.coord.settings["enable_food_database"] = legacy
+                provider.reset_mock()
+                result = await self.coord.async_command("search_foods", {"query": "unknown fixture", "online": True})
+                self.assertEqual(result["warnings"], [])
+                self.assertEqual(result["source"], "local + Open Food Facts")
+                self.assertEqual(result["foods"], [])
+                provider.set_enabled.assert_called_once_with(True)
+                provider.async_search.assert_awaited_once_with("unknown fixture", submitted=True)
+                self.assertTrue(self.coord.diary_data()["enable_food_database"])
 
     async def test_successful_remote_search_and_cache_failure_are_not_reported_as_offline(self):
         from unittest.mock import AsyncMock
@@ -76,7 +88,7 @@ class FoodCommandsTests(CoordinatorTransactions):
         self.assertIn("ODbL", result["attribution"])
         self.assertEqual(result["foods"][0]["food_id"], remote.food_id)
 
-    async def test_online_access_requires_config_consent_and_cached_attribution_persists(self):
+    async def test_online_barcode_ignores_retired_preference_and_cached_attribution_persists(self):
         from custom_components.macromate.foods import FoodProduct
         class Provider:
             calls = 0
@@ -89,13 +101,11 @@ class FoodCommandsTests(CoordinatorTransactions):
                     "source":"open_food_facts","source_url":"https://world.openfoodfacts.org/product/"+barcode,"license":"ODbL-1.0 / DbCL-1.0"})
         provider = Provider()
         self.coord._provider = provider
-        disabled = await self.coord.async_command("barcode",{"barcode":"4006381333931","online":True})
-        self.assertEqual(disabled["warnings"], ["provider_consent_required"])
-        self.assertEqual(disabled["foods"], [])
-        self.assertEqual(provider.calls,0)
-        self.coord.settings["enable_food_database"] = True
+        self.coord.settings["enable_food_database"] = False
         remote = await self.coord.async_command("barcode",{"barcode":"4006381333931","online":True})
         self.assertEqual(provider.calls,1)
+        self.assertTrue(provider.enabled)
+        self.assertEqual(remote["warnings"], [])
         self.assertIn("ODbL",remote["attribution"])
         self.coord.settings["enable_food_database"] = False
         await self.coord.async_load()

@@ -195,9 +195,6 @@ export class FoodBrowser {
       provider_unavailable: this.t(
         "Open Food Facts is currently unavailable. Local foods remain available. Try again later or use Quick entry.",
       ),
-      provider_consent_required: this.t(
-        "Online search is disabled. Enable Open Food Facts in the integration options, or use local foods and Quick entry.",
-      ),
       provider_rate_limited: this.t(
         "Open Food Facts has reached its request limit. Wait before searching online again. Local foods and Quick entry remain available.",
       ),

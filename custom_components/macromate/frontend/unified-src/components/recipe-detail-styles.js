@@ -125,11 +125,11 @@ export const recipeDetailStyles = css`
     transition: color 0.15s;
   }
   .qr-star.filled {
-    color: #f5a623;
-    -webkit-text-stroke: 1px #c47f0a;
+    color: var(--rm-ochre);
+    -webkit-text-stroke: 1px var(--rm-warning);
   }
   .qr-star:hover {
-    color: #f5a623;
+    color: var(--rm-ochre);
   }
 
   /* Action buttons row */
@@ -173,20 +173,20 @@ export const recipeDetailStyles = css`
     background: var(--rm-accent-soft);
   }
   .action-icon-btn:hover {
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   .action-icon-btn.fav-active .btn-icon {
     background: var(--rm-error-soft, #f6e5df);
   }
   .action-icon-btn.fav-active {
-    color: var(--rm-error, #983d25);
+    color: var(--rm-error-ink, #983d25);
   }
   .action-icon-btn.danger .btn-icon {
     background: var(--rm-error, #983d25);
     color: var(--rm-error-text, #fff);
   }
   .action-icon-btn.danger {
-    color: var(--rm-error, #983d25);
+    color: var(--rm-error-ink, #983d25);
   }
 
   /* Meta chips (wide layout) */
@@ -301,7 +301,7 @@ export const recipeDetailStyles = css`
     background: rgba(0, 0, 0, 0.75);
   }
   .hero-btn.fav-active {
-    color: #ffb5c0;
+    color: var(--rm-rose);
   }
   .hero-btn.delete-btn.confirm {
     background: var(--rm-error, #983d25);
@@ -362,7 +362,7 @@ export const recipeDetailStyles = css`
   }
   .tag-chip {
     background: var(--rm-accent-soft, rgba(255, 107, 53, 0.15));
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
     border-radius: 20px;
     padding: 3px 10px;
     font-size: var(--rm-font-size-xs, 12px);
@@ -402,11 +402,11 @@ export const recipeDetailStyles = css`
   }
   .chip-course {
     background: var(--rm-accent-soft);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   .chip-category {
     background: var(--rm-success-soft, #e2eee7);
-    color: var(--rm-success, #326044);
+    color: var(--rm-success-ink, #326044);
   }
   .chip-collection {
     background: var(--rm-warning-soft, #f2ebd5);
@@ -414,7 +414,7 @@ export const recipeDetailStyles = css`
   }
   .chip-tag {
     background: var(--rm-accent-soft);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
 
   /* Scaler */
@@ -449,7 +449,7 @@ export const recipeDetailStyles = css`
   }
   .scaler-btn:hover {
     background: var(--rm-accent-soft);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     border-color: var(--rm-accent);
   }
   .scaler-btn ha-icon {
@@ -497,7 +497,7 @@ export const recipeDetailStyles = css`
     white-space: nowrap;
   }
   .tab-btn.active {
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
     border-bottom-color: var(--rm-accent, #ff6b35);
   }
 
@@ -525,7 +525,7 @@ export const recipeDetailStyles = css`
   }
   .wakelock-btn.active {
     background: var(--rm-accent-soft);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     border-color: var(--rm-accent);
   }
   .wakelock-unsupported {
@@ -566,7 +566,7 @@ export const recipeDetailStyles = css`
   }
   .metric-btn.active {
     background: var(--rm-accent-soft);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     border-color: var(--rm-accent);
   }
 
@@ -577,7 +577,7 @@ export const recipeDetailStyles = css`
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     padding: 10px 0 4px;
     margin-top: 6px;
   }
@@ -601,7 +601,7 @@ export const recipeDetailStyles = css`
   .ing-amount {
     font-size: var(--rm-font-size-sm, 14px);
     font-weight: 700;
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
     min-width: 70px;
     flex-shrink: 0;
   }
@@ -709,7 +709,7 @@ export const recipeDetailStyles = css`
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--rm-success, #326044);
+    color: var(--rm-success-ink, #326044);
     font-size: var(--rm-font-size-sm, 14px);
     padding: 8px 0;
   }
@@ -777,7 +777,7 @@ export const recipeDetailStyles = css`
     align-items: center;
     gap: 3px;
     background: var(--rm-accent-soft, rgba(255, 107, 53, 0.15));
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
     border: 1px solid var(--rm-accent, #ff6b35);
     border-radius: 12px;
     padding: 1px 7px;
@@ -911,6 +911,15 @@ export const recipeDetailStyles = css`
     font-size: var(--rm-font-size-xs, 12px);
     color: var(--rm-text-secondary);
     font-weight: 500;
+  }
+  .nutr-mcol-label::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: var(--macro-color);
   }
   .nutr-mcol-pct {
     font-size: var(--rm-font-size-xs, 12px);
@@ -1132,7 +1141,7 @@ export const recipeDetailStyles = css`
   }
   .camera-btn-split ha-icon {
     --mdc-icon-size: 28px;
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   .camera-input {
     display: none;
@@ -1307,7 +1316,7 @@ export const recipeDetailStyles = css`
     background: var(--rm-accent-soft, rgba(255, 107, 53, 0.12));
     border: 2px dashed var(--rm-accent, #ff6b35);
     cursor: pointer;
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
     transition: background 0.15s;
   }
   .edit-photo-add:hover {
@@ -1334,11 +1343,11 @@ export const recipeDetailStyles = css`
     -webkit-text-stroke: 1px rgba(200, 150, 50, 0.5);
   }
   .edit-star.filled {
-    color: #f5a623;
-    -webkit-text-stroke: 1px #d4881b;
+    color: var(--rm-ochre);
+    -webkit-text-stroke: 1px var(--rm-warning);
   }
   .edit-star:hover {
-    color: #f5a623;
+    color: var(--rm-ochre);
   }
   .edit-footer {
     display: flex;
@@ -1373,7 +1382,7 @@ export const recipeDetailStyles = css`
   }
   .edit-ing-heading {
     font-weight: 700;
-    color: var(--rm-accent) !important;
+    color: var(--rm-accent-ink, var(--rm-text)) !important;
   }
   .edit-ing-text {
     flex: 1;
@@ -1462,7 +1471,7 @@ export const recipeDetailStyles = css`
 
   /* Danger outline button */
   .action-btn.danger-outline {
-    color: var(--rm-error, #983d25);
+    color: var(--rm-error-ink, #983d25);
     border-color: var(--rm-error, #983d25);
   }
   .action-btn.danger-outline:hover {
@@ -1689,16 +1698,16 @@ export const recipeDetailStyles = css`
   }
   .ing-shop-btn:hover {
     background: var(--rm-accent-soft);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     border-color: var(--rm-accent);
   }
   .ing-shop-btn.active {
     background: var(--rm-accent-soft);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     border-color: var(--rm-accent);
   }
   .ing-shop-success {
-    color: var(--rm-success, #326044);
+    color: var(--rm-success-ink, #326044);
     display: flex;
     align-items: center;
   }
@@ -1774,7 +1783,7 @@ export const recipeDetailStyles = css`
   .review-chip.selected {
     border-color: var(--rm-accent, #ff6b35);
     background: var(--rm-accent-soft, rgba(255, 107, 53, 0.12));
-    color: var(--rm-accent, #ff6b35);
+    color: var(--rm-accent-ink, var(--rm-text));
     font-weight: 600;
   }
   .review-chip.manual {
@@ -1866,7 +1875,7 @@ export const recipeDetailStyles = css`
     border-radius: 3px;
   }
   .md-content a {
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     text-decoration: none;
   }
   .md-content a:hover {
@@ -1910,7 +1919,7 @@ export const recipeDetailStyles = css`
   .list-chip.selected {
     background: var(--rm-accent-soft);
     border-color: var(--rm-accent);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   .list-chip.available {
     cursor: pointer;
@@ -1918,7 +1927,7 @@ export const recipeDetailStyles = css`
   }
   .list-chip.available:hover {
     border-color: var(--rm-accent);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
     background: var(--rm-accent-soft);
   }
   .list-chip-remove {
@@ -1949,7 +1958,7 @@ export const recipeDetailStyles = css`
   }
   .list-chip-add-btn:hover {
     border-color: var(--rm-accent);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   .list-chip-add-btn ha-icon {
     --mdc-icon-size: 14px;
@@ -2009,7 +2018,7 @@ export const recipeDetailStyles = css`
     flex: 1;
   }
   .edit-ing-text:hover {
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   .edit-ing-inline-edit {
     display: flex;
@@ -2058,7 +2067,7 @@ export const recipeDetailStyles = css`
   }
   .ing-inline-save {
     border-color: var(--rm-accent);
-    color: var(--rm-accent);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   .ing-inline-save:hover {
     background: var(--rm-accent);

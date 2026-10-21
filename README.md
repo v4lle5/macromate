@@ -2,7 +2,7 @@
 
 <p align="center"><img src="brand/macromate-logo.png" alt="MacroMate — Track Eat Progress" width="420"></p>
 
-Local nutrition, recipes, weekly planning and cooking timers inside one Home Assistant integration. MacroMate keeps its food/portion/diary model, automatic nutrition goals, local storage and optional Open Food Facts lookup, with one connected dashboard and authenticated local agent API.
+Local nutrition, recipes, weekly planning and cooking timers inside one Home Assistant integration. MacroMate keeps its food/portion/diary model, automatic nutrition goals, local storage and integrated Open Food Facts lookup, with one connected dashboard and authenticated local agent API.
 
 Development build, not a medical tool. Physical mobile cameras and iOS/Safari remain unverified; read the limits below before installing on a live instance.
 
@@ -14,7 +14,7 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 - Reusable foods: stable product ID, name, producer, explicit g/ml basis, declared nutrients, product-specific servings, exact barcode strings, source/licensing metadata and favorite portion templates.
 - Per-100-g/ml label entry, normalized per-one-g/ml storage and portion conversion. No silent g↔ml conversion.
 - Local text search, favorites, recent foods, custom foods and persistent offline product cache.
-- Optional read-only Open Food Facts search and barcode lookup; disabled by default.
+- Automatic read-only Open Food Facts search and barcode lookup, without a setup or search toggle.
 - Camera EAN-8/EAN-13 scanning, locally decoded barcode photos and bundled ZXing fallback. Manual lookup supports valid GTIN12/GTIN14 too.
 - Quick entries store total nutrients; food entries store immutable label snapshots. Edit, delete and copy entries without later product changes rewriting their nutrition history.
 - Extended nutrients with explicit kcal/g/mg/µg/ml units. Missing values remain unknown; declared zero remains zero.
@@ -45,7 +45,7 @@ The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tes
 
 ## Dashboard card
 
-The local dashboard card opens the combined recipe, planner, timer and nutrition workspace. **Glass Wave** is the single application theme, with light, dark and automatic appearance in Settings → Appearance. Earlier palette choices migrate to Glass Wave while retaining the other account preferences. Shared typography, readable text colors, opaque reading surfaces and touch-sized controls keep recipes, planning, timers and nutrition consistent. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
+The local dashboard card opens the combined recipe, planner, timer and nutrition workspace. **Wave Glass Echo** supplies the whole application's cream, sand, terracotta, rose and sage palette, with warm translucent glass surfaces. There is no Design/Appearance tab or theme label in Settings. Earlier palette choices normalize to the shared theme; recipe quantities use metric display without an imperial/metric selector. Shared typography, readable text colors and touch-sized controls keep recipes, planning, timers and nutrition consistent. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
 
 The integration loads the card module automatically, just like Recipe Manager. No manual resource URL or YAML is needed for a normal storage dashboard:
 
@@ -91,7 +91,7 @@ Goals are snapshotted by HA local date on setup/source updates and at local midn
 
 ## Food source, license and scanner
 
-The normal local search includes **all 7,140 foods and dishes from BLS 4.0**, alongside your saved products. German/English source names, umlaut spellings and common plurals work offline without an API key or online consent. Simpler matching names appear before specialized preparations; personal saved matches appear first. Results are bounded to 100; refine broad queries when more matches exist. Favorites and recorded portions belong only to the selected nutrition profile. Open Food Facts remains the optional additional source for supermarket products and barcodes.
+The normal local search includes **all 7,140 foods and dishes from BLS 4.0**, alongside your saved products. German/English source names, umlaut spellings and common plurals work offline without an API key. Simpler matching names appear before specialized preparations; personal saved matches appear first. Results are bounded to 100; refine broad queries when more matches exist. Favorites and recorded portions belong only to the selected nutrition profile. Submitted general name searches automatically include Open Food Facts as an additional source for supermarket products and barcodes.
 
 Reference data: **Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. [DOI: 10.25826/Data20251217-134202-0](https://doi.org/10.25826/Data20251217-134202-0)**, licensed **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**. Adapted for MacroMate through supported nutrient selection and explicit unit conversion; original German/English names and BLS codes are retained. Source, license and adaptation details are also shown in food results/details and in the installable component's [BLS notice](custom_components/macromate/BLS-NOTICE.md).
 
@@ -99,13 +99,13 @@ Values are reference averages per **100 g edible portion**, including drinks and
 
 Maintainers can regenerate `bls_food_data.json.gz` with `python tools/update_bls_foods.py /path/to/BLS_4_0_2025_DE.zip`. The standard-library-only generator verifies both the [official archive](https://blsdb.de/assets/uploads/BLS_4_0_2025_DE.zip) and workbook SHA-256, checks component codes/units and all 7,140 unique food codes, and emits reproducible compressed data. Only the compact catalogue is bundled; no workbook, spreadsheet dependency, download or database service is required at runtime. Loading and indexing happen once in an executor, and searches materialize only bounded result sets.
 
-Enable Open Food Facts in integration options once. Submitted searches and barcode scans then use online lookup automatically, without a per-search checkbox. Local results appear immediately; the online response supplements them when available. Only that query/barcode goes to Open Food Facts, not profile/diary data. No per-keystroke network search. Camera frames and barcode photos are decoded locally and never uploaded. Camera access needs HTTPS or localhost plus browser permission.
+Submitting a food name such as **Banane** immediately displays local matches and automatically supplements them with Open Food Facts results. There is no setup question, integration option, profile checkbox or separate online-search button. Previously saved disabled preferences no longer block the provider. Barcode scans use the online provider when the barcode is not cached locally. Only that query/barcode goes to Open Food Facts, not profile/diary data. No per-keystroke network search. Camera frames and barcode photos are decoded locally and never uploaded. Camera access needs HTTPS or localhost plus browser permission.
 
 The nutrition tab uses the application's theme and a compact, single calorie/macro overview. Search and meals sit side by side on desktop and stack on phones. Selecting a food opens a portion dialog with an explicit breakfast/lunch/dinner/snack choice; detailed nutrients and source notes are expandable. Nutrition profiles remain isolated and can be managed through the date toolbar's options button rather than a permanent form. The frontend build remains available as `data-build-revision` on the card without a visible branding strip.
 
 OFF product reads use v3.6; text search uses documented legacy CGI because v2 structured search is not full-text search. GET-only requests have timeouts, response-size bounds, no redirects, rolling quotas, cooldowns and memory caches. Other applications behind the same IP still share upstream limits. Imported products persist locally for offline use.
 
-If online access is unavailable, disabled or rate limited, search still returns local foods and displays an inline explanation. Logging local foods and Quick entry remain available. The `search_foods` and `barcode` responses include a `warnings` list (`provider_unavailable`, `provider_consent_required`, or `provider_rate_limited`); an online failure does not imply that no matching online products exist.
+If online access is unavailable or rate limited, search still returns local foods and displays an inline explanation. Logging local foods and Quick entry remain available. The `search_foods` and `barcode` responses include a `warnings` list (`provider_unavailable` or `provider_rate_limited`); an online failure does not imply that no matching online products exist.
 
 Food data: **Open Food Facts contributors**, https://world.openfoodfacts.org — database **ODbL 1.0**, contents **DbCL 1.0**. Cached products retain attribution; it is displayed with results. Redistributing a derived database may invoke ODbL share-alike requirements. The integration's code license does not replace data licensing. Product images are not fetched. Community data can be incomplete or wrong: verify the label.
 

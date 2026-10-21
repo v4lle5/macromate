@@ -25,7 +25,7 @@ class ProfileMigrationTests(unittest.TestCase):
         self.assertEqual(migrated["kcal_per_kg"], 23.5)
         self.assertEqual(migrated["protein_per_kg"], 1.8)
         self.assertEqual(migrated["fat_per_kg"], 0.9)
-        self.assertFalse(migrated["enable_food_database"])
+        self.assertTrue(migrated["enable_food_database"])
         self.assertFalse(migrated["profile_complete"])
         self.assertNotIn("birthday", migrated)
         self.assertNotIn("formula_sex", migrated)

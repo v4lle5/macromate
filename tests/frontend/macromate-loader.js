@@ -7,6 +7,19 @@ function diagnostic(code){
  if(!node){node=document.createElement('aside');node.id=id;node.setAttribute('role','alert');node.style.cssText='position:fixed;bottom:0;left:0;right:0;padding:16px;background:#fff4dc;color:#443700;z-index:2147483647;font:14px system-ui';document.body.append(node);}
  node.textContent=`MacroMate ${revision.slice(0,12)} · ${code}. ${code==='registration_conflict'?'An older MacroMate frontend is already active.':'The complete MacroMate frontend could not be loaded.'} Reload this page to finish the update. If this remains, check the dashboard resource URL. No dashboard records were modified by this loader.`;
 }
+async function waitForHomeAssistant(){
+ // HA imports extra modules alongside its app, which first replaces the native
+ // custom-element registry. Definitions made before that replacement are lost.
+ // The root is defined after the polyfill. Re-read the CURRENT registry: a
+ // whenDefined promise captured from the old registry would never resolve.
+ if(!document.querySelector('home-assistant'))return;
+ const deadline=Date.now()+60000;
+ while(!customElements.get('home-assistant')){
+  if(Date.now()>=deadline){diagnostic('frontend_not_ready');throw Error('MacroMate: Home Assistant frontend did not initialize');}
+  await new Promise(resolve=>setTimeout(resolve,25));
+ }
+}
+await waitForHomeAssistant();
 const previous=window[key];
 if(previous&&previous.revision!==revision){diagnostic('registration_conflict');}
 else if(!previous){

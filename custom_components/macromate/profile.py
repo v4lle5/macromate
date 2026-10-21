@@ -157,10 +157,9 @@ def normalize_settings(settings: Mapping[str, Any], current_date: date) -> dict[
     profile = Profile.from_settings({"profile_version": PROFILE_VERSION, **settings}, current_date)
     result = profile.to_settings()
     result["profile_complete"] = True
-    consent = settings.get("enable_food_database", False)
-    if type(consent) is not bool:
-        raise ProfileValidationError("enable_food_database")
-    result["enable_food_database"] = consent
+    # Compatibility capability for older cards; food search is always available.
+    # Retired setup preferences must not disable submitted Open Food Facts lookups.
+    result["enable_food_database"] = True
     for key in ("weight_entity", "bmr_entity", "active_calories_entity"):
         entity = settings.get(key)
         if entity is None or entity == "":

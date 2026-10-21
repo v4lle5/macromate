@@ -20,9 +20,9 @@
   --muted: var(--rm-text-secondary, #405870);
   --line: var(--rm-border, #bccddd);
   --jade: var(--rm-success, #176044);
-  --amber: var(--rm-warning, #805600);
-  --coral: var(--rm-error, #a42c38);
-  --violet: var(--rm-primary, #175cb0);
+  --amber: var(--rm-ochre, #c19a3f);
+  --coral: var(--rm-terracotta, #b46f52);
+  --violet: var(--rm-rose, #e4a9a3);
 }
 * {
   box-sizing: border-box;
@@ -63,7 +63,7 @@ textarea {
   border-radius: var(--rm-radius-sm, 10px);
   padding: 8px 10px;
   background: var(--rm-bg-elevated, #fff);
-  color: var(--rm-text, #233b47);
+  color: var(--rm-text, #263b47);
 }
 button {
   min-width: 44px;
@@ -75,12 +75,12 @@ button:hover {
   background: var(--rm-accent-soft, #e2edf3);
 }
 button.primary {
-  background: var(--rm-accent, #326382);
+  background: var(--rm-accent, #dccdb8);
   color: var(--rm-accent-text, #fff);
-  border-color: var(--rm-accent, #326382);
+  border-color: var(--rm-accent, #dccdb8);
 }
 button.danger {
-  color: var(--rm-error, #a42c38);
+  color: var(--rm-error-ink, #a42c38);
 }
 button:disabled {
   background: var(--rm-disabled-bg, #e2eaf2);
@@ -93,7 +93,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible {
-  outline: 3px solid var(--rm-focus, #326382);
+  outline: 3px solid var(--rm-focus, #dccdb8);
   outline-offset: 3px;
 }
 label {
@@ -218,12 +218,12 @@ dialog {
   overflow: auto;
   border: 1px solid var(--rm-border-strong, #879ba6);
   border-radius: 14px;
-  color: var(--rm-text, #233b47);
+  color: var(--rm-text, #263b47);
   background: var(--rm-dialog-bg, #f7faff);
   box-shadow: var(--rm-shadow);
 }
 dialog::backdrop {
-  background: var(--rm-overlay, #14262f99);
+  background: var(--rm-overlay, #302a2499);
 }
 video,
 canvas {
@@ -233,7 +233,7 @@ canvas {
 video {
   width: 100%;
   max-height: 50vh;
-  background: var(--rm-bg-canvas, #14262f);
+  background: var(--rm-bg-canvas, #f9efda);
 }
 fieldset {
   border: 1px solid var(--rm-border, #bdcbd1);
@@ -533,12 +533,12 @@ dialog h2 {
   pointer-events: none;
 }
 .meal-choice label:has(input:checked) {
-  border-color: var(--rm-accent, #326382);
+  border-color: var(--rm-accent, #dccdb8);
   background: var(--rm-accent-soft, #e2edf3);
   font-weight: 600;
 }
 .meal-choice label:has(input:focus-visible) {
-  outline: 2px solid var(--rm-focus, #326382);
+  outline: 2px solid var(--rm-focus, #dccdb8);
   outline-offset: 2px;
 }
 .portion-fields {

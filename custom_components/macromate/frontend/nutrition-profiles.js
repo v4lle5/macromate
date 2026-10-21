@@ -24,7 +24,6 @@ const labels = {
   pace: "Weekly change (kg)",
   activity: "Activity",
   macros: "Macro plan",
-  online: "Allow submitted online food lookups",
 };
 const text = (panel) =>
   Object.fromEntries(
@@ -201,11 +200,6 @@ async function editProfile(panel, id) {
         options,
         s[key] ?? (key === "goal" ? "maintain" : options[0][0]),
       );
-    const online = field(l.online, {
-      name: "enable_food_database",
-      type: "checkbox",
-      checked: s.enable_food_database === true,
-    });
     let dialog;
     const form = el(
       "form",
@@ -218,7 +212,6 @@ async function editProfile(panel, id) {
             settings[key] =
               input.type === "number" ? Number(input.value) : input.value;
           }
-          settings.enable_food_database = online.querySelector("input").checked;
           // Keep explicitly selected wearable sources when editing demographics.
           for (const key of [
             "weight_entity",
@@ -258,7 +251,6 @@ async function editProfile(panel, id) {
       owner,
       sharing,
       el("div", { class: "form-grid" }, Object.values(inputs)),
-      online,
       el(
         "div",
         { class: "actions" },

@@ -17,8 +17,7 @@
           "macro_plan": "Nutrition preference",
           "weight_entity": "Weight sensor (optional)",
           "bmr_entity": "Resting energy / BMR sensor (optional)",
-          "active_calories_entity": "Today's active calories sensor (optional; not total energy)",
-          "enable_food_database": "Allow explicit online food searches with Open Food Facts"
+          "active_calories_entity": "Today's active calories sensor (optional; not total energy)"
         },
         "data_description": {
           "birthday": "Type DD.MM.YYYY, e.g. 23.07.1990. ISO YYYY-MM-DD (1990-07-23) is also accepted. Adults aged 18–120 only.",
@@ -27,8 +26,7 @@
           "weekly_pace_kg": "Enter a positive amount without a sign, e.g. 0.5 kg/week (0,5 is also accepted). Use zero for maintenance; the goal determines the direction. Supported range: 0–1.5, not a health recommendation.",
           "active_calories_entity": "Use only current-day active energy (kcal or kJ), not total daily energy. A usable reading replaces the activity-level estimate; the two are never added together.",
           "weight_entity": "Uses kg, lb or stone. A finite, non-restored reading no older than 7 days is sufficient; leave manual weight blank. The accepted reading is saved as a labelled profile fallback if the sensor later fails.",
-          "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate.",
-          "enable_food_database": "Off by default. Only explicitly submitted online searches/barcodes contact Open Food Facts and share the query or barcode; profile data is not sent. Local diary and custom foods work without this."
+          "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate."
         }
       }
     },
@@ -63,8 +61,7 @@
           "macro_plan": "Nutrition preference",
           "weight_entity": "Weight sensor (optional)",
           "bmr_entity": "Resting energy / BMR sensor (optional)",
-          "active_calories_entity": "Today's active calories sensor (optional; not total energy)",
-          "enable_food_database": "Allow explicit online food searches with Open Food Facts"
+          "active_calories_entity": "Today's active calories sensor (optional; not total energy)"
         },
         "data_description": {
           "birthday": "Type DD.MM.YYYY, e.g. 23.07.1990. ISO YYYY-MM-DD (1990-07-23) is also accepted. Adults aged 18–120 only.",
@@ -73,8 +70,7 @@
           "weekly_pace_kg": "Enter a positive amount without a sign, e.g. 0.5 kg/week (0,5 is also accepted). Use zero for maintenance; the goal determines the direction. Supported range: 0–1.5, not a health recommendation.",
           "active_calories_entity": "Use only current-day active energy (kcal or kJ), not total daily energy. A usable reading replaces the activity-level estimate; the two are never added together.",
           "weight_entity": "Uses kg, lb or stone. A finite, non-restored reading no older than 7 days is sufficient; leave manual weight blank. The accepted reading is saved as a labelled profile fallback if the sensor later fails.",
-          "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate.",
-          "enable_food_database": "Off by default. Only explicitly submitted online searches/barcodes contact Open Food Facts and share the query or barcode; profile data is not sent. Local diary and custom foods work without this."
+          "bmr_entity": "Uses kcal or kJ. Without a usable sensor, your profile provides the resting-energy estimate."
         }
       }
     },
@@ -122,7 +118,7 @@
     },
     "barcode": {
       "name": "Barcode",
-      "description": "Look up an exact food barcode, online only after consent.",
+      "description": "Look up an exact valid food barcode. Leading zeros are preserved; online requests use Open Food Facts when the barcode is not cached.",
       "fields": {
         "barcode": {
           "name": "Barcode",
@@ -503,7 +499,7 @@
     },
     "lookup_barcode": {
       "name": "Lookup exact barcode",
-      "description": "Look up an exact valid GTIN8/12/13/14 string. Leading zeros are preserved; online lookup requires explicit consent.",
+      "description": "Look up an exact valid food barcode. Leading zeros are preserved; online requests use Open Food Facts when the barcode is not cached.",
       "fields": {
         "barcode": {
           "name": "Barcode",
@@ -1260,7 +1256,7 @@
     },
     "search_foods": {
       "name": "Search foods",
-      "description": "Search locally by default. Explicit online searches require configuration consent and send the query to Open Food Facts.",
+      "description": "Search foods. Online requests send only the submitted food name to Open Food Facts.",
       "fields": {
         "query": {
           "name": "Query",

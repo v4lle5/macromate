@@ -49,7 +49,7 @@ export const workspaceStyles = css`
   button:hover,
   button.active {
     background: var(--rm-accent-soft, #dce9f0);
-    color: var(--rm-accent, #315d75);
+    color: var(--rm-accent-ink, var(--rm-text));
   }
   label {
     display: flex;
@@ -101,7 +101,7 @@ export const workspaceStyles = css`
     max-width: 720px;
   }
   .danger {
-    color: var(--rm-error, #983d25);
+    color: var(--rm-error-ink, #983d25);
   }
   @media (max-width: 600px) {
     section {

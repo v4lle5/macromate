@@ -108,7 +108,7 @@ export class MacroMateCard extends MacroMateSummary {
     const api = this.api;
     const stylesheet = document.createElement("style");
     stylesheet.textContent =
-      ":host{display:block;min-width:0;min-height:0;height:100%}.workspace{display:flex;flex-direction:column;height:100%;min-height:0}mm-unified-app{flex:none;height:100%;min-height:0}.status:empty{display:none}.status{flex-shrink:0;padding:12px;background:var(--rm-warning-soft,#f4ebd0);color:var(--rm-text,#233b47);font:var(--rm-font-size-sm,14px)/1.55 var(--rm-font-family,system-ui)}.status button{min-width:44px;min-height:44px;padding:8px;margin-left:12px;border:1px solid var(--rm-border-strong,#738991);border-radius:var(--rm-radius-sm,12px);background:var(--rm-bg-elevated,#fffdf8);color:inherit;font:inherit}.status button:focus-visible{outline:3px solid var(--rm-focus,#326382);outline-offset:2px}";
+      ":host{display:block;min-width:0;min-height:0;height:100%}.workspace{display:flex;flex-direction:column;height:100%;min-height:0}mm-unified-app{flex:none;height:100%;min-height:0}.status:empty{display:none}.status{flex-shrink:0;padding:12px;background:var(--rm-warning-soft,#f4ebd0);color:var(--rm-text,#263B47);font:var(--rm-font-size-sm,14px)/1.55 var(--rm-font-family,system-ui)}.status button{min-width:44px;min-height:44px;padding:8px;margin-left:12px;border:1px solid var(--rm-border-strong,#576C65);border-radius:var(--rm-radius-sm,12px);background:var(--rm-bg-elevated,#FDF8EF);color:inherit;font:inherit}.status button:focus-visible{outline:3px solid var(--rm-focus,#DCCDB8);outline-offset:2px}";
     const status = document.createElement("div");
     status.className = "status";
     status.setAttribute("role", "status");

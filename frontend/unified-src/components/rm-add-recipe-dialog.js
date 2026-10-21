@@ -1225,7 +1225,7 @@ class RmAddRecipeDialog extends LitElement {
       display: flex;
       align-items: center;
       gap: 6px;
-      color: var(--rm-error, var(--error-color, #cf6679));
+      color: var(--rm-error-ink, var(--error-color, #cf6679));
       font-size: var(--rm-font-size-sm, 14px);
     }
     .error-msg ha-icon {
@@ -1293,10 +1293,10 @@ class RmAddRecipeDialog extends LitElement {
       transition: color 0.1s;
     }
     .star.filled {
-      color: #f5a623;
+      color: var(--rm-ochre);
     }
     .star:hover {
-      color: #f5a623;
+      color: var(--rm-ochre);
     }
     .clear-rating {
       margin-left: 8px;
@@ -1339,7 +1339,7 @@ class RmAddRecipeDialog extends LitElement {
     }
     .ing-list li.ing-heading {
       font-weight: 700;
-      color: var(--rm-accent, #9fa8da);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
     .ing-text,
     .step-text {
@@ -1487,7 +1487,7 @@ class RmAddRecipeDialog extends LitElement {
     }
     .file-label ha-icon {
       --mdc-icon-size: 22px;
-      color: var(--rm-accent, #ff6b35);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
     .file-input {
       position: absolute;
@@ -1528,7 +1528,7 @@ class RmAddRecipeDialog extends LitElement {
     }
     .import-result.success {
       background: var(--rm-success-soft, #e2eee7);
-      color: var(--rm-success, #326044);
+      color: var(--rm-success-ink, #326044);
     }
     .import-result.partial {
       background: var(--rm-warning-soft, #f2ebd5);
@@ -1536,7 +1536,7 @@ class RmAddRecipeDialog extends LitElement {
     }
     .import-result.error {
       background: var(--rm-error-soft, #f6e5df);
-      color: var(--rm-error, #983d25);
+      color: var(--rm-error-ink, #983d25);
     }
     .import-result strong {
       display: block;

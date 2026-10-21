@@ -20,7 +20,7 @@ try {
  const open=async()=>{await view('grid');await page.getByText('Garden Bowl',{exact:true}).first().click();await page.locator('rm-recipe-detail').waitFor();};
  await open();const detail=page.locator('rm-recipe-detail');
  await test('unit-dimension-and-ambiguous-preservation',async()=>{
-  const actual=await detail.evaluate(d=>{d._metricMode=true;return ['cup','tbsp','oz','fl oz'].map(unit=>({unit,...d._getDisplayAmount({amount:'1/2',unit})})).concat([{source:'ambiguous',...d._getDisplayAmount({amount:'2-3',unit:'cups'})}]);});
+  const actual=await detail.evaluate(d=>{d.settings={...d.settings,unitSystem:'imperial',showUnitConversion:true};return ['cup','tbsp','oz','fl oz'].map(unit=>({unit,...d._getDisplayAmount({amount:'1/2',unit})})).concat([{source:'ambiguous',...d._getDisplayAmount({amount:'2-3',unit:'cups'})}]);});
   assert.equal(actual[0].unit,'ml');assert.equal(actual[0].amount,'125');assert.equal(actual[1].unit,'tbsp');assert.equal(actual[2].unit,'g');assert.equal(actual[3].unit,'ml');assert.deepEqual(actual[4],{source:'ambiguous',amount:'2-3',unit:'cups'},'Ambiguous ranges must not be guessed by parseFloat');return actual;
  });
  await test('recipe-declared-original-zero-basis',async()=>{

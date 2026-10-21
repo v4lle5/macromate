@@ -57,6 +57,25 @@ test('shared entry provides empty and no-result guidance without extra name fiel
  await query.fill('Unbekanntes Essen');await query.press('Enter');await pane.getByText(/Keine Lebensmittel gefunden/).waitFor();await pane.getByRole('button',{name:'Schnelleintrag',exact:true}).click();assert.match(await pane.getByRole('dialog').innerText(),/Unbekanntes Essen/);assert.equal(await pane.getByRole('dialog').locator('input[name=name]:visible').count(),0);await page.close();
 });
 
+test('Banane automatically includes Open Food Facts and remains available for logging',async()=>{
+ const page=await open();const pane=panel(page);
+ await page.evaluate(()=>{window.product={...window.product,food_id:'bls4:F503100',name:'Banane roh',base_unit:'g',source:'bls',is_custom:false,nutrients_per_100:{calories:79,carbs:15.89},servings:[]};});
+ const query=pane.getByLabel('Lebensmittel suchen',{exact:true});
+ await query.fill('Banane');await query.press('Enter');
+ await pane.getByRole('button',{name:'Banane roh · Lokal',exact:true}).waitFor();
+ await page.waitForFunction(()=>window.calls.some(c=>c.action==='search_foods'&&c.payload.online));
+ const searches=(await calls(page)).filter(c=>c.action==='search_foods');
+ assert.deepEqual(searches.map(c=>c.payload.online),[false,true],'Local matches precede the automatic OFF lookup');
+ assert.ok(searches.every(c=>c.payload.query==='Banane'));
+ assert.equal(await pane.locator('.provider-warning').count(),0);
+ assert.equal(await pane.getByRole('button',{name:'Open Food Facts durchsuchen',exact:true}).count(),0,'No separate online-search button');
+ await pane.getByRole('button',{name:'Banane roh · Lokal',exact:true}).click();
+ await pane.getByRole('radio',{name:'Snacks',exact:true}).check();
+ await pane.getByRole('button',{name:'Lebensmittel eintragen',exact:true}).click();
+ await page.waitForFunction(()=>window.calls.some(c=>c.action==='log_food'&&c.payload.food_id==='bls4:F503100'));
+ await page.close();
+});
+
 test('top energy overview shows only snapshot current active energy, preserving zero and unknown',async()=>{
  const page=await open();
  const cases=[{active_calories:321,budget_source:'bmr_plus_active',expected:'321 kcal'},{active_calories:0,budget_source:'bmr_plus_active',expected:'0 kcal'},{active_calories:0,budget_source:'profile_pal',expected:'Nicht verfügbar'},{active_calories:999,budget_source:'bmr_plus_active',fallback_reasons:['active_calories_unavailable'],expected:'Nicht verfügbar'},{expected:'Nicht verfügbar'}];
@@ -66,14 +85,14 @@ test('top energy overview shows only snapshot current active energy, preserving 
  await page.close();
 });
 
-test('online failures explain consent, quota or outage while local food logging and quick entry stay usable',async()=>{
+test('online failures explain quota or outage while local food logging and quick entry stay usable',async()=>{
  const page=await open();const pane=panel(page);const query=pane.getByLabel('Lebensmittel suchen',{exact:true});
- await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane'),read=app.hass.callWS;window.providerWarning='provider_unavailable';app.hass={...app.hass,callWS:message=>['search_foods','barcode'].includes(message.action)?Promise.resolve({foods:window.localMiss?[]:[window.product],source:'local',warnings:[window.providerWarning]}):read(message)};});
- for(const [code,text] of [['provider_unavailable','derzeit nicht erreichbar'],['provider_consent_required','Online-Suche ist deaktiviert'],['provider_rate_limited','Anfragelimit']]){
+ await page.evaluate(()=>{const app=document.querySelector('test-nutrition-pane'),read=app.hass.callWS;window.providerWarning='provider_unavailable';app.hass={...app.hass,callWS:message=>['search_foods','barcode'].includes(message.action)?Promise.resolve({foods:window.localMiss?[]:[window.product],source:'local',warnings:message.payload.online&&window.providerWarning?[window.providerWarning]:[]}):read(message)};});
+ for(const [code,text] of [['provider_unavailable','derzeit nicht erreichbar'],['provider_rate_limited','Anfragelimit']]){
   await page.evaluate(code=>{window.providerWarning=code;},code);await query.fill('Hafer');await query.press('Enter');
   await pane.locator('.provider-warning').getByText(new RegExp(text)).waitFor();
   assert.equal(await pane.locator('.results button').count(),1,'the local result is still selectable');
-  assert.equal(await pane.locator('[role=alert]').count(),0,'optional provider failures do not become page errors');
+  assert.equal(await pane.locator('[role=alert]').count(),0,'provider failures do not become page errors');
  }
  await pane.locator('.results button').click();await pane.getByRole('radio',{name:'Snacks',exact:true}).check();await pane.getByRole('button',{name:'Lebensmittel eintragen',exact:true}).click();
  await page.waitForFunction(()=>window.calls.some(c=>c.action==='log_food'));

@@ -10,6 +10,8 @@ from homeassistant.config_entries import ConfigEntries
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 
+from offline_food_provider import install_offline_food_provider
+
 PROFILE = {
     "formula_sex": "male",
     "birthday": "1990-01-01",
@@ -20,7 +22,6 @@ PROFILE = {
     "weekly_pace_kg": 0,
     "activity_level": "low",
     "macro_plan": "balanced",
-    "enable_food_database": False,
 }
 
 
@@ -54,6 +55,7 @@ async def run(path, mode):
     await hass.async_block_till_done()
     assert entry.state.value == "loaded"
     coord = entry.runtime_data
+    install_offline_food_provider(hass)
 
     async def api(name, data):
         return await hass.services.async_call(

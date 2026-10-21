@@ -521,7 +521,7 @@ class RmMealPlanner extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: var(--rm-accent, #ff6b35);
+      color: var(--rm-accent-ink, var(--rm-text));
       font-size: var(--rm-font-size-sm, 14px);
       font-weight: 500;
       padding: 4px 6px;
@@ -573,7 +573,7 @@ class RmMealPlanner extends LitElement {
     .today-badge {
       font-size: var(--rm-font-size-xs, 12px);
       background: var(--rm-accent-soft, rgba(255, 107, 53, 0.15));
-      color: var(--rm-accent, #ff6b35);
+      color: var(--rm-accent-ink, var(--rm-text));
       border-radius: 10px;
       padding: 2px 8px;
     }
@@ -581,7 +581,7 @@ class RmMealPlanner extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: var(--rm-accent, #ff6b35);
+      color: var(--rm-accent-ink, var(--rm-text));
       font-size: var(--rm-font-size-xs, 12px);
       padding: 0;
     }
@@ -746,7 +746,7 @@ class RmMealPlanner extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--rm-error, #983d25);
+      color: var(--rm-error-ink, #983d25);
       padding: 0;
       opacity: 1;
       flex-shrink: 0;
@@ -782,7 +782,7 @@ class RmMealPlanner extends LitElement {
     }
     .add-slot-btn:hover {
       border-color: var(--rm-accent, #ff6b35);
-      color: var(--rm-accent, #ff6b35);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
 
     .clear-row {
@@ -794,7 +794,7 @@ class RmMealPlanner extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: var(--rm-error, #983d25);
+      color: var(--rm-error-ink, #983d25);
       font-size: var(--rm-font-size-sm, 14px);
       display: flex;
       align-items: center;
@@ -980,7 +980,7 @@ class RmMealPlanner extends LitElement {
       color: var(--rm-text-secondary, #8e8e93);
     }
     .picker-fav {
-      color: var(--rm-error, #983d25);
+      color: var(--rm-error-ink, #983d25);
       --mdc-icon-size: 16px;
     }
     .picker-empty {

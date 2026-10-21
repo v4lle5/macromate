@@ -29,14 +29,21 @@ The original full notice is in `RECIPE-MANAGER-CARD-LICENSE.txt` and in the buil
 `../unified/THIRD-PARTY-NOTICES.txt`. Disabled Cookbook, Sync and Help navigation
 placeholders remain disabled; they are not implemented upstream workflows.
 
-Glass Wave is the only current theme. Shared color, typography and spacing
-tokens live in `services/theme.js`; common component controls use
-`components/component-styles.js`. Authenticated legacy preferences normalize
-to Glass Wave while preserving supported appearance and unrelated settings.
-Shared browser-local settings are not read across accounts. The appearance
-control offers Light, Auto and Dark; text sizes are 14, 16 and 18 pixels.
-Rendered text/placeholder contrast and responsive checks cover both modes
-including 320-pixel phones with large text.
+Wave Glass Echo supplies the application's warm cream/sand Boho palette, with
+terracotta, rose, sage and ochre accents. Shared tokens in `services/theme.js`
+apply to all views, including the reused nutrition pane; common controls use
+`components/component-styles.js`. The Design/Appearance tab and visible theme
+identity are removed. The language selector remains under Advanced. Legacy
+preferences stay scoped to the authenticated actor; imperial preferences
+normalize to metric and the conversion toggle is removed. Supported recipe
+measurements convert on display; ambiguous amounts are preserved rather than
+guessed. Light/system/dark rendering continues to use the shared theme tokens.
+
+Submitted general name searches immediately display local matches and
+automatically supplement them with Open Food Facts results. No setup/profile
+switch or separate online-search button is exposed. Provider failures remain
+visible without blocking local foods or quick entry. Barcode lookup checks
+locally cached products before its automatic remote request.
 
 Internal shopping and the generic action editor are retired. Historical data
 is retained. Dedicated recipe editing/logging, planning, timers/presets,
@@ -124,6 +131,8 @@ task-private screenshot directory:
 ```sh
 node tests/frontend/macromate-unified-adapter.mjs
 node tests/frontend/macromate-unified-amounts.mjs
+node tests/frontend/macromate-unified-food-search.mjs
+MACROMATE_BUILD_DEPS="$MACROMATE_BUILD_DEPS" node tests/frontend/macromate-unified-settings.mjs
 PLAYWRIGHT_DIR="$PLAYWRIGHT_DIR" EVIDENCE_DIR="$EVIDENCE_DIR" node tests/frontend/macromate-unified-browser.mjs
 PLAYWRIGHT_DIR="$PLAYWRIGHT_DIR" EVIDENCE_DIR="$EVIDENCE_DIR" node tests/frontend/macromate-unified-domain-browser.mjs
 HA_PYTHON="$HA_PYTHON" PLAYWRIGHT_DIR="$PLAYWRIGHT_DIR" EVIDENCE_DIR="$EVIDENCE_DIR" node tests/frontend/macromate-unified-nutrition-browser.mjs

@@ -1,6 +1,6 @@
 /**
  * Recipe Manager — Settings panel.
- * Tabs: Appearance (Glass Wave, dark, font, grid, nav) | Advanced (sound, wake lock, units) | Sync | Help
+ * Tabs: Advanced (language, sound, wake lock) | Sync | Help
  */
 import { LitElement, html, css } from "lit";
 import { msg, str } from "@lit/localize";
@@ -32,7 +32,7 @@ class RmSettingsView extends LitElement {
   constructor() {
     super();
     this.settings = {};
-    this._activeTab = "appearance";
+    this._activeTab = "advanced";
     this._rmVersion = "…";
     this._rmcVersion = "…";
     this._backupState = null;
@@ -100,7 +100,6 @@ class RmSettingsView extends LitElement {
       <div class="settings-root">
         <div class="tab-bar">
           ${[
-            ["appearance", "mdi:palette-outline", msg("Appearance")],
             ["advanced", "mdi:tune-variant", msg("Advanced")],
             ["sync", "mdi:cloud-sync-outline", msg("Sync")],
             ["help", "mdi:help-circle-outline", msg("Help")],
@@ -120,7 +119,6 @@ class RmSettingsView extends LitElement {
           )}
         </div>
         <div class="settings-body">
-          ${this._activeTab === "appearance" ? this._renderAppearance(s) : ""}
           ${this._activeTab === "advanced" ? this._renderAdvanced(s) : ""}
           ${this._activeTab === "sync" ? this._renderSync() : ""}
           ${this._activeTab === "help" ? this._renderHelp() : ""}
@@ -129,12 +127,9 @@ class RmSettingsView extends LitElement {
     `;
   }
 
-  _renderAppearance(s) {
+  _renderAdvanced(s) {
     return html`
-      <!-- ── Language & Units ── -->
       <div class="section">
-        <div class="section-label">${msg("Language & Units")}</div>
-
         <div class="setting-row">
           <span class="setting-name">${msg("Language")}</span>
           <select
@@ -154,162 +149,7 @@ class RmSettingsView extends LitElement {
             )}
           </select>
         </div>
-
-        <div class="setting-row">
-          <span class="setting-name">${msg("Preferred units")}</span>
-          <div class="btn-group">
-            ${[
-              ["imperial", msg("Imperial")],
-              ["metric", msg("Metric")],
-            ].map(
-              ([val, lbl]) => html`
-                <button
-                  class="seg-btn ${(s.unitSystem ?? "imperial") === val
-                    ? "active"
-                    : ""}"
-                  aria-pressed=${(s.unitSystem ?? "imperial") === val}
-                  @click=${() => this._update({ unitSystem: val })}
-                >
-                  ${lbl}
-                </button>
-              `,
-            )}
-          </div>
-        </div>
       </div>
-
-      <!-- ── Theme ── -->
-      <div class="section">
-        <div class="section-label">${msg("Theme")}</div>
-
-        <div class="theme-identity">
-          <ha-icon icon="mdi:waves"></ha-icon>
-          <span class="theme-name">Glass Wave</span>
-        </div>
-
-        <div class="setting-row">
-          <span class="setting-name">${msg("Dark mode")}</span>
-          <div class="btn-group" role="group" aria-label=${msg("Dark mode")}>
-            ${[
-              ["off", msg("Light")],
-              ["system", msg("Auto")],
-              ["on", msg("Dark")],
-            ].map(
-              ([val, lbl]) => html`
-                <button
-                  class="seg-btn ${s.darkMode === val ? "active" : ""}"
-                  aria-pressed=${s.darkMode === val}
-                  @click=${() => this._update({ darkMode: val })}
-                >
-                  ${lbl}
-                </button>
-              `,
-            )}
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <span class="setting-name">${msg("Text size")}</span>
-          <div class="btn-group">
-            ${[
-              ["small", msg("S")],
-              ["medium", msg("M")],
-              ["large", msg("L")],
-            ].map(
-              ([val, lbl]) => html`
-                <button
-                  class="seg-btn ${s.fontSize === val ? "active" : ""}"
-                  aria-pressed=${s.fontSize === val}
-                  @click=${() => this._update({ fontSize: val })}
-                >
-                  ${lbl}
-                </button>
-              `,
-            )}
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Recipe Grid ── -->
-      <div class="section">
-        <div class="section-label">${msg("Recipe Grid")}</div>
-
-        <div class="setting-row">
-          <span class="setting-name">${msg("Recipe columns")}</span>
-          <div class="btn-group">
-            ${[2, 3, 4, 5, 8, 10].map(
-              (n) => html`
-                <button
-                  class="seg-btn ${s.columns === n ? "active" : ""}"
-                  aria-pressed=${s.columns === n}
-                  @click=${() => this._update({ columns: n })}
-                >
-                  ${n}
-                </button>
-              `,
-            )}
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <span class="setting-name">${msg("Favourites section")}</span>
-          <label class="toggle">
-            <input
-              type="checkbox"
-              aria-label=${msg("Favourites section")}
-              ?checked=${s.showFavourites}
-              @change=${(e) =>
-                this._update({ showFavourites: e.target.checked })}
-            />
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-info">
-            <span class="setting-name">${msg("Recent recipes count")}</span>
-            <span class="setting-hint"
-              >${msg("Recipes shown in the Recent filter tab")}</span
-            >
-          </div>
-          <div class="btn-group">
-            ${[6, 12, 24].map(
-              (n) => html`
-                <button
-                  class="seg-btn ${(s.recentCount ?? 12) === n ? "active" : ""}"
-                  aria-pressed=${(s.recentCount ?? 12) === n}
-                  @click=${() => this._update({ recentCount: n })}
-                >
-                  ${n}
-                </button>
-              `,
-            )}
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Navigation ── -->
-      <div class="section">
-        <div class="section-label">${msg("Navigation")}</div>
-
-        <div class="setting-row">
-          <span class="setting-name">${msg("Meal planner")}</span>
-          <label class="toggle">
-            <input
-              type="checkbox"
-              aria-label=${msg("Meal planner")}
-              ?checked=${s.showPlanner}
-              @change=${(e) => this._update({ showPlanner: e.target.checked })}
-            />
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
-        </div>
-      </div>
-    `;
-  }
-
-  _renderAdvanced(s) {
-    return html`
       <!-- ── Timer Sound ── -->
       <div class="section">
         <div class="section-label">${msg("Timer Sound")}</div>
@@ -448,34 +288,6 @@ class RmSettingsView extends LitElement {
               </div>
             `
           : ""}
-      </div>
-
-      <!-- ── Unit Conversion ── -->
-      <div class="section">
-        <div class="section-label">${msg("Unit Conversion")}</div>
-
-        <div class="setting-row">
-          <div class="setting-info">
-            <span class="setting-name"
-              >${msg("Show metric conversion button")}</span
-            >
-            <span class="setting-hint"
-              >${msg(
-                "Button in Ingredients tab converts oz/lb/cups/fl oz → g/ml/kg",
-              )}</span
-            >
-          </div>
-          <label class="toggle">
-            <input
-              type="checkbox"
-              aria-label=${msg("Show metric conversion button")}
-              ?checked=${s.showUnitConversion}
-              @change=${(e) =>
-                this._update({ showUnitConversion: e.target.checked })}
-            />
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
-        </div>
       </div>
 
       <!-- ── Image Slideshow ── -->
@@ -759,7 +571,7 @@ class RmSettingsView extends LitElement {
       color: var(--rm-text, #2d2016);
     }
     .tab-item.active {
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       border-bottom-color: var(--rm-accent);
     }
 
@@ -777,24 +589,6 @@ class RmSettingsView extends LitElement {
       border-radius: var(--rm-radius);
       background: var(--rm-bg-surface);
       overflow: hidden;
-    }
-
-    .theme-identity {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 20px;
-      color: var(--rm-accent);
-      background: var(--rm-accent-soft);
-      margin: 12px 20px 4px;
-      border-radius: var(--rm-radius-sm);
-    }
-    .theme-identity ha-icon {
-      --mdc-icon-size: 28px;
-    }
-    .theme-name {
-      font-size: 1.125em;
-      font-weight: 700;
     }
 
     .section-label {
@@ -874,7 +668,7 @@ class RmSettingsView extends LitElement {
       border-bottom: none;
     }
     .help-link ha-icon {
-      color: var(--rm-accent, #a0522d);
+      color: var(--rm-accent-ink, var(--rm-text));
       flex-shrink: 0;
     }
     .help-link-content {
@@ -1023,7 +817,7 @@ class RmSettingsView extends LitElement {
     }
     .file-label ha-icon {
       --mdc-icon-size: 18px;
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
     .file-input {
       position: absolute;

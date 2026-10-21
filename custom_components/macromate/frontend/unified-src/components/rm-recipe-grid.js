@@ -843,7 +843,7 @@ class RmRecipeGrid extends LitElement {
     }
     .filter-tab.active {
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       font-weight: 600;
     }
 
@@ -877,7 +877,7 @@ class RmRecipeGrid extends LitElement {
       color: var(--rm-text);
     }
     .rating-filter-btn.active {
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       border-color: var(--rm-accent);
       background: var(--rm-accent-soft);
     }
@@ -930,7 +930,7 @@ class RmRecipeGrid extends LitElement {
       color: var(--rm-text);
     }
     .rating-menu-item.active {
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       font-weight: 600;
     }
 
@@ -941,7 +941,7 @@ class RmRecipeGrid extends LitElement {
       gap: 8px;
       padding: 4px 14px;
       font-size: var(--rm-font-size-xs, 12px);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
       background: var(--rm-accent-soft);
       flex-shrink: 0;
     }
@@ -1000,7 +1000,7 @@ class RmRecipeGrid extends LitElement {
     .sub-chip.active {
       background: var(--rm-accent-soft);
       border-color: var(--rm-accent);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
     .sub-chip-count {
       display: inline-flex;
@@ -1043,7 +1043,7 @@ class RmRecipeGrid extends LitElement {
     .tag-btn.active {
       background: var(--rm-accent-soft);
       border-color: var(--rm-accent);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
 
     /* Grid scroll area */
@@ -1152,7 +1152,7 @@ class RmRecipeGrid extends LitElement {
       --mdc-icon-size: 22px;
     }
     .fav-btn.active {
-      color: #ffb5c0;
+      color: var(--rm-rose);
     }
 
     .recipe-info {
@@ -1184,8 +1184,8 @@ class RmRecipeGrid extends LitElement {
       -webkit-text-stroke: 1px rgba(200, 150, 0, 0.5);
     }
     .card-star.filled {
-      color: #f5a623;
-      -webkit-text-stroke: 1px #c47f0a;
+      color: var(--rm-ochre);
+      -webkit-text-stroke: 1px var(--rm-warning);
     }
 
     .recipe-meta {
@@ -1208,7 +1208,7 @@ class RmRecipeGrid extends LitElement {
     }
     .tag-chip {
       background: var(--rm-accent-soft);
-      color: var(--rm-accent);
+      color: var(--rm-accent-ink, var(--rm-text));
     }
 
     /* Empty state */

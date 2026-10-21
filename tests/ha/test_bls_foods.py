@@ -62,7 +62,8 @@ class BLSFoodCommands(IsolatedAsyncioTestCase):
         self.coord.settings["enable_food_database"] = False
         fallback = await self.coord.async_command("search_foods", {"query": "Banane", "online": True})
         self.assertEqual(fallback["foods"][0]["food_id"], "bls4:F503100")
-        self.assertEqual(fallback["warnings"], ["provider_consent_required"])
+        self.assertEqual(fallback["warnings"], [])
+        self.coord._provider.async_search.assert_awaited_with("Banane", submitted=True)
         custom = await self.coord.async_command("save_food", {"food": {"name": "Meine Banane", "base_unit": "g", "nutrients_per_100": {"calories": 90}}})
         combined = await self.coord.async_command("search_foods", {"query": "Banane"})
         self.assertEqual(combined["foods"][0]["food_id"], custom["food"]["food_id"])

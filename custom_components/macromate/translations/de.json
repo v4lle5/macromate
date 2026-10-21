@@ -17,8 +17,7 @@
           "macro_plan": "Ernährungspräferenz",
           "weight_entity": "Gewichtssensor (optional)",
           "bmr_entity": "Sensor für Ruheenergie / Grundumsatz (optional)",
-          "active_calories_entity": "Heutige Aktivkalorien (optional; nicht Gesamtenergie)",
-          "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
+          "active_calories_entity": "Heutige Aktivkalorien (optional; nicht Gesamtenergie)"
         },
         "data_description": {
           "birthday": "Geburtsdatum direkt als TT.MM.JJJJ eingeben, z. B. 23.07.1990. ISO JJJJ-MM-TT (1990-07-23) wird ebenfalls akzeptiert. Nur für Erwachsene von 18–120 Jahren.",
@@ -27,8 +26,7 @@
           "weekly_pace_kg": "Positiven Betrag ohne Vorzeichen eingeben, z. B. 0,5 kg/Woche (auch 0.5 möglich). Zum Halten null; die Zielauswahl bestimmt die Richtung. Unterstützter Bereich: 0–1,5, keine Gesundheitsempfehlung.",
           "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
           "weight_entity": "Verwendet kg, lb oder Stone. Ein gültiger, nicht wiederhergestellter Messwert bis 7 Tage genügt; manuelles Gewicht leer lassen. Bei späterem Sensorausfall wird der gespeicherte Wert ausdrücklich als Ersatz, nicht als Live-Messwert angezeigt.",
-          "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung.",
-          "enable_food_database": "Standardmäßig aus. Nur ausdrücklich abgesendete Online-Suchen/Barcodes kontaktieren Open Food Facts und übermitteln Suchtext oder Barcode; keine Profildaten. Lokales Tagebuch und eigene Lebensmittel funktionieren auch ohne diese Freigabe."
+          "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung."
         }
       }
     },
@@ -63,8 +61,7 @@
           "macro_plan": "Ernährungspräferenz",
           "weight_entity": "Gewichtssensor (optional)",
           "bmr_entity": "Sensor für Ruheenergie / Grundumsatz (optional)",
-          "active_calories_entity": "Heutige Aktivkalorien (optional; nicht Gesamtenergie)",
-          "enable_food_database": "Ausdrückliche Online-Lebensmittelsuchen mit Open Food Facts erlauben"
+          "active_calories_entity": "Heutige Aktivkalorien (optional; nicht Gesamtenergie)"
         },
         "data_description": {
           "birthday": "Geburtsdatum direkt als TT.MM.JJJJ eingeben, z. B. 23.07.1990. ISO JJJJ-MM-TT (1990-07-23) wird ebenfalls akzeptiert. Nur für Erwachsene von 18–120 Jahren.",
@@ -73,8 +70,7 @@
           "weekly_pace_kg": "Positiven Betrag ohne Vorzeichen eingeben, z. B. 0,5 kg/Woche (auch 0.5 möglich). Zum Halten null; die Zielauswahl bestimmt die Richtung. Unterstützter Bereich: 0–1,5, keine Gesundheitsempfehlung.",
           "active_calories_entity": "Nur heutige aktive Energie (kcal oder kJ) verwenden, nicht die gesamte Tagesenergie. Ein nutzbarer Messwert ersetzt die Schätzung nach Aktivitätsniveau; beide werden nie addiert.",
           "weight_entity": "Verwendet kg, lb oder Stone. Ein gültiger, nicht wiederhergestellter Messwert bis 7 Tage genügt; manuelles Gewicht leer lassen. Bei späterem Sensorausfall wird der gespeicherte Wert ausdrücklich als Ersatz, nicht als Live-Messwert angezeigt.",
-          "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung.",
-          "enable_food_database": "Standardmäßig aus. Nur ausdrücklich abgesendete Online-Suchen/Barcodes kontaktieren Open Food Facts und übermitteln Suchtext oder Barcode; keine Profildaten. Lokales Tagebuch und eigene Lebensmittel funktionieren auch ohne diese Freigabe."
+          "bmr_entity": "Verwendet kcal oder kJ. Ohne nutzbaren Sensor liefert dein Profil die Ruheenergie-Schätzung."
         }
       }
     },
@@ -122,7 +118,7 @@
     },
     "barcode": {
       "name": "Barcode",
-      "description": "Diese Aktion verwendet die gemeinsame MacroMate-Validierung und die aktuellen Zugriffsrechte. Look up an exact food barcode, online only after consent.",
+      "description": "Sucht einen exakt gültigen Lebensmittelbarcode. Führende Nullen bleiben erhalten; Online-Abfragen verwenden Open Food Facts, wenn der Barcode nicht lokal gespeichert ist.",
       "fields": {
         "barcode": {
           "name": "Barcode",
@@ -503,7 +499,7 @@
     },
     "lookup_barcode": {
       "name": "Exakten Barcode nachschlagen",
-      "description": "Sucht eine exakt gültige GTIN8/12/13/14-Zeichenfolge. Führende Nullen bleiben erhalten; Online-Abfragen erfordern eine ausdrückliche Freigabe.",
+      "description": "Sucht einen exakt gültigen Lebensmittelbarcode. Führende Nullen bleiben erhalten; Online-Abfragen verwenden Open Food Facts, wenn der Barcode nicht lokal gespeichert ist.",
       "fields": {
         "barcode": {
           "name": "Barcode",
@@ -1260,7 +1256,7 @@
     },
     "search_foods": {
       "name": "Lebensmittel suchen",
-      "description": "Sucht standardmäßig lokal. Ausdrückliche Online-Suchen erfordern die Freigabe in den Optionen und senden den Suchtext an Open Food Facts.",
+      "description": "Sucht Lebensmittel. Online-Abfragen senden nur den abgesendeten Lebensmittelnamen an Open Food Facts.",
       "fields": {
         "query": {
           "name": "Query",

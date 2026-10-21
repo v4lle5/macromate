@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from homeassistant.core import HomeAssistant
 from custom_components.macromate.coordinator import MealTrackerCoordinator
 from test_coordinator_transactions import MemoryStore
+from offline_food_provider import install_offline_food_provider
 
 
 async def main(data):
@@ -20,6 +21,7 @@ async def main(data):
         hass.config.time_zone = "Europe/Berlin"
         runtime = MealTrackerCoordinator(hass, {"weight_entity": None, "active_calories_entity": None})
         runtime._store = MemoryStore()
+        install_offline_food_provider(hass)
         if data.get("seed_entries"):
             runtime._adopt({"entries": [{**entry, "id": entry["entry_id"]} for entry in data["seed_entries"]]})
         results = []

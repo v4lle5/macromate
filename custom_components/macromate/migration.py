@@ -2,7 +2,7 @@
 
 Parent integration must export/import async_migrate_entry from its __init__.py.
 Old factors remain internal for the legacy runtime until a complete profile is
-submitted in options. No demographic values or new online consent are invented.
+submitted in options. No demographic values are invented.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ def migrate_settings_v1(data: Mapping[str, Any], options: Mapping[str, Any]) -> 
         settings.setdefault(key, None)
     settings.setdefault("profile_version", PROFILE_VERSION)
     settings["profile_complete"] = False
-    settings["enable_food_database"] = False
+    settings["enable_food_database"] = True
     return settings
 
 
