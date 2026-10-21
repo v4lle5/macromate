@@ -77,7 +77,7 @@ test('unified outputs and both manifests are identical across clean dependency a
     const manifest = JSON.parse(await readFile(join(cwd, 'frontend/unified/build-manifest.json')));
     const lock = JSON.parse(await readFile(join(root, 'frontend/unified-src/package-lock.json')));
     const notices = await readFile(join(cwd, 'frontend/unified/THIRD-PARTY-NOTICES.txt'), 'utf8');
-    assert.equal(manifest.runtimeDependencies.length, 18, 'Keep the full bundled runtime notice closure after retiring the two shopping barcode generators');
+    assert.deepEqual(manifest.runtimeDependencies.map(record => record.name).sort(), ['@lit/localize', '@lit/reactive-element', 'lit', 'lit-element', 'lit-html'], 'The recipe import UI and its ZIP runtime are no longer bundled');
     for (const record of manifest.runtimeDependencies) {
       assert.equal(record.version, lock.packages[`node_modules/${record.name}`].version);
       assert.ok(notices.includes(`===== ${record.name} ${record.version} =====`), record.name);
@@ -86,23 +86,23 @@ test('unified outputs and both manifests are identical across clean dependency a
       assert.ok(!(await readFile(join(cwd, name))).includes(Buffer.from(scratch)), `Private path leaked in ${name}`);
     }
     await t.test('missing full runtime notices fail before replacing the last complete output', async () => {
-      const files = ['LICENSE.markdown'].map(name => join(dependencies[1], 'node_modules/jszip', name));
+      const files = ['LICENSE'].map(name => join(dependencies[1], 'node_modules/lit', name));
       const original = await Promise.all(files.map(path => readFile(path)));
       try {
         for (const path of files) await rm(path);
         const failed = spawnSync(process.execPath, [builder], {cwd, env, encoding: 'utf8'});
         assert.notEqual(failed.status, 0);
-        assert.match(failed.stderr, /Missing full runtime notice: jszip/);
+        assert.match(failed.stderr, /Missing full runtime notice: lit/);
         assert.deepEqual(await inventory(cwd), results[1]);
       } finally {
         for (const [index, path] of files.entries()) await writeFile(path, original[index]);
       }
     });
     await t.test('missing dependencies fail without replacing the last complete output', async () => {
-      await rm(join(dependencies[1], 'node_modules/jszip'), {recursive: true});
+      await rm(join(dependencies[1], 'node_modules/lit'), {recursive: true});
       const failed = spawnSync(process.execPath, [builder], {cwd, env, encoding: 'utf8'});
       assert.notEqual(failed.status, 0);
-      assert.match(failed.stderr, /Could not resolve "jszip"/);
+      assert.match(failed.stderr, /Could not resolve "lit"/);
       assert.deepEqual(await inventory(cwd), results[1]);
     });
     await t.test('canonical identities retain native exports, browser, require, nested, suffix and sideEffects semantics', async () => {

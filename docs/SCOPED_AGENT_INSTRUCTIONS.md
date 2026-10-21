@@ -42,8 +42,11 @@ includes historical recipe snapshots but does not authorize live recipe reads.
 Create/delete receipts follow the exact matrix in SCOPED_AGENT_ACCESS.md.
 Delete operations need separate opt-in scopes;
 recipe deletion also needs meal-plan deletion permission because it cascades.
-These records use MacroMate's existing **global administrator datasets**, not
-private per-person partitions. Do not promise person-private recipes or diaries.
+Recipes and meal plans are shared administrator data. Diaries support the default
+diary and named profiles with owner/sharing ACLs. A delegated administrator
+credential can target accessible named profiles using `profile_id`; it is **not
+bound to one person**. Do not promise that its diary access is restricted to a
+single household member.
 
 **Shopping is not supported.** Bring is the user's shopping application. Do not
 create shopping lists/items, try recipe-to-shopping actions, or request shopping

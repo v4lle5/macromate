@@ -19,13 +19,13 @@ Development build, not a medical tool. Physical mobile cameras and iOS/Safari re
 - Quick entries store total nutrients; food entries store immutable label snapshots. Edit, delete and copy entries without later product changes rewriting their nutrition history.
 - Extended nutrients with explicit kcal/g/mg/µg/ml units. Missing values remain unknown; declared zero remains zero.
 - Local private storage, bounded persistent retry history, summary/goal sensors and authenticated actions for automations/agent clients.
-- Recipe library, taxonomy, ratings/favorites, manual editing, consented imports and private normalized images.
+- Recipe library, taxonomy, ratings/favorites, editing existing recipes and private normalized images. Agents create structured recipes through the scoped API; administrative import APIs remain available.
 - Weekly planning; logging recipe portions to the diary is a separate action with an immutable nutrition snapshot.
 - Internal shopping UI, backend services/WebSocket actions, discovery, settings and recipe/plan transfers have been removed. Use Bring! separately; MacroMate does not connect to it. Existing shopping data is retained, not deleted or migrated.
 - Cooking timers/presets, server-side Home Assistant notifications, and complete local agent CRUD through the same authenticated, validated command model as the card.
 - Separate nutrition profiles with explicit Home Assistant ownership/sharing, plus ISO-week and calendar-month reports.
 
-No bundled inference model, fasting tracker or photo-based food recognition. Agents need no cloud model, browser automation or extra MCP server to use the API. See the [local agent guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md). This development branch is not automatically published or installed.
+No bundled inference model, fasting tracker or photo-based food recognition. Agents need no cloud model, browser automation or extra MCP server to use the API. Start with the [German LAN setup guide](docs/AGENT_LAN_SETUP_DE.md) and [scoped agent instructions](docs/SCOPED_AGENT_INSTRUCTIONS.md). The [administrative API guide](docs/AGENT_API.md) and [unified contract](docs/UNIFIED_CONTRACT.md) cover broader operator access. This development branch is not automatically published or installed.
 
 ## Installation
 
@@ -46,6 +46,8 @@ The isolated runtime is HA Core 2026.10.1 / Python 3.14.2. Pure model/client tes
 ## Dashboard card
 
 The local dashboard card opens the combined recipe, planner, timer and nutrition workspace. **Wave Glass Echo** supplies the whole application's cream, sand, terracotta, rose and sage palette, with warm translucent glass surfaces. There is no Design/Appearance tab or theme label in Settings. Earlier palette choices normalize to the shared theme; recipe quantities use metric display without an imperial/metric selector. Shared typography, readable text colors and touch-sized controls keep recipes, planning, timers and nutrition consistent. The nutrition pane retains the calorie-balance ring, macros, meal groups, food database and scanner. It uses Home Assistant's existing authentication without guessed entity IDs or extra credentials. Missing nutrients and goals remain explicitly unknown.
+
+New recipes are created by an agent. The app has no **New Recipe** tab, add button, manual creation form or recipe import screen. Existing recipes remain available for viewing, editing, planning and portion logging; scoped recipe creation and the separate administrative import APIs remain available.
 
 The integration loads the card module automatically, just like Recipe Manager. No manual resource URL or YAML is needed for a normal storage dashboard:
 

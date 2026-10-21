@@ -693,7 +693,7 @@ class RmRecipeGrid extends LitElement {
                           ? msg("No favourites yet — heart a recipe!")
                           : this._filterMode === "recent"
                             ? msg("No recently viewed recipes yet.")
-                            : msg("No recipes yet — add one!")}
+                            : msg("No recipes found")}
                   </p>
                 </div>
               `

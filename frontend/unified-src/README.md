@@ -45,11 +45,13 @@ switch or separate online-search button is exposed. Provider failures remain
 visible without blocking local foods or quick entry. Barcode lookup checks
 locally cached products before its automatic remote request.
 
-Internal shopping and the generic action editor are retired. Historical data
-is retained. Dedicated recipe editing/logging, planning, timers/presets,
-nutrition and settings/import/export workflows remain. The authenticated
-agent API is independent of UI navigation; optional API fields without a
-dedicated control are not claimed as graphical workflows.
+Internal shopping, the generic action editor and recipe creation/import screens
+are retired. The New Recipe tab and desktop/mobile add controls are removed;
+agents create structured recipes through the scoped API. Historical data is retained.
+Dedicated editing/logging of existing recipes, planning, timers/presets,
+nutrition, settings and backup download remain. Backend scoped recipe creation and administrative import
+actions remain available independently of UI navigation; optional API fields
+without a dedicated control are not claimed as graphical workflows.
 
 The nutrition pane reuses the existing diary, food, custom-food, entry, barcode
 and camera modules, with the original calorie ring and macro display. It uses
@@ -66,11 +68,10 @@ private object URLs. Private photos are fetched only with `hass.fetchWithAuth`
 from `/api/macromate/media/{id}`. Remote photo references may be retained as
 metadata but are not fetched directly by image tags. Custom alarm/preview audio
 accepts only bounded local `data:audio/...;base64,...` values, never remote URLs.
-Markdown is rendered as
-Lit templates, never raw HTML. Remote imports require an explicit consent
-control. Default archive imports send the bounded archive to the backend;
-photo-free HTML extraction is bounded before browser decompression and checks
-both JSZip's sanitized member name and `unsafeOriginalName`.
+Markdown is rendered as Lit templates, never raw HTML. Recipe creation and
+URL/archive import remain administrative API workflows; the retired browser import component
+is not bundled. Backend remote imports retain their explicit consent, bounded
+archive processing and media/network validation contracts.
 
 ### Exact recipe → shopping selection
 
@@ -111,10 +112,10 @@ MACROMATE_BUILD_DEPS="$MACROMATE_BUILD_DEPS" node tests/frontend/macromate-unifi
 
 No upstream install, build or postbuild hooks are used. The esbuild invocation
 is controlled by the test/build script. The manifest pins direct and transitive
-dependencies. JSZip uses its MIT alternative. Full runtime notices include
-transitive code embedded in its browser distribution, JsBarcode and the QR
-code generator; the latter's npm distribution has only a license pointer, so
-its full matching MIT/copyright notice is supplied locally with provenance.
+dependencies. The current application bundles Lit and its localization/runtime
+dependencies with their full license notices. Removing the recipe-import UI
+also removes JSZip and its transitive code from the runtime; historical
+published graphs retain their original notices.
 
 Ship the root card/CSS, `unified/`, `unified-src/services/adapter.js`,
 `unified-src/summary.js`, all existing nutrition modules/CSS/brand asset and the
@@ -165,7 +166,7 @@ all output files, including notices.
 
 - The first browser fixture is explicitly synthetic. It renders actual source
   components, Glass Wave light/dark/system appearance, migration from retired
-  palettes, seven locales, forms, consent and rejection states; it
+  palettes, seven locales, retained forms and rejection states; it
   does not fabricate successful backend mutations.
 - The domain browser uses the actual recipe/shopping commands and schemas with
   a task-local kitchen dictionary. It exercises CRUD and independent exact
@@ -191,12 +192,14 @@ all output files, including notices.
   for the packaging owner after the complete asset handoff is mirrored.
 
 `feature-support.json` retains all 43 standalone-card and 25 bundled-recipe UI
-rows, with implementation paths and named executable checks. Every row is
-**partial local evidence**, not full production acceptance: an assertion about a
+rows, including explicit retirement statuses for removed creation/import and
+shopping controls. Retained rows have implementation paths and named executable
+checks with **partial local evidence**, not full production acceptance: an assertion about a
 rejection, rendering or one field does not prove successful native mutations or
 all advanced sub-workflows. `workflow-evidence.json` records actual values,
 viewport/breakpoint and contrast measurements, authenticated media pixel
-sizes, archive/audio security rejections and context-reset results.
+sizes, audio security rejections and context-reset results. Archive import
+security is exercised through the retained backend/API tests.
 `recipe-workflow-readback.json` and captured command/Store files provide exact
 domain readbacks rather than screenshots alone. Generic schema-form evidence
 was retired with that UI; explicit API tests are labelled separately.

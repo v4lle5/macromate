@@ -45,8 +45,16 @@ MAX_BODY = 256 * 1024
 MAX_RESPONSE = 4 * 1024 * 1024
 
 
+class ScopedHTTPError(RuntimeError):
+    """Expose only the HTTP status, never the server body, URL or credential."""
+
+    def __init__(self, status):
+        self.status = int(status)
+        super().__init__(f"MacroMate returned HTTP {self.status}; no retry performed")
+
+
 def read_secret(path):
-    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     try:
         info = os.fstat(fd)
         if (
@@ -110,7 +118,7 @@ def _request(origin, token, path, payload=None, *, method="POST", trusted_lan_ht
     except HTTPError as error:
         code = error.code
         error.close()
-        raise RuntimeError(f"MacroMate returned HTTP {code}; no retry performed") from None
+        raise ScopedHTTPError(code) from None
     except (URLError, OSError, HTTPException, ValueError, UnicodeError, RecursionError):
         raise RuntimeError(
             "MacroMate transport/response failure; outcome uncertain; retain request_id"
@@ -190,7 +198,8 @@ def main(argv=None):
                 trusted_lan_http=args.trusted_lan_http,
             )
         elif args.command == "call":
-            raw = Path(args.json_file).read_bytes()
+            with Path(args.json_file).open("rb") as stream:
+                raw = stream.read(MAX_BODY + 1)
             if len(raw) > MAX_BODY:
                 raise ValueError("Request too large")
             payload = json.loads(
@@ -221,6 +230,13 @@ def main(argv=None):
             )
         print(json.dumps(result, allow_nan=False))
         return 0
+    except ScopedHTTPError as error:
+        print(
+            f"Scoped request failed: HTTP {error.status}; no retry performed. "
+            "Inspect metadata/readback before retrying writes.",
+            file=sys.stderr,
+        )
+        return 1
     except (ValueError, OSError, RuntimeError, RecursionError):
         print(
             (

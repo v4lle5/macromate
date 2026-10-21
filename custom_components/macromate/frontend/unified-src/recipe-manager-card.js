@@ -17,7 +17,6 @@ const GLOBAL_WAKE_LOCK_REASON = "manual-toggle";
 
 import "./components/rm-recipe-grid.js";
 import "./components/rm-recipe-detail.js";
-import "./components/rm-add-recipe-dialog.js";
 import "./components/rm-meal-planner.js";
 import "./components/rm-settings-view.js";
 import "./components/nutrition.js";
@@ -27,7 +26,7 @@ import { componentStyles } from "./components/component-styles.js";
 // Settings helpers
 // ---------------------------------------------------------------------------
 
-// Views worth restoring after a reload, excluding transient import/timer views.
+// Views worth restoring after a reload, excluding transient timer views.
 const RESTORABLE_VIEWS = ["grid", "detail", "settings", "planner"];
 
 // ---------------------------------------------------------------------------
@@ -286,7 +285,7 @@ export class UnifiedApp extends LitElement {
     if (
       (changedProps.has("_view") || changedProps.has("_closingDetail")) &&
       this._recipeRefreshDeferred &&
-      !this.shadowRoot.querySelector("rm-add-recipe-dialog, rm-recipe-detail")
+      !this.shadowRoot.querySelector("rm-recipe-detail")
     )
       this._queueRefresh();
   }
@@ -476,7 +475,7 @@ export class UnifiedApp extends LitElement {
     // Only list metadata is safe to replace while a recipe context is open.
     // Rebinding the selected recipe resets servings, picker and editor state.
     const recipeContextOpen = () =>
-      !!this.shadowRoot.querySelector("rm-add-recipe-dialog, rm-recipe-detail");
+      !!this.shadowRoot.querySelector("rm-recipe-detail");
     const deferRecipes = recipeContextOpen();
     try {
       const [recipes, tags, timers] = await Promise.all([
@@ -980,25 +979,6 @@ export class UnifiedApp extends LitElement {
     } catch {}
   }
 
-  async _handleAddRecipe(e) {
-    try {
-      await this._api.addRecipe(e.detail.data);
-      this._navDirection = "back";
-      this._view = "grid";
-      await this._loadRecipes();
-      await this._loadTags();
-    } catch (err) {
-      console.error("[Recipe Manager] Failed to save recipe:", err);
-    }
-  }
-
-  async _handleImportDone() {
-    this._navDirection = "back";
-    this._view = "grid";
-    await this._loadRecipes();
-    await this._loadTags();
-  }
-
   // -- Render ---------------------------------------------------------------
 
   _renderStars(rating) {
@@ -1149,28 +1129,8 @@ export class UnifiedApp extends LitElement {
                       `
                     : ""}
                 </div>
-
-                <button
-                  class="sb-new-btn"
-                  @click=${() => {
-                    this._view = "add";
-                  }}
-                >
-                  <ha-icon icon="mdi:plus"></ha-icon>
-                  <span>${msg("New Recipe")}</span>
-                </button>
               `
-            : html`
-                <button
-                  class="sb-icon-only-btn"
-                  @click=${() => {
-                    this._view = "add";
-                  }}
-                  title="${msg("New Recipe")}"
-                >
-                  <ha-icon icon="mdi:plus"></ha-icon>
-                </button>
-              `}
+            : ""}
         </div>
 
         <div class="sb-nav">
@@ -1249,30 +1209,27 @@ export class UnifiedApp extends LitElement {
     const inDetail =
       (this._view === "detail" || this._closingDetail) && this._selectedRecipe;
     const inSettings = this._view === "settings";
-    const inAdd = this._view === "add";
     const inTimers = this._view === "timers";
     const wide = this._wide;
 
     const title = inSettings
       ? msg("Settings")
-      : inAdd
-        ? msg("New Recipe")
-        : inTimers
-          ? msg("Timers")
-          : inDetail
-            ? ""
-            : this._view === "planner"
-              ? msg("Meal Planner")
-              : this._view === "nutrition"
-                ? this._settings.language === "de"
-                  ? "Ernährung"
-                  : "Nutrition"
-                : msg("Recipes");
+      : inTimers
+        ? msg("Timers")
+        : inDetail
+          ? ""
+          : this._view === "planner"
+            ? msg("Meal Planner")
+            : this._view === "nutrition"
+              ? this._settings.language === "de"
+                ? "Ernährung"
+                : "Nutrition"
+              : msg("Recipes");
 
     return html`
       <div class="rm-header">
         <div class="rm-header-left">
-          ${inDetail || inAdd
+          ${inDetail
             ? html`
                 <button
                   class="icon-btn"
@@ -1365,7 +1322,7 @@ export class UnifiedApp extends LitElement {
             ></ha-icon>
           </button>
 
-          ${inSettings || inAdd || inTimers
+          ${inSettings || inTimers
             ? html`
                 <button
                   class="icon-btn"
@@ -1411,20 +1368,6 @@ export class UnifiedApp extends LitElement {
           .settings=${s}
           @rm-settings-change=${this._handleSettingsChange}
         ></rm-settings-view>
-      `;
-    if (this._view === "add")
-      return html`
-        <rm-add-recipe-dialog
-          .api=${this._api}
-          .asPanel=${true}
-          .inlineMode=${true}
-          @rm-add-recipe=${this._handleAddRecipe}
-          @rm-import-done=${this._handleImportDone}
-          @rm-close=${() => {
-            this._navDirection = "back";
-            this._view = "grid";
-          }}
-        ></rm-add-recipe-dialog>
       `;
     if (this._view === "timers") return this._renderTimersView();
     if (this._view === "planner")
@@ -2069,16 +2012,6 @@ export class UnifiedApp extends LitElement {
           this._settings.language === "de" ? "Ernährung" : "Nutrition",
           "nutrition",
         )}
-        <button
-          class="rm-bn-btn rm-bn-add"
-          @click=${() => {
-            this._navDirection = "forward";
-            this._view = "add";
-          }}
-          title="${msg("New Recipe")}"
-        >
-          <ha-icon icon="mdi:plus"></ha-icon>
-        </button>
         ${btn("mdi:calendar-week", msg("Planner"), "planner", () => {
           this._plannerFromRecipe = null;
           this._navDirection = "forward";
@@ -2335,49 +2268,6 @@ export class UnifiedApp extends LitElement {
     }
     .sb-search-clear ha-icon {
       --mdc-icon-size: 14px;
-    }
-
-    .sb-new-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 8px 10px;
-      background: var(--rm-accent);
-      color: var(--rm-accent-text, #fff);
-      border: none;
-      border-radius: var(--rm-radius-sm);
-      font-size: var(--rm-font-size-sm);
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .sb-new-btn:hover {
-      opacity: 0.88;
-    }
-    .sb-new-btn ha-icon {
-      --mdc-icon-size: 18px;
-    }
-
-    .sb-icon-only-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      margin: 0 auto;
-      background: var(--rm-accent);
-      color: var(--rm-accent-text, #fff);
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .sb-icon-only-btn:hover {
-      opacity: 0.88;
-    }
-    .sb-icon-only-btn ha-icon {
-      --mdc-icon-size: 20px;
     }
 
     .sb-nav {
@@ -3220,24 +3110,8 @@ export class UnifiedApp extends LitElement {
     .rm-bn-btn.active {
       color: var(--rm-accent-ink, var(--rm-text));
     }
-    .rm-bn-btn:not(.rm-bn-add):hover {
+    .rm-bn-btn:hover {
       color: var(--rm-text);
-    }
-
-    .rm-bn-add {
-      background: var(--rm-accent);
-      color: var(--rm-accent-text, #fff) !important;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      flex: none;
-      align-self: center;
-      margin: 0 8px;
-      padding: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-    .rm-bn-add ha-icon {
-      --mdc-icon-size: 26px;
     }
 
     .rm-bn-badge {

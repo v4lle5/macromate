@@ -109,6 +109,26 @@ class AgentCredentialsTests(unittest.IsolatedAsyncioTestCase):
         async with self.client.post(self.origin + '/api/macromate/agent/credentials', headers=self.headers(), json={'label': 'No', 'scopes': ['admin']}) as r:
             self.assertEqual(r.status, 400)
 
+    async def test_scoped_discovery_matches_mutation_boundary(self):
+        from custom_components.macromate.platform_api import ACTIONS
+        credential = await self.mint(scopes=['recipes.read', 'recipes.create', 'recipes.update'])
+        described = await self.action(credential, 'describe', {})
+        self.assertEqual(described['authentication'], 'macromate_scoped_bearer')
+        for action, descriptor in described['actions'].items():
+            self.assertNotIn('admin_only', descriptor)
+            self.assertTrue(set(descriptor['required_scopes']) <= set(credential['scopes']))
+            self.assertEqual('request_id' in descriptor['schema']['required'], not descriptor['read_only'])
+        schema = described['actions']['recipes_add']['schema']
+        self.assertIs(schema['properties']['download_image']['const'], False)
+        self.assertNotIn('request_id', ACTIONS['recipes_add']['schema']['required'])
+        self.assertNotIn('const', ACTIONS['recipes_add']['schema']['properties']['download_image'])
+        await self.action(credential, 'recipes_add', {'name': 'No ID'}, 400)
+        await self.action(credential, 'recipes_add', {'name': 'No network', 'download_image': True, 'request_id': 'net'}, 400)
+        payload = {'name': 'Metric oats', 'ingredients': [{'name': 'Oats', 'amount': '60', 'unit': 'g'}], 'download_image': False, 'request_id': 'Breakfast: 2026-10-21'}
+        created = await self.action(credential, 'recipes_add', payload)
+        self.assertEqual(await self.action(credential, 'recipes_add', payload), created)
+        self.assertEqual(await self.action(credential, 'recipes_get', {'recipe_id': created['recipe']['id']}), created)
+
     async def test_plan_diary_updates_replay_and_optional_delete(self):
         credential = await self.mint()
         recipe = (await self.action(credential, 'recipes_add', {'name': 'Oats', 'servings': 1, 'declared_nutrition': {'calories': 100}, 'nutrition_basis': 'per_serving', 'request_id': 'r'}))['recipe']

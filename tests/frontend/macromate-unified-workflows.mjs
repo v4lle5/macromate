@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
-import {spawnSync} from 'node:child_process';
 import {measureTextContrast} from './macromate-contrast-helpers.mjs';
 const root=resolve(new URL('../..',import.meta.url).pathname);
 const {chromium}=await import(resolve(process.env.PLAYWRIGHT_DIR,'playwright/index.mjs'));
@@ -49,11 +48,15 @@ try {
   const pixels=await photo.evaluate(n=>({width:n.naturalWidth,height:n.naturalHeight,source:n.src}));assert.ok(pixels.width>0);assert.ok(pixels.source.startsWith('blob:'));assert.deepEqual(await page.evaluate(()=>window.mediaPaths),['/api/macromate/media/private-one','/api/macromate/media/private-two']);
   const before=await photo.getAttribute('src');await detail.locator('.slide-next').click();assert.notEqual(await photo.getAttribute('src'),before);await detail.locator('.slide-prev').click();assert.equal(await photo.getAttribute('src'),before);return {pixels,authenticatedPaths:await page.evaluate(()=>window.mediaPaths),slideshow:'next and previous changed and restored the rendered image'};
  });
- await test('hostile-photo-free-archive-preflight',async()=>{
-  await view('add');const importer=page.locator('rm-add-recipe-dialog');
-  const result=spawnSync('python3',['-c',"import io,zipfile,base64; b=io.BytesIO(); z=zipfile.ZipFile(b,'w'); z.writestr('../recipes.html','<html>Unsafe path</html>'); z.close(); print(base64.b64encode(b.getvalue()).decode())"],{encoding:'utf8'});assert.equal(result.status,0);
-  const actual=await importer.evaluate(async(d,encoded)=>{const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));d._importFile=new File([bytes],'unsafe.zip');d._importDownloadImages=false;const before=window.calls.length;await d._handleImport();return {writes:window.calls.slice(before),error:d._importError};},result.stdout.trim());
-  assert.deepEqual(actual.writes,[],'JSZip sanitized traversal names must be checked against unsafeOriginalName before sending HTML');assert.ok(actual.error);return actual;
+ await test('recipe-creation-controls-absent-on-phone-and-desktop',async()=>{
+  await view('grid');const widths=[320,390,1280];
+  for(const width of widths){
+   await page.setViewportSize({width,height:900});await page.waitForTimeout(100);
+   assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0);
+   assert.equal(await page.locator('.sb-new-btn,.rm-bn-add,[title="New Recipe"],rm-add-recipe-dialog').count(),0);
+   assert.ok(await page.getByText('Garden Bowl',{exact:true}).count(),'Agent-created recipes remain available in the library');
+  }
+  return {widths,creationControls:0,libraryRecipe:'Garden Bowl'};
  });
  await test('library-search-taxonomy-rating-favorite-recent',async()=>{
   await view('grid');const grid=page.locator('rm-recipe-grid');const actual=await grid.evaluate(g=>{const sample=[{id:'a',name:'Apple soup',tags:['Fruit'],courses:['Lunch'],categories:['Soup'],collections:['Quick'],rating:5,is_favourite:true},{id:'b',name:'Bread',tags:['Baking'],courses:['Dinner'],categories:['Baked'],collections:['Quick'],rating:2,is_favourite:true}];g.allRecipes=sample;g.recipes=sample;g.recentRecipes=sample;g.searchQuery='Apple';g._filterMode='favourites';const favorites=g._getFilteredList().map(r=>r.id);g._filterMode='recent';const recent=g._getFilteredList().map(r=>r.id);g.searchQuery='';g._filterMode='all';g._selectedCourses=new Set(['Lunch']);g._selectedCategories=new Set(['Soup']);const taxonomy=g._getFilteredList().map(r=>r.id);g._selectedCourses=new Set();g._selectedCategories=new Set();g._starFilter=3;g._sortByRating=true;return {favorites,recent,taxonomy,rating:g._getFilteredList().map(r=>r.id)};});
@@ -77,7 +80,7 @@ try {
   for(const darkMode of ['off','on'])for(const width of [320,390,768,1280]){
    await page.setViewportSize({width,height:900});
    await page.evaluate(darkMode=>{card.application._settings={...card.application._settings,darkMode,fontSize:'large'};},darkMode);
-   for(const name of ['grid','detail','planner','timers','nutrition','add','settings']){
+   for(const name of ['grid','detail','planner','timers','nutrition','settings']){
     await view(name);
     const metrics=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,cardWidth:card.getBoundingClientRect().width,appWidth:card.application.scrollWidth,wide:card.application._wide}));
     assert.ok(metrics.documentWidth<=width+1&&metrics.appWidth<=metrics.cardWidth+1,`${name}/${darkMode} overflows ${width}px: ${JSON.stringify(metrics)}`);

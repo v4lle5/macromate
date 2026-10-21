@@ -41,10 +41,29 @@ for(const [theme,darkMode]of [['glass-wave','off'],['glass-wave','on']]){
  await page.evaluate(({theme,darkMode})=>{card.application._settings={...card.application._settings,theme,darkMode};card.application._applyTheme();}, {theme,darkMode});
  for(const [width,height]of [[1280,900],[390,844]]){
   await page.setViewportSize({width,height});await page.waitForTimeout(180);
-  const layout=await pane.evaluate(n=>({width:n.clientWidth,height:n.clientHeight,scrollHeight:n.scrollHeight,scrollWidth:n.scrollWidth,ring:n.shadowRoot.querySelector('.calorie-ring').getBoundingClientRect().width,main:n.shadowRoot.querySelector('main').getBoundingClientRect().height}));
+  const layout=await pane.evaluate(async n=>{
+   n.scrollTop=0;await new Promise(requestAnimationFrame);
+   const rect=n.getBoundingClientRect(),shadow=n.shadowRoot;
+   return {width:n.clientWidth,height:n.clientHeight,scrollHeight:n.scrollHeight,scrollWidth:n.scrollWidth,overflowY:getComputedStyle(n).overflowY,top:rect.top,bottom:rect.bottom,ring:shadow.querySelector('.calorie-ring').getBoundingClientRect().width,main:shadow.querySelector('main').getBoundingClientRect().height,overviewBottom:shadow.querySelector('.nutrition-overview').getBoundingClientRect().bottom,searchBottom:shadow.querySelector('.food-search form').getBoundingClientRect().bottom,documentHeight:document.documentElement.scrollHeight,viewportHeight:innerHeight,entries:shadow.querySelectorAll('.entry').length};
+  });
   layouts.push({theme,darkMode,width,height,...layout});await writeFile(resolve(process.env.EVIDENCE_DIR,'compact-layouts.json'),JSON.stringify(layouts,null,2));await page.screenshot({path:resolve(process.env.EVIDENCE_DIR,`nutrition-compact-${theme}-${darkMode}-${width}.png`)});assert.ok(layout.ring<=112);assert.ok(layout.scrollWidth<=layout.width);
-  assert.ok(layout.scrollHeight<=layout.height+(width===390?100:2),JSON.stringify(layout));
-  await page.screenshot({path:resolve(process.env.EVIDENCE_DIR,`nutrition-compact-${theme}-${darkMode}-${width}.png`)});
+  // Diary length is data-dependent: three saved entries already exceed the old
+  // arbitrary 100px mobile scroll allowance. Keep the overview and food controls
+  // visible initially, and verify longer diaries scroll inside the bounded pane.
+  assert.equal(layout.entries,3);assert.equal(layout.overflowY,'auto');
+  assert.ok(layout.top>=-1&&layout.bottom<=height+1,'Nutrition stays within the app viewport: '+JSON.stringify(layout));
+  assert.ok(layout.documentHeight<=layout.viewportHeight+1,'The diary must not expand the outer document: '+JSON.stringify(layout));
+  assert.ok(layout.overviewBottom<=layout.bottom+1&&layout.searchBottom<=layout.bottom+1,'Overview and food entry controls fit before scrolling: '+JSON.stringify(layout));
+  const scrolled=await pane.evaluate(async n=>{
+   n.scrollTop=n.scrollHeight;await new Promise(requestAnimationFrame);
+   const host=n.getBoundingClientRect(),last=n.shadowRoot.querySelector('.diary-entries>details:last-child>summary').getBoundingClientRect();
+   return {scrollTop:n.scrollTop,remaining:n.scrollHeight-n.clientHeight-n.scrollTop,hostTop:host.top,hostBottom:host.bottom,lastTop:last.top,lastBottom:last.bottom};
+  });
+  layouts.at(-1).scrolled=scrolled;
+  assert.ok(scrolled.remaining<=1,'The end of the diary is reachable: '+JSON.stringify(scrolled));
+  assert.ok(scrolled.lastTop>=scrolled.hostTop-1&&scrolled.lastBottom<=scrolled.hostBottom+1,'Reports remain visible at the end of the diary: '+JSON.stringify(scrolled));
+  await page.screenshot({path:resolve(process.env.EVIDENCE_DIR,`nutrition-compact-${theme}-${darkMode}-${width}-scrolled.png`)});
+  await pane.evaluate(n=>{n.scrollTop=0;});
  }
 }
 await writeFile(resolve(process.env.EVIDENCE_DIR,'compact-layouts.json'),JSON.stringify(layouts,null,2));

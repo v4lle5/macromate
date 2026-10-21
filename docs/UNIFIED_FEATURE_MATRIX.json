@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "Partial local implementation/evidence reconciled. NO row claims complete unified-runtime or production acceptance.",
+  "status": "Partial local implementation/evidence reconciled, with explicit UI retirement statuses. Recipe creation/import UI is retired; scoped recipe creation and administrative import APIs remain available. NO row claims complete unified-runtime or production acceptance.",
   "counts": {
     "macromate": 17,
     "recipe": 67,
@@ -2256,38 +2256,23 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+        "frontend/unified-src/recipe-manager-card.js"
       ],
       "executable_evidence": [
         {
-          "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-          "assertion": "manual recipe declarations and exact readback",
-          "tier": "chromium-pure-domains"
-        },
-        {
           "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "explicit consent, read-only scrape payload and rejected result",
-          "tier": "chromium-synthetic"
-        },
-        {
-          "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "bounded archive payload, stable request ID and rejected import",
-          "tier": "chromium-synthetic"
-        },
-        {
-          "command": "node tests/frontend/macromate-unified-workflows.mjs",
-          "assertion": "hostile-photo-free-archive-preflight",
+          "assertion": "No New Recipe control or creation/import component is exposed; existing recipe detail remains available",
           "tier": "chromium-synthetic"
         }
       ],
       "revision": "3c6dcba4b84872ac432e1198f6e855d437cfa294",
       "remaining_gates": [
-        "independent-review",
         "native-ha-dashboard-and-authenticated-transport",
-        "native-server-network-media-import-export-acceptance"
-      ]
+        "independent-review"
+      ],
+      "adaptation": "Removed by user request: scoped agents create structured recipes; administrative import APIs remain available. No New Recipe tab, desktop/mobile add control or creation/import component remains. Existing recipe viewing/editing is retained; backend recipe creation/import actions remain available."
     },
     {
       "id": "recipe:ui.planner",
@@ -6145,22 +6130,23 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+        "frontend/unified-src/recipe-manager-card.js"
       ],
       "executable_evidence": [
         {
-          "command": "node tests/frontend/macromate-unified-domain-browser.mjs",
-          "assertion": "manual recipe declarations and exact readback",
-          "tier": "chromium-pure-domains"
+          "command": "node tests/frontend/macromate-unified-browser.mjs",
+          "assertion": "No New Recipe control or creation/import component is exposed; existing recipe detail remains available",
+          "tier": "chromium-synthetic"
         }
       ],
       "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
       "remaining_gates": [
         "native-ha-dashboard-and-authenticated-transport",
         "independent-review"
-      ]
+      ],
+      "adaptation": "Removed by user request: scoped agents create structured recipes; administrative import APIs remain available. No New Recipe tab, desktop/mobile add control or creation/import component remains. Existing recipe viewing/editing is retained; backend recipe creation/import actions remain available."
     },
     {
       "id": "card:scrape",
@@ -6175,23 +6161,23 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+        "frontend/unified-src/recipe-manager-card.js"
       ],
       "executable_evidence": [
         {
           "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "explicit consent, read-only scrape payload and rejected result",
+          "assertion": "No New Recipe control or creation/import component is exposed; existing recipe detail remains available",
           "tier": "chromium-synthetic"
         }
       ],
       "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
       "remaining_gates": [
         "native-ha-dashboard-and-authenticated-transport",
-        "independent-review",
-        "native-server-network-media-import-export-acceptance"
-      ]
+        "independent-review"
+      ],
+      "adaptation": "Removed by user request: scoped agents create structured recipes; administrative import APIs remain available. No New Recipe tab, desktop/mobile add control or creation/import component remains. Existing recipe viewing/editing is retained; backend recipe creation/import actions remain available."
     },
     {
       "id": "card:import",
@@ -6206,28 +6192,23 @@
         }
       ],
       "upstream_commands": [],
-      "integration_status": "partial_local_evidence",
+      "integration_status": "retired_by_user_request",
       "implementation": [
-        "frontend/unified-src/components/rm-add-recipe-dialog.js"
+        "frontend/unified-src/recipe-manager-card.js"
       ],
       "executable_evidence": [
         {
           "command": "node tests/frontend/macromate-unified-browser.mjs",
-          "assertion": "bounded archive payload, stable request ID and rejected import",
-          "tier": "chromium-synthetic"
-        },
-        {
-          "command": "node tests/frontend/macromate-unified-workflows.mjs",
-          "assertion": "hostile-photo-free-archive-preflight",
+          "assertion": "No New Recipe control or creation/import component is exposed; existing recipe detail remains available",
           "tier": "chromium-synthetic"
         }
       ],
       "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
       "remaining_gates": [
         "native-ha-dashboard-and-authenticated-transport",
-        "independent-review",
-        "native-server-network-media-import-export-acceptance"
-      ]
+        "independent-review"
+      ],
+      "adaptation": "Removed by user request: scoped agents create structured recipes; administrative import APIs remain available. No New Recipe tab, desktop/mobile add control or creation/import component remains. Existing recipe viewing/editing is retained; backend recipe creation/import actions remain available."
     },
     {
       "id": "card:planner",

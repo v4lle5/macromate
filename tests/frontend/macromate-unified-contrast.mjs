@@ -90,31 +90,28 @@ try {
       if (view === 'nutrition') await page.locator('mm-nutrition .calorie-ring').waitFor();
       await measure(page.locator(host), selectors, view);
     }
-    await page.evaluate(() => {card.application._view = 'add';});
-    const importer = page.locator('rm-add-recipe-dialog');
-    await importer.waitFor();
-    for (const [mode, selectors] of [
-      [2, '.mode-btn,.import-info,.import-info strong,.file-label,.toggle-row'],
-      [0, '.mode-btn,.url-hint,.url-input'],
-      [1, '.mode-btn,.field label,.field input,.field textarea'],
-    ]) {
-      await importer.locator('.mode-btn').nth(mode).click();
-      await measure(importer, selectors, `import-${mode}`);
-    }
+    await page.evaluate(() => {card.application._view = 'detail';});
+    const editor = page.locator('rm-recipe-detail');
+    await editor.waitFor();
+    await editor.getByTitle('Edit recipe', {exact:true}).click();
+    await editor.locator('.edit-panel').waitFor();
+    await measure(editor, '.edit-field label,.edit-field input,.edit-field textarea,.edit-section-label,.edit-footer button', 'recipe-edit');
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({width, height:850});
-      await importer.locator('.mode-btn').nth(2).click();
       await page.waitForTimeout(200);
-      assert.equal(await importer.evaluate(node => node.scrollWidth <= node.clientWidth + 1), true, 'import form fits the viewport');
+      assert.equal(await page.getByRole('button', {name:'New Recipe', exact:true}).count(), 0);
+      assert.equal(await page.locator('.sb-new-btn,.rm-bn-add,[title="New Recipe"],rm-add-recipe-dialog').count(), 0);
+      assert.equal(await editor.locator('.edit-panel').evaluate(node => node.scrollWidth <= node.clientWidth + 1), true, 'existing recipe editor fits the viewport');
       if (process.env.EVIDENCE_DIR) {
         await mkdir(process.env.EVIDENCE_DIR, {recursive:true});
-        await page.screenshot({path:resolve(process.env.EVIDENCE_DIR, `glasswave-import-${darkMode}-${system}-${width}.png`)});
+        await page.screenshot({path:resolve(process.env.EVIDENCE_DIR, `glasswave-recipe-edit-${darkMode}-${system}-${width}.png`)});
       }
     }
+    await editor.getByRole('button', {name:'Cancel', exact:true}).click();
   }
   assert.deepEqual(errors, []);
   if (process.env.EVIDENCE_DIR) await writeFile(resolve(process.env.EVIDENCE_DIR,'contrast.json'),JSON.stringify(rows,null,2));
-  console.log(`PASS: ${rows.length} rendered labels, placeholders and controls have at least 4.5:1 contrast across Glass Wave light/dark/system; import forms fit 320px phones and desktops.`);
+  console.log(`PASS: ${rows.length} rendered labels, placeholders and controls have at least 4.5:1 contrast across Glass Wave light/dark/system; existing recipe editors fit 320px phones and desktops; recipe creation controls are absent.`);
 } finally {
   await browser.close();
   await new Promise(r => server.close(r));

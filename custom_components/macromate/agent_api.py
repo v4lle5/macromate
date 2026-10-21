@@ -8,41 +8,17 @@ from __future__ import annotations
 
 import hashlib
 import json
-from copy import deepcopy
 
 from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.http.const import KEY_HASS_USER
 
 from .agent_auth import AgentCredentials, settle
+from .agent_policy import ACTION_SCOPES, scoped_descriptors
 from .const import DOMAIN
 from .platform_api import ACTIONS
 from .platform_support import Actor, validate_json
 
-ACTION_SCOPES = {
-    "profiles_list": {"diary.read"},
-    "nutrition_report": {"diary.read"},
-    "recipes_get": {"recipes.read"},
-    "recipes_get_all": {"recipes.read"},
-    "recipes_search": {"recipes.read"},
-    "tags_get_all": {"recipes.read"},
-    "recipes_add": {"recipes.create"},
-    "recipes_update": {"recipes.update", "recipes.read"},
-    "recipes_set_favourite": {"recipes.update", "recipes.read"},
-    # Native deletion cascades to plan entries, so both opt-ins are mandatory.
-    "recipes_delete": {"recipes.delete", "mealplan.delete"},
-    "meal_plan_get": {"mealplan.read"},
-    "meal_plan_add": {"mealplan.create", "recipes.read"},
-    "meal_plan_update": {"mealplan.update", "mealplan.read", "recipes.read"},
-    "meal_plan_remove": {"mealplan.delete"},
-    "diary": {"diary.read"},
-    "log_meal": {"diary.create"},
-    "copy_meal": {"diary.create", "diary.read"},
-    "update_meal": {"diary.update", "diary.read"},
-    "recipe_log": {"diary.create", "recipes.read"},
-    "recipe_entry_update": {"diary.update", "diary.read", "recipes.read"},
-    "delete_meal": {"diary.delete"},
-}
 MAX_BODY = 256 * 1024
 HEADERS = {
     "Cache-Control": "no-store",
@@ -216,11 +192,8 @@ async def _async_register_agent_views(hass):
                         raise web.HTTPBadRequest(headers=HEADERS)
                     return web.json_response(
                         {
-                            "actions": {
-                                key: deepcopy(ACTIONS[key])
-                                for key, required in ACTION_SCOPES.items()
-                                if required <= scopes
-                            },
+                            "actions": scoped_descriptors(scopes, ACTIONS),
+                            "authentication": "macromate_scoped_bearer",
                             "scopes": sorted(scopes),
                             "limits": {"body_bytes": MAX_BODY, "requests_per_minute": 60},
                         },

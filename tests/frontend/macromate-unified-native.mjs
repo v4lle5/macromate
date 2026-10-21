@@ -82,34 +82,33 @@ try{
   assert.ok(wire.some(m=>m.action==='describe'));
   return {actions:await page.evaluate(()=>Object.keys(card.api.actions).length),subscription:'macromate/subscribe'};
  });
- await test('manual-recipe-editor-create-edit-readback',async()=>{
-  await view('New Recipe');await page.getByRole('button',{name:'Manual',exact:true}).click();
-  const editor=page.locator('rm-add-recipe-dialog');
-  await editor.getByPlaceholder('e.g. Spaghetti Bolognese').fill('Native browser soup');
-  await editor.getByPlaceholder('4',{exact:true}).fill('2');
-  await editor.getByLabel('Nutrition basis',{exact:true}).selectOption('per_serving');
-  await editor.getByLabel('Declared calories (kcal)',{exact:true}).fill('240');
-  await editor.getByLabel('Declared protein (g)',{exact:true}).fill('0');
-  const ingredient=editor.getByPlaceholder('e.g. "2 cups flour", "salt", or "# Section"');
-  await ingredient.fill('# Sauce');await ingredient.press('Enter');
-  await ingredient.fill('40 g Oats');await ingredient.press('Enter');
-  await editor.getByRole('button',{name:'Save Recipe',exact:true}).click();
-  await page.waitForFunction(()=>card.application._view==='grid');
-  const created=(await agent('recipes_get_all',{})).recipes.find(r=>r.name==='Native browser soup');
-  assert.ok(created,'Manual form actually created a recipe');recipeId=created.id;
+ await test('agent-recipe-create-ui-edit-readback',async()=>{
+  await page.waitForFunction(()=>card.application&&!card.application._loading);
+  assert.equal(await page.getByRole('button',{name:'New Recipe',exact:true}).count(),0,'Recipe creation belongs to the agent, including for administrators');
+  assert.equal(await page.locator('rm-add-recipe-dialog').count(),0);
+  const created=(await agent('recipes_add',{
+   name:'Native browser soup',servings:2,
+   ingredients:[{name:'Sauce',is_heading:true},{name:'Oats',amount:'40',unit:'g'}],
+   declared_nutrition:{calories:240,protein:0},nutrition_basis:'per_serving',
+   request_id:'native-browser-agent-recipe'
+  })).recipe;
+  assert.ok(created,'Agent API actually created a recipe');recipeId=created.id;
   assert.equal(created.declared_nutrition.calories,240);assert.equal(created.declared_nutrition.protein,0);
   assert.equal(created.servings,2);assert.equal(created.ingredients[0].is_heading,true);
   assert.equal(created.ingredients[1].amount,'40');
-  const raw=(await store('ui-recipe-created')).kitchen.recipes[recipeId];assert.deepEqual(raw,created);
+  const raw=(await store('agent-recipe-created')).kitchen.recipes[recipeId];assert.deepEqual(raw,created);
+  await page.waitForFunction(id=>card.application._recipes.some(recipe=>recipe.id===id),recipeId);
   await page.getByText('Native browser soup',{exact:true}).first().click();
   const detail=page.locator('rm-recipe-detail');await detail.getByRole('button',{name:'Edit',exact:true}).click();
+  assert.equal(await detail.getByLabel('Nutrition basis',{exact:true}).inputValue(),'per_serving');
+  assert.equal(await detail.getByLabel('Declared calories (kcal)',{exact:true}).inputValue(),'240');
   await detail.getByLabel('Declared calories (kcal)',{exact:true}).fill('260');
   await detail.getByRole('button',{name:'Save',exact:true}).click();
   await page.waitForFunction(()=>!card.application.shadowRoot.querySelector('rm-recipe-detail')?._editing);
   const edited=(await agent('recipes_get',{recipe_id:recipeId})).recipe;
   assert.equal(edited.declared_nutrition.calories,260);
   assert.deepEqual((await store('ui-recipe-edited')).kitchen.recipes[recipeId],edited);
-  return {recipe_id:recipeId,calories:260,original_indexes:[0,1]};
+  return {recipe_id:recipeId,created_via:'agent API',edited_via:'recipe detail UI',calories:260,original_indexes:[0,1]};
  });
  await test('recipe-log-dedicated-form-native-store',async()=>{
   assert.ok(recipeId);

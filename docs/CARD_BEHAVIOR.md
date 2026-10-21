@@ -21,13 +21,17 @@ The planner can scroll horizontally on narrow screens. Retained text-size
 preferences continue to apply across nutrition forms and recipe components.
 
 `tests/frontend/macromate-unified-contrast.mjs` measures rendered labels,
-placeholders and controls across recipes, planning, timers, nutrition, settings
-and import forms in light, dark and automatic appearance. These checks require
+placeholders and controls across recipes, planning, timers, nutrition and settings
+in light, dark and automatic appearance. These checks require
 at least 4.5:1 text contrast and include alpha-composited surfaces across shadow
 roots. Image captions and gradients are outside these solid-color measurements.
 Responsive checks include 320-pixel phones with large text.
 
 Locale strings are plain text, not HTML entity fragments. Rendering continues to use Lit text bindings and DOM text nodes; no general HTML decoding or unsafe HTML insertion is needed for ampersands.
+
+## Recipe creation through agents
+
+The **New Recipe** tab, desktop/mobile add controls and recipe creation/import component are removed. Agents create structured recipes through the scoped API. Existing bounded import actions remain in the separate administrative API; they are not granted by a scoped token. The app continues to show and edit existing recipes, manage their photos and taxonomy, add them to the meal plan, and log their portions. Removing creation controls does not delete recipes or retire backend creation/import actions.
 
 ## Settings save outcomes
 

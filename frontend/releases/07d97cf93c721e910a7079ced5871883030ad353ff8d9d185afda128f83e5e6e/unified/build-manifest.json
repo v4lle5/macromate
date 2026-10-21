@@ -1,0 +1,92 @@
+{
+  "source": {
+    "project": "Recipe-Manager-Card",
+    "revision": "e25f96663538fb148b25ccbe51982b7ba6c6681d",
+    "license": "MIT"
+  },
+  "build": {
+    "bundler": "esbuild",
+    "version": "0.25.12",
+    "target": "es2022",
+    "scriptsExecuted": false
+  },
+  "runtimeDependencies": [
+    {
+      "name": "@lit/localize",
+      "version": "0.12.2",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "@lit/reactive-element",
+      "version": "2.1.2",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "lit",
+      "version": "3.3.1",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "lit-element",
+      "version": "4.2.2",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "lit-html",
+      "version": "3.3.3",
+      "license": "BSD-3-Clause"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "frontend/unified/app.js",
+      "bytes": 282885,
+      "sha256": "a7e9fbcb79a511a88b52e1320f7626ad6834f32f7d3ccac33b2160347a0df457"
+    },
+    {
+      "path": "frontend/unified/chunks/de-6NBW56XJ.js",
+      "bytes": 15471,
+      "sha256": "ce9f13d85054df6651c3043de43ab54ea54a9d20ec3b4798bd7c0ef8e2872cff"
+    },
+    {
+      "path": "frontend/unified/chunks/es-A3J7ZU3H.js",
+      "bytes": 15599,
+      "sha256": "0e5b3f56ddee97d820cf89d93e3925fc0731a898645e50f8ba9692ad3d8fa04c"
+    },
+    {
+      "path": "frontend/unified/chunks/fr-GWNL7MIW.js",
+      "bytes": 16035,
+      "sha256": "acdfb43f21c94693eef56dee663c2aea95c413c8b7bfb718674a8b6790faacc2"
+    },
+    {
+      "path": "frontend/unified/chunks/it-NFOVWZSQ.js",
+      "bytes": 15060,
+      "sha256": "040e63b619a802c3185e580a05ea0eed9a469243aca8f8093220412002672722"
+    },
+    {
+      "path": "frontend/unified/chunks/nl-BCWQZI3N.js",
+      "bytes": 14802,
+      "sha256": "a4d70e470c2bc2721bd463bc6073e7e9c9b7052d4205a5b6f4001b46ef8d3809"
+    },
+    {
+      "path": "frontend/unified/chunks/pt-ARZFEKX4.js",
+      "bytes": 15831,
+      "sha256": "8e5b3a58ab44a225b9e84231202db9a8c37c3467b0490a0666e45d0bbb1ff6bd"
+    },
+    {
+      "path": "frontend/unified/chunks/chunk-MCIAZV6Q.js.LEGAL.txt",
+      "bytes": 1272,
+      "sha256": "630427e8f7649304b3cb411a4d742f3c093c11ffd48fcdb76b2c695713af14d2"
+    },
+    {
+      "path": "frontend/unified/chunks/chunk-MCIAZV6Q.js",
+      "bytes": 17216,
+      "sha256": "2a24d5d5e7bfb124cc64e287eca0248ed68539524c776c2d41b50608a392f819"
+    },
+    {
+      "path": "frontend/unified/THIRD-PARTY-NOTICES.txt",
+      "bytes": 8821,
+      "sha256": "58c16abb85737af7cb36cfcd16b8c8909451ae9334e696086aa373192323db06"
+    }
+  ]
+}

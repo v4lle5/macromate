@@ -136,10 +136,13 @@ export, imports, scraping, media upload/download, online food access, food catal
 management, timers and preferences. `download_image=true` is refused on recipe
 creation. Inert image/source URLs are not fetched by the allowed commands.
 
-`describe` uses the existing schemas, so `admin_only` describes the underlying
-native command, not a requirement to provide an HA token to the scoped endpoint.
-Clients must use this endpoint's scope-filtered action list, not native service
-registration, for agent discovery.
+`describe` derives scoped schemas from the native registry without changing it.
+Every mutation marks `request_id` as required, using the caller ID contract before
+server namespacing/hashing. `download_image` accepts only `false`. Each descriptor
+lists `required_scopes` instead of the native `admin_only` flag, and the response
+identifies `authentication: "macromate_scoped_bearer"`. Clients must use this
+endpoint's scope-filtered action list, not native service registration, for agent
+discovery.
 
 ## Validation, persistence and replay
 
@@ -184,11 +187,16 @@ not browser screenshots, verbose curl, shared terminals or chat.
 
 ## Protected local client
 
+For a complete recipe-only LAN setup, discovery, creation and exact readback, see
+[AGENT_LAN_SETUP_DE.md](AGENT_LAN_SETUP_DE.md).
+
 `tools/macromate_scoped_client.py` is separate from the older broad HA client.
 It requires HTTPS unless `--trusted-lan-http` is explicitly supplied. It rejects
 redirects and environment proxies; the origin must have no credentials/path/query.
 Secret files must be bounded regular files, owned by the invoking OS user,
-without group/world permission bits; symlinks are refused. Errors are sanitized.
+without group/world permission bits; symlinks and special files are refused.
+Errors are sanitized; HTTP refusals retain only the numeric status, so callers
+can distinguish authentication, scope, rate and availability failures.
 
 An **operator**, not the agent, can mint using an existing protected HA admin
 secret file; only metadata is printed and the new token is written once to a
@@ -230,8 +238,8 @@ The restart fixture loads a real config entry in three fresh Python processes on
 one disposable configuration; every identity, credential and record is synthetic.
 
 ```sh
-PYTHONPATH=.:tests/ha \
-/home/valentin/.hermes/profiles/darlene/cache/scratch/macromate-runtime/venv/bin/python \
+# HA_PYTHON points to Python with the pinned requirements-dev.txt installed.
+PYTHONPATH=.:tests/ha "$HA_PYTHON" \
   -B -m unittest test_agent_credentials_native test_agent_security_native test_agent_restart -v
 ```
 
@@ -250,9 +258,11 @@ Independent Store readback matches the coordinator; no persisted HA Store contai
 the bearer secret. A separate concurrent registration test asserts exactly three
 views, one manager, no minted credential and unchanged native users/services.
 
-Local acceptance on HA 2026.10.1 / Python 3.14.2: **14 scoped tests pass**;
-`python -B -m unittest discover -s tests/ha -p 'test_*.py' -v` passes **183 native
-framework regressions**. Security regressions additionally prove body/lock-wait
+Historical local acceptance on HA 2026.10.1 / Python 3.14.2: **14 scoped tests passed**;
+`python -B -m unittest discover -s tests/ha -p 'test_*.py' -v` passed **183 native
+framework regressions**. These counts describe that earlier handoff, not a current
+revision run. Current CI must also run the scoped discovery/mutation test and the
+no-socket policy/client suites (`test_agent_policy.py`, `test_agent_scoped_client.py`). Security regressions additionally prove body/lock-wait
 administrator demotion, deactivation and deletion reject list/mint/revoke without
 Store changes or latent grants, and full-record no-op/replay responses require
 the listed read scopes. Evidence logs are local scratch artifacts, not published

@@ -17,7 +17,7 @@ Actual Chromium captures from a disposable Home Assistant 2026.10.1 instance. Al
 2. Copy the complete `custom_components/macromate` directory into `/config/custom_components/macromate`, including every frontend chunk, source adapter, notice and brand asset. Do not copy only `app.js` or the two root card files.
 3. Restart Home Assistant and retain the existing integration entry. Complete its profile/options if necessary. HACS can download this candidate only after a corresponding revision is actually published.
 
-The tested framework is HA 2026.10.1 / Python 3.14.2. No npm server, separate recipe/shopping integration or additional runtime custom-card dependency is required. Optional remote lookups/imports need explicit consent. Camera access requires HTTPS or localhost and browser permission.
+The tested framework is HA 2026.10.1 / Python 3.14.2. No npm server, separate recipe/shopping integration or additional runtime custom-card dependency is required. Submitted food lookups automatically query Open Food Facts; remote recipe imports through the administrative API require explicit consent; scoped agent credentials do not grant imports. Camera access requires HTTPS or localhost and browser permission.
 
 ## Add the full dashboard app — no resource URL or YAML
 
@@ -48,7 +48,7 @@ The default nutrition diary, recipes and planning require an administrator. Name
 
 Adding a plan does not silently log calories. Recipe → diary logging is a separate confirmed portion operation; saved nutrition snapshots survive later source edits/deletion. Unknown nutrients stay unknown, not zero. Incomplete totals do not imply exact progress, and over-goal intake is distinct from calories remaining.
 
-The interface uses dedicated recipe editing, portion logging, weekly planning, timer/preset and settings/import/export workflows. The generic action editor has been removed. The authenticated API and agent clients remain available independently; API coverage is not evidence of a graphical editor for every optional field. Inert upstream Cookbook/Sync/Help placeholders remain disabled.
+Agents create new recipes through the authenticated API. The **New Recipe** tab, desktop/mobile add controls and manual/URL/archive recipe creation screens are removed. The interface retains editing existing recipes, portion logging, weekly planning, timers/presets, settings and backup download. Scoped agents retain structured recipe creation. Backend import actions remain available through the separate administrative API. The generic action editor has been removed; API coverage is not evidence of a graphical editor for every optional field. Inert upstream Cookbook/Sync/Help placeholders remain disabled.
 
 Refresh events coalesce. Safe list metadata can refresh while a recipe editor is dirty; protected recipes/dates/drafts/focus are retained. Uncertain mutations retain their exact request and UUID for explicit retry only. Identity changes/removal clear private UI state and release subscriptions, cameras and object URLs. Private recipe photos use authenticated local media routes; barcode camera frames are decoded locally, not uploaded for recognition.
 
