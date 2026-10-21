@@ -3,6 +3,9 @@
 Home Assistant und dein Agent können direkt im selben LAN miteinander sprechen.
 Du richtest den Zugang in MacroMate ein:
 
+Nach einem Update Home Assistant vollständig neu starten und die App oder
+Browserseite neu öffnen. Ist „Neues Rezept“ noch sichtbar, läuft noch die alte Karte.
+
 1. Öffne **Einstellungen → Agent** mit deinem Home-Assistant-Administratorkonto.
 2. Prüfe die **Home-Assistant-Adresse** und tippe auf **Agent verbinden**.
    Der Name ist optional, die aktuelle Adresse ist bereits eingetragen. Falls du HA von

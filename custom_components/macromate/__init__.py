@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -150,7 +151,17 @@ async def _async_card_resource(hass) -> None:
         )
     )
     url = delivery["entry"]
-    if modules is not None and url not in modules.urls:
+    if modules is None:
+        return
+    # Entry reloads keep HA's module manager alive. Replace only our generated
+    # release loaders so a fresh page cannot race an obsolete automatic module.
+    # User-managed Lovelace resources and other extra modules are untouched.
+    for registered in tuple(modules.urls):
+        if registered != url and re.fullmatch(
+            r"/macromate-assets/releases/[0-9a-f]{64}/loader\.js", registered
+        ):
+            frontend.remove_extra_js_url(hass, registered)
+    if url not in modules.urls:
         frontend.add_extra_js_url(hass, url)
 
 
